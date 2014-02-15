@@ -6,6 +6,8 @@
 #include <istream>
 #include <string>
 
+#include "peekable_stream.hh"
+
 namespace kyaml
 {
   class tokenizer
@@ -32,6 +34,8 @@ namespace kyaml
       FLOW_ENTRY,
       FLOW_SEQUENCE_END,
       FLOW_MAPPING_END,
+      KEY,
+      VALUE,
     } token_t;
 
     tokenizer(std::istream &stream) : d_stream(stream)
@@ -62,12 +66,18 @@ namespace kyaml
     bool try_document_start();
     bool try_document_end();
     bool try_directive();
-    bool try_alias();
+    bool try_alias()
+    {
+      return try_alias_anchor('*');
+    }
     bool try_tag();
-    bool try_anchor();
+    bool try_anchor()
+    {
+      return try_alias_anchor('&');
+    }
     bool try_scalar();
     bool try_block_sequence_start();
-    bool try_mapping_squence_start();
+    bool try_block_mapping_start();
     bool try_block_entry();
     bool try_block_end();
     bool try_flow_sequence_start();
@@ -75,13 +85,17 @@ namespace kyaml
     bool try_flow_entry();
     bool try_flow_sequence_end();
     bool try_flow_mapping_end();
+    bool try_key();
+    bool try_value();
 
-    std::istream &d_stream;
+    bool try_alias_anchor(char d);
+
+    peekable_stream d_stream;
     std::string d_value;
 
     // static dispact table for bool next()
     typedef bool (tokenizer::*next_f_t)(); // pointer to member function
-    enum {TOKENTABLE_SIZE = FLOW_MAPPING_END + 1};
+    enum {TOKENTABLE_SIZE = VALUE + 1};
     static const next_f_t s_dispatch[TOKENTABLE_SIZE];
   };
 }

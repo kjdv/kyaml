@@ -19,8 +19,12 @@ namespace kyaml
     std::string peek(size_t n);
     
     std::string read(size_t n);
+    std::string read_until(char d);
+
+    int peekc();
 
     void ignore(size_t n);
+    void ignore_until(char d);
 
     bool eof() const
     {
@@ -31,6 +35,9 @@ namespace kyaml
     {
       return !d_buffer.empty() || d_stream.good();
     }
+
+    void putback(char c);
+    void putback(std::string const &s);
     
   private:
     std::istream &d_stream;
