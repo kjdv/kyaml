@@ -6,7 +6,7 @@ using namespace kyaml::clauses;
 
 bool printable::try_clause()
 {
-  int c = stream().peekc();
+  int c = stream().peek();
   return 
     c >=0 &&
     (
@@ -19,7 +19,7 @@ bool printable::try_clause()
 
 bool json::try_clause()
 {
-  int c = stream().peekc();
+  int c = stream().peek();
   return 
     c >=0 &&
     (
@@ -30,7 +30,7 @@ bool json::try_clause()
 
 bool reserved::try_clause()
 {
-  int c = stream().peekc();
+  int c = stream().peek();
   return 
     c >=0 &&
     ( c == '@' || c == '`' );

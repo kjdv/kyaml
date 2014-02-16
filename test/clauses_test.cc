@@ -28,7 +28,7 @@ public:
 
 private:
   stringstream d_str;
-  peekable_stream d_ps;
+  char_stream d_ps;
 
   clause_t d_clause;
 };

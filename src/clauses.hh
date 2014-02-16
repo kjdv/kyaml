@@ -2,12 +2,10 @@
 #define CLAUSES_HH
 
 #include <string>
-#include "peekable_stream.hh"
+#include "char_stream.hh"
 
 namespace kyaml
 {
-  typedef peekable_stream char_stream;
-  
   namespace clauses
   {
     // base class is informational only: there are no virtual functions, its here only to document
@@ -15,7 +13,9 @@ namespace kyaml
     class clause
     {
     public:
-      clause(char_stream &stream) : d_stream(stream)
+      clause(char_stream &stream) : 
+        d_stream(stream),
+        d_mark(d_stream.mark())
       {}
       
       // returns true if the head of the stream is of this type, should leave the stream unmodified
@@ -23,8 +23,12 @@ namespace kyaml
       
       // return clause-depentend value of this, should only be called if try_clause returned true
       // value_t consume();
-      // void unwind(value_t)
-      
+
+      void unwind()
+      {
+        d_stream.unwind(d_mark);
+      }
+            
       // note: public methods are not implemented, they should not be called directly
       
     protected:
@@ -35,6 +39,7 @@ namespace kyaml
       
     private:
       char_stream &d_stream;
+      char_stream::mark_t d_mark;
     };
     
     // [1] 	c-printable 	::= 	  #x9 | #xA | #xD | [#x20-#x7E]
@@ -46,12 +51,7 @@ namespace kyaml
       bool try_clause();
       char consume()
       {
-        return stream().getc();
-      }
-
-      void unwind(char c)
-      {
-        stream().putback(c);
+        return stream().get();
       }
     };
     
@@ -65,12 +65,7 @@ namespace kyaml
       
       char consume()
       {
-        return stream().getc();
-      }
-
-      void unwind(char c)
-      {
-        stream().putback(c);
+        return stream().get();
       }
     };
 
@@ -85,17 +80,12 @@ namespace kyaml
       
       bool try_clause()
       {
-        return stream().peekc() == value;
+        return stream().peek() == value;
       }
       
       char consume()
       {
-        return stream().getc();
-      }
-
-      void unwind(char c)
-      {
-        stream().putback(c);
+        return stream().get();
       }
     };
 
@@ -160,12 +150,7 @@ namespace kyaml
       
       char consume()
       {
-        return stream().getc();
-      }
-
-      void unwind(char c)
-      {
-        stream().putback(c);
+        return stream().get();
       }
     };
 

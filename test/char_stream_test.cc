@@ -56,6 +56,20 @@ TEST(char_stream_test, unwind)
   EXPECT_EQ(seq[0], cs.get());
 }
 
+TEST(char_stream_test, unwind_later)
+{
+  string seq = "abc";
+  stringstream str(seq);
+  char_stream cs(str);
+
+  EXPECT_EQ(seq[0], cs.get());
+  char_stream::mark_t m = cs.mark();
+  EXPECT_EQ(seq[1], cs.get());
+  cs.unwind(m);
+  EXPECT_EQ(seq[1], cs.get());
+}
+
+
 TEST(char_stream_test, consume)
 {
   string seq = "abc";
