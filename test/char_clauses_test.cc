@@ -1,4 +1,4 @@
-#include "clauses.hh"
+#include "char_clauses.hh"
 #include <sstream>
 #include <gtest/gtest.h>
 
