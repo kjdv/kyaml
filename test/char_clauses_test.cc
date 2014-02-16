@@ -82,6 +82,8 @@ CHAR_CLAUSE_TEST(json, string, tab, "\t", "\t")
 CHAR_CLAUSE_TEST(json, string, mutlibyte, "\xd5\x81", "\xd5\x81")
 NEG_CHAR_CLAUSE_TEST(json, string, newline, "\n")
 
+CHAR_CLAUSE_TEST(byte_order_mark, string, simple, "\xfe\xff", "\xfe\xff")
+
 CHAR_CLAUSE_TEST(sequence_entry, char, positive, "-", '-')
 NEG_CHAR_CLAUSE_TEST(sequence_entry, char, negative, "a");
 

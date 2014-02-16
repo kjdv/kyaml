@@ -87,7 +87,13 @@ namespace kyaml
     };
 
     // [3] 	c-byte-order-mark 	::= 	#xFEFF 
-    // (we don't worry about utf for now)
+    class byte_order_mark : public internal::multi_char_clause
+    {
+    public:
+      using internal::multi_char_clause::multi_char_clause;
+      
+      bool try_clause();
+    };
 
     namespace internal
     {

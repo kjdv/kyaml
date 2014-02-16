@@ -73,6 +73,25 @@ bool json::try_clause()
   return false;
 }
 
+bool byte_order_mark::try_clause()
+{
+  char c;
+  if(!stream().peek(c))
+    return false;
+  if(c == '\xfe')
+  {
+    consume(c);
+    if(stream().peek(c) && c == '\xff')
+    {
+      consume(c);
+      return true;
+    }
+    else
+      unwind();
+  }
+  return false;
+}
+
 bool reserved::try_clause()
 {
   char c;
