@@ -8,13 +8,21 @@ using namespace kyaml;
 TEST(char_stream_test, simple_get)
 {
   stringstream str("a");
-  EXPECT_EQ('a', char_stream(str).get());
+  char_stream cs(str);
+
+  char c;
+  EXPECT_TRUE(cs.get(c));
+  EXPECT_EQ('a', c);
 }
 
 TEST(char_stream_test, simple_peek)
 {
   stringstream str("a");
-  EXPECT_EQ('a', char_stream(str).peek());
+  char_stream cs(str);
+
+  char c;
+  EXPECT_TRUE(cs.peek(c));
+  EXPECT_EQ('a', c);
 }
 
 TEST(char_stream_test, multi_get)
@@ -24,7 +32,11 @@ TEST(char_stream_test, multi_get)
   char_stream cs(str);
 
   for(char c : seq)
-    EXPECT_EQ(c, cs.get());
+  {
+    char a;
+    EXPECT_TRUE(cs.get(a));
+    EXPECT_EQ(c, a);
+  }
 }
 
 TEST(char_stream_test, multi_peek)
@@ -34,13 +46,18 @@ TEST(char_stream_test, multi_peek)
   char_stream cs(str);
 
   for(size_t i = 0; i < 3; ++i)
-    EXPECT_EQ(seq[0], cs.peek());
+  {
+    char c;
+    cs.peek(c);
+    EXPECT_EQ(seq[0], c);
+  }
 }
 
 TEST(char_stream_test, endoffile)
 {
   stringstream str("");
-  EXPECT_LT(char_stream(str).get(), 0);
+  char c;
+  EXPECT_FALSE(char_stream(str).get(c));
 }
 
 TEST(char_stream_test, unwind)
@@ -51,9 +68,12 @@ TEST(char_stream_test, unwind)
 
   char_stream::mark_t m = cs.mark();
 
-  EXPECT_EQ(seq[0], cs.get());
+  char c;
+  cs.get(c);
+  EXPECT_EQ(seq[0], c);
   cs.unwind(m);
-  EXPECT_EQ(seq[0], cs.get());
+  cs.get(c);
+  EXPECT_EQ(seq[0], c);
 }
 
 TEST(char_stream_test, unwind_later)
@@ -62,13 +82,16 @@ TEST(char_stream_test, unwind_later)
   stringstream str(seq);
   char_stream cs(str);
 
-  EXPECT_EQ(seq[0], cs.get());
+  char c;
+  cs.get(c);
+  EXPECT_EQ(seq[0], c);
   char_stream::mark_t m = cs.mark();
-  EXPECT_EQ(seq[1], cs.get());
+  cs.get(c);
+  EXPECT_EQ(seq[1], c);
   cs.unwind(m);
-  EXPECT_EQ(seq[1], cs.get());
+  cs.get(c);
+  EXPECT_EQ(seq[1], c);
 }
-
 
 TEST(char_stream_test, consume)
 {
@@ -76,7 +99,9 @@ TEST(char_stream_test, consume)
   stringstream str(seq);
   char_stream cs(str);
 
-  cs.get(), cs.get();
+  char c;
+  cs.get(c), cs.get(c);
   EXPECT_EQ(seq.substr(0, 2), cs.consume());
-  EXPECT_EQ(seq[2], cs.get());
+  cs.get(c);
+  EXPECT_EQ(seq[2], c);
 }

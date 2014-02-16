@@ -19,10 +19,10 @@ namespace kyaml
     {}
 
     // get the next character, or EOF
-    int get();
+    bool get(char &c);
 
     // peek the next character without modifying the stream
-    int peek();
+    bool peek(char &c);
 
     void advance(size_t n = 1);
 

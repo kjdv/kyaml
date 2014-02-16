@@ -14,14 +14,14 @@ namespace kyaml
       {
       public:
         single_char_clause(char_stream &stream) : 
-        clause(stream),
-        d_value(0)
+          clause(stream),
+          d_value(0)
         {}
         
         char value()
-      {
-        return d_value;
-      }
+        {
+          return d_value;
+        }
         
       protected:
         void consume(char c)
@@ -36,22 +36,52 @@ namespace kyaml
       private:
         char d_value;
       };
+
+      class multi_char_clause : public clause
+      {
+      public:
+        using clause::clause;
+
+        std::string const &value()
+        {
+          return d_value;
+        }
+
+      protected:
+        void clear()
+        {
+          d_value.clear();
+        }
+        void consume(char c)
+        {
+          d_value += c;
+          advance();
+        }          
+        void set(std::string const &s)
+        {
+          d_value = s;
+        }
+      private:
+        std::string d_value;
+      };
     }
     
     // [1] 	c-printable 	::= 	  #x9 | #xA | #xD | [#x20-#x7E]
-    class printable : public internal::single_char_clause
+    //                                  | #x85 | [#xA0-#xD7FF] | [#xE000-#xFFFD]
+    //                                  | [#x10000-#x10FFFF]
+    class printable : public internal::multi_char_clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
+      using internal::multi_char_clause::multi_char_clause;
 
       bool try_clause();
     };
     
     // [2] 	nb-json 	::= 	#x9 | [#x20-#x10FFFF] 
-    class json : public internal::single_char_clause
+    class json : public internal::multi_char_clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
+      using internal::multi_char_clause::multi_char_clause;
       
       bool try_clause();
     };
@@ -69,11 +99,12 @@ namespace kyaml
         
         bool try_clause()
         {
-          if(stream().peek() == char_value)
-        {
-          consume(char_value);
-          return true;
-        }
+          char c;
+          if(stream().peek(c) && c == char_value)
+          {
+            consume(char_value);
+            return true;
+          }
           return false;
         }
       };
@@ -175,10 +206,10 @@ namespace kyaml
     };
 
     // [27] 	nb-char 	::= 	c-printable - b-char - c-byte-order-mark
-    class non_break_char : public internal::single_char_clause
+    class non_break_char : public internal::multi_char_clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
+      using internal::multi_char_clause::multi_char_clause;
       
       bool try_clause();
     };
@@ -223,10 +254,10 @@ namespace kyaml
     };
 
     // [34] 	ns-char 	::= 	nb-char - s-white
-    class non_white_char : public internal::single_char_clause
+    class non_white_char : public internal::multi_char_clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
+      using internal::multi_char_clause::multi_char_clause;
       
       bool try_clause();
     };
@@ -367,8 +398,8 @@ namespace kyaml
         bool try_clause()
         {
           d_value.clear();
-          int c = stream().peek();
-          if(c == escape)
+          char c;
+          if(stream().peek(c) && c == escape)
           {
             d_value += (char)c;
             advance(1);

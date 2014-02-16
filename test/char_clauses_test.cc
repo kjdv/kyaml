@@ -70,14 +70,17 @@ private:
     EXPECT_EQ(0, c.stream().pos());                              \
   }                                                              
 
-CHAR_CLAUSE_TEST(printable, char, simple, "a", 'a')
-CHAR_CLAUSE_TEST(printable, char, tab, "\t", '\t')
-CHAR_CLAUSE_TEST(printable, char, newline, "\n", '\n')
-NEG_CHAR_CLAUSE_TEST(printable, char, nonprintable, "\x10");
+CHAR_CLAUSE_TEST(printable, string, simple, "a", "a")
+CHAR_CLAUSE_TEST(printable, string, tab, "\t", "\t")
+CHAR_CLAUSE_TEST(printable, string, newline, "\n", "\n")
+CHAR_CLAUSE_TEST(printable, string, mutlibyte1, "\xd5\x81", "\xd5\x81")
+CHAR_CLAUSE_TEST(printable, string, mutlibyte2, "\xf0\x9d\x84\x8b", "\xf0\x9d\x84\x8b");
+NEG_CHAR_CLAUSE_TEST(printable, string, nonprintable, "\x10");
 
-CHAR_CLAUSE_TEST(json, char, simple, "a", 'a')
-CHAR_CLAUSE_TEST(json, char, tab, "\t", '\t')
-NEG_CHAR_CLAUSE_TEST(json, char, newline, "\n")
+CHAR_CLAUSE_TEST(json, string, simple, "a", "a")
+CHAR_CLAUSE_TEST(json, string, tab, "\t", "\t")
+CHAR_CLAUSE_TEST(json, string, mutlibyte, "\xd5\x81", "\xd5\x81")
+NEG_CHAR_CLAUSE_TEST(json, string, newline, "\n")
 
 CHAR_CLAUSE_TEST(sequence_entry, char, positive, "-", '-')
 NEG_CHAR_CLAUSE_TEST(sequence_entry, char, negative, "a");
@@ -169,9 +172,9 @@ CHAR_CLAUSE_TEST(break_char, char, positive1, "\r", '\r')
 CHAR_CLAUSE_TEST(break_char, char, positive2, "\n", '\n')
 NEG_CHAR_CLAUSE_TEST(break_char, char, negative, "a");
 
-CHAR_CLAUSE_TEST(non_break_char, char, positive, "a", 'a')
-NEG_CHAR_CLAUSE_TEST(non_break_char, char, negative1, "\n");
-NEG_CHAR_CLAUSE_TEST(non_break_char, char, negative2, "\r");
+CHAR_CLAUSE_TEST(non_break_char, string, positive, "a", "a")
+NEG_CHAR_CLAUSE_TEST(non_break_char, string, negative1, "\n");
+NEG_CHAR_CLAUSE_TEST(non_break_char, string, negative2, "\r");
 
 CHAR_CLAUSE_TEST(line_break, string, windows, "\r\n", "\r\n");
 CHAR_CLAUSE_TEST(line_break, string, mac, "\r", "\r");
@@ -187,11 +190,11 @@ CHAR_CLAUSE_TEST(white, char, positive1, " ", ' ')
 CHAR_CLAUSE_TEST(white, char, positive2, "\t", '\t')
 NEG_CHAR_CLAUSE_TEST(white, char, negative, "a");
 
-CHAR_CLAUSE_TEST(non_white_char, char, positive, "a", 'a')
-NEG_CHAR_CLAUSE_TEST(non_white_char, char, negative1, "\n");
-NEG_CHAR_CLAUSE_TEST(non_white_char, char, negative2, "\r");
-NEG_CHAR_CLAUSE_TEST(non_white_char, char, negative3, "\t");
-NEG_CHAR_CLAUSE_TEST(non_white_char, char, negative4, " ");
+CHAR_CLAUSE_TEST(non_white_char, string, positive, "a", "a")
+NEG_CHAR_CLAUSE_TEST(non_white_char, string, negative1, "\n");
+NEG_CHAR_CLAUSE_TEST(non_white_char, string, negative2, "\r");
+NEG_CHAR_CLAUSE_TEST(non_white_char, string, negative3, "\t");
+NEG_CHAR_CLAUSE_TEST(non_white_char, string, negative4, " ");
 
 CHAR_CLAUSE_TEST(dec_digit_char, char, positive, "1", '1')
 NEG_CHAR_CLAUSE_TEST(dec_digit_char, char, negative, "a");

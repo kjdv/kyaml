@@ -4,42 +4,80 @@ using namespace std;
 using namespace kyaml;
 using namespace kyaml::clauses;
 
+namespace
+{
+  bool is_utf8_lead_byte(char b)
+  {
+    return (b & 0xc0) == 0xc0;
+  }
+
+  bool is_utf8_cont_byte(char b)
+  {
+    return (b & 0xc0) == 0x80;
+  }
+}
+
 bool printable::try_clause()
 {
-  int c = stream().peek();
+  char c;
+  if(!stream().peek(c))
+    return false;
   if(c >=0 &&
      (
        c == '\x9' ||
        c == '\xa' ||
        c == '\xd' ||
-       (c >= '\x20' && c <= '\x7e')
+       (c >= '\x20' && c <= '\x7e') ||
+       c == '\x85'
      ))
   {
     consume(c);
     return true;
   }
+  else if(is_utf8_lead_byte(c))
+  {
+    consume(c);
+    // no extensive checking done, we just assume all utf8 is printable (to improve)
+    while(stream().peek(c) && is_utf8_cont_byte(c))
+      consume(c);
+    return true;
+  }
+
   return false;
 }
 
 bool json::try_clause()
 {
-  int c = stream().peek();
+  char c;
+  if(!stream().peek(c))
+    return false;
+
   if(c >=0 &&
      (
        c == '\x9' ||
-       c >= '\x20'
+       (c >= '\x20' && c <= '\x7f')
      ))
   {
     consume(c);
     return true;
   }
+  else if(is_utf8_lead_byte(c))
+  {
+    consume(c);
+    // no extensive checking done, we just assume all utf8 is printable (to improve)
+    while(stream().peek(c) && is_utf8_cont_byte(c))
+      consume(c);
+    return true;
+  }
+
   return false;
 }
 
 bool reserved::try_clause()
 {
-  int c = stream().peek();
-  if(c >=0 &&
+  char c;
+  if(stream().peek(c) &&
+     c >=0 &&
      ( c == '@' || c == '`' ))
   {
     consume(c);
@@ -50,7 +88,9 @@ bool reserved::try_clause()
 
 bool indicator::try_clause()
 {
-  int c = stream().peek();
+  char c = 0;
+  stream().peek(c);
+
   switch(c)
   {
   case '-':
@@ -81,7 +121,9 @@ bool indicator::try_clause()
 
 bool flow_indicator::try_clause()
 {
-  int c = stream().peek();
+  char c = 0;
+  stream().peek(c);
+  
   switch(c)
   {
   case ',':
@@ -202,8 +244,9 @@ bool non_white_char::try_clause()
 
 bool dec_digit_char::try_clause()
 {
-  int c = stream().peek();
-  if(c >= '0' && c <= '9')
+  char c;
+  if(stream().peek(c) && 
+     (c >= '0' && c <= '9'))
   {
     consume(c);
     return true;
@@ -221,9 +264,10 @@ bool hex_digit_char::try_clause()
   }
   else
   {
-    int c = stream().peek();
-    if((c >= 'a' && c <= 'f') ||
-       (c >= 'A' && c <= 'F'))
+    char c;
+    if(stream().peek(c) && 
+       ((c >= 'a' && c <= 'f') ||
+        (c >= 'A' && c <= 'F')))
     {
       consume(c);
       return true;
@@ -234,9 +278,10 @@ bool hex_digit_char::try_clause()
 
 bool ascii_letter::try_clause()
 {
-  int c = stream().peek();
-  if((c >= 'a' && c <= 'z') ||
-     (c >= 'A' && c <= 'Z'))
+  char c;
+  if(stream().peek(c) &&
+     ((c >= 'a' && c <= 'z') ||
+      (c >= 'A' && c <= 'Z')))
   {
     consume(c);
     return true;
@@ -260,8 +305,9 @@ bool word_char::try_clause()
     return true;
   }
   
-  int c = stream().peek();
-  if(c == '-')
+  char c;
+  if(stream().peek(c) &&
+     c == '-')
   {
     consume(c);
     return true;
@@ -273,8 +319,11 @@ bool uri_char::try_clause()
 {
   d_value.clear();
 
-  int c = stream().peek();
-  if (c == '%')
+  char c;
+  if(!stream().peek(c))
+    return false;
+
+  if(c == '%')
   {
     d_value += (char)c;
     advance(1);
@@ -328,7 +377,10 @@ bool uri_char::try_clause()
 
 bool tag_char::try_clause()
 {
-  int c = stream().peek();
+  char c;
+  if(!stream().peek(c))
+    return false;
+
   if(c == '!')
     return false;
 
@@ -364,7 +416,10 @@ bool tryclause(char_stream &str, string &value)
 
 bool esc_char::try_clause()
 {
-  int c = stream().peek();
+  char c;
+  if(!stream().peek(c))
+    return false;
+
   if(c == '\\')
   {
     d_value += (char)c;

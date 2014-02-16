@@ -4,24 +4,26 @@
 using namespace std;
 using namespace kyaml;
 
-int char_stream::get()
+bool char_stream::get(char &c)
 {
   if(!underflow())
-    return EOF;
+    return false;
 
   assert(d_pos < d_buffer.size());
 
-  return d_buffer[d_pos++];
+  c = d_buffer[d_pos++];
+  return true;
 }
 
-int char_stream::peek()
+bool char_stream::peek(char &c)
 {
   if(!underflow())
-    return EOF;
+    return false;
 
   assert(d_pos < d_buffer.size());
 
-  return d_buffer[d_pos];
+  c = d_buffer[d_pos];
+  return true;
 }
 
 void char_stream::advance(size_t n)
@@ -65,8 +67,8 @@ bool char_stream::underflow()
 {
   while(d_buffer.size() <= d_pos)
   {
-    int c = d_base.get();
-    if(c >= 0)
+    char c;
+    if(d_base.read(&c, 1))
       d_buffer.push_back(c);
     else
       return false;
