@@ -24,6 +24,12 @@ int char_stream::peek()
   return d_buffer[d_pos];
 }
 
+void char_stream::advance(size_t n)
+{
+  d_pos += n;
+  underflow();
+}
+
 char_stream::mark_t char_stream::mark() const
 {
   d_mark_valid = true;
@@ -57,7 +63,7 @@ string char_stream::consume(mark_t m)
 
 bool char_stream::underflow()
 {
-  if(d_buffer.size() == d_pos)
+  while(d_buffer.size() <= d_pos)
   {
     int c = d_base.get();
     if(c >= 0)

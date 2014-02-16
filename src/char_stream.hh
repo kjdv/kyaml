@@ -24,6 +24,8 @@ namespace kyaml
     // peek the next character without modifying the stream
     int peek();
 
+    void advance(size_t n = 1);
+
     // mark the current position in the stream
     mark_t mark() const;
 
