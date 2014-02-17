@@ -7,6 +7,8 @@
 
 namespace kyaml
 {
+  typedef char32_t char_t;
+
   class char_stream
   {
   public:
@@ -19,10 +21,10 @@ namespace kyaml
     {}
 
     // get the next character, or EOF
-    bool get(char &c);
+    bool get(char_t &c);
 
     // peek the next character without modifying the stream
-    bool peek(char &c);
+    bool peek(char_t &c);
 
     void advance(size_t n = 1);
 
@@ -31,6 +33,9 @@ namespace kyaml
 
     // unwind the stream, setting the read pos back to m. 
     void unwind(mark_t m);
+
+    // purge all buffers until pos(), will invalidate marks
+    void ignore();
 
     // eat all charactes to the current read pos. Returns all from m to the current read pos. Note
     // that this invalidates all marks previously returned by mark().
@@ -45,10 +50,10 @@ namespace kyaml
   private:
     bool underflow();
 
-    std::istream    &d_base;
-    std::deque<char> d_buffer;
-    mark_t           d_pos;
-    mutable bool     d_mark_valid; // only for additional run-time error checking
+    std::istream      &d_base;
+    std::deque<char_t> d_buffer;
+    mark_t             d_pos;
+    mutable bool       d_mark_valid; // only for additional run-time error checking
   };
 }
 

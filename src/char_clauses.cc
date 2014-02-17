@@ -1,3 +1,5 @@
+/*
+
 #include "char_clauses.hh"
 
 using namespace std;
@@ -474,3 +476,4 @@ bool esc_char::try_clause()
   }
   return false;
 }
+*/

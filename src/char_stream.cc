@@ -1,10 +1,11 @@
 #include "char_stream.hh"
+#include "utils.hh"
 #include <cassert>
 
 using namespace std;
 using namespace kyaml;
 
-bool char_stream::get(char &c)
+bool char_stream::get(char_t &c)
 {
   if(!underflow())
     return false;
@@ -15,7 +16,7 @@ bool char_stream::get(char &c)
   return true;
 }
 
-bool char_stream::peek(char &c)
+bool char_stream::peek(char_t &c)
 {
   if(!underflow())
     return false;
@@ -53,22 +54,28 @@ string char_stream::consume(mark_t m)
   {
     auto begin = d_buffer.begin() + m;
     auto end = d_buffer.begin() + d_pos;
-    result.assign(begin, end);
+
+    for(auto it = begin; it != end; ++it)
+      append_utf8(result, *it);
   }
 
+  ignore();
+  return result;
+}
+
+void char_stream::ignore()
+{
   d_buffer.erase(d_buffer.begin(), d_buffer.begin() + d_pos);
   d_pos = 0;
   d_mark_valid = false;
-
-  return result;
 }
 
 bool char_stream::underflow()
 {
   while(d_buffer.size() <= d_pos)
   {
-    char c;
-    if(d_base.read(&c, 1))
+    char32_t c;
+    if(extract_utf8(d_base, c))
       d_buffer.push_back(c);
     else
       return false;

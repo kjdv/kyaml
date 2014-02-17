@@ -10,7 +10,7 @@ TEST(char_stream_test, simple_get)
   stringstream str("a");
   char_stream cs(str);
 
-  char c;
+  char_t c;
   EXPECT_TRUE(cs.get(c));
   EXPECT_EQ('a', c);
 }
@@ -20,7 +20,7 @@ TEST(char_stream_test, simple_peek)
   stringstream str("a");
   char_stream cs(str);
 
-  char c;
+  char_t c;
   EXPECT_TRUE(cs.peek(c));
   EXPECT_EQ('a', c);
 }
@@ -33,7 +33,7 @@ TEST(char_stream_test, multi_get)
 
   for(char c : seq)
   {
-    char a;
+    char_t a;
     EXPECT_TRUE(cs.get(a));
     EXPECT_EQ(c, a);
   }
@@ -47,7 +47,7 @@ TEST(char_stream_test, multi_peek)
 
   for(size_t i = 0; i < 3; ++i)
   {
-    char c;
+    char_t c;
     cs.peek(c);
     EXPECT_EQ(seq[0], c);
   }
@@ -56,7 +56,7 @@ TEST(char_stream_test, multi_peek)
 TEST(char_stream_test, endoffile)
 {
   stringstream str("");
-  char c;
+  char_t c;
   EXPECT_FALSE(char_stream(str).get(c));
 }
 
@@ -68,7 +68,7 @@ TEST(char_stream_test, unwind)
 
   char_stream::mark_t m = cs.mark();
 
-  char c;
+  char_t c;
   cs.get(c);
   EXPECT_EQ(seq[0], c);
   cs.unwind(m);
@@ -82,7 +82,7 @@ TEST(char_stream_test, unwind_later)
   stringstream str(seq);
   char_stream cs(str);
 
-  char c;
+  char_t c;
   cs.get(c);
   EXPECT_EQ(seq[0], c);
   char_stream::mark_t m = cs.mark();
@@ -99,7 +99,7 @@ TEST(char_stream_test, consume)
   stringstream str(seq);
   char_stream cs(str);
 
-  char c;
+  char_t c;
   cs.get(c), cs.get(c);
   EXPECT_EQ(seq.substr(0, 2), cs.consume());
   cs.get(c);
