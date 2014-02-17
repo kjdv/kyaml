@@ -82,6 +82,22 @@ namespace kyaml
 
     namespace internal
     {
+      class void_clause : public clause
+      {
+      public:
+        typedef void_result value_t;
+
+        using clause::clause;
+        
+        value_t value() const
+        {
+          return value_t();
+        }
+      };
+    }
+
+    namespace internal
+    {
       template <typename result_t>
       class compound_clause : public clause
       {
