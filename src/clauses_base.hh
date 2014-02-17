@@ -2,6 +2,7 @@
 #define CLAUSES_BASE_HH
 
 #include "char_stream.hh"
+#include "utils.hh"
 
 namespace kyaml
 {
@@ -45,6 +46,158 @@ namespace kyaml
       char_stream &d_stream;
       char_stream::mark_t const d_mark;
     };
+
+    class string_result : public std::string
+    {
+    public:
+      string_result()
+      {}
+      string_result(std::string const &s) : std::string(s)
+      {}
+      string_result(char_t c)
+      {
+        append_utf8(*this, c);
+      }
+      
+      void append(char_t c)
+      {
+        append_utf8(*this, c);
+      }
+    private:
+      std::string d_val;
+    };
+
+    class void_result
+    {
+    public:
+      void_result()
+      {}
+      template <typename T>
+      void_result(T const &)
+      {}
+      template <typename T>
+      void append(T const &)
+      {}
+    };
+
+    namespace internal
+    {
+      template <typename result_t>
+      class compound_clause : public clause
+      {
+      public:
+        typedef result_t value_t;
+        
+        using clause::clause;
+
+        value_t const &value() const
+        {
+          return d_value;
+        }
+        
+      protected:
+        void set(value_t const &v)
+        {
+          d_value = v;
+        }
+
+      private:
+        value_t d_value;
+      };
+
+      template <typename result_t, typename left_t, typename right_t>
+      class or_clause : public compound_clause<result_t>
+      {
+      public:
+        typedef typename compound_clause<result_t>::value_t value_t;
+
+        bool try_clause()
+        {
+          left_t l(compound_clause<result_t>::stream());
+          if(l.try_clause())
+          {
+            value_t v(l.value());
+            set(v);
+            return true;
+          }
+
+          right_t r(compound_clause<result_t>::stream());
+          if(r.try_clause())
+          {
+            value_t v(r.value());
+            set(v);
+            return true;
+          }
+          return false;
+        }
+      };
+
+      template <typename result_t, typename left_t, typename right_t>
+      class and_clause : public compound_clause<result_t>
+      {
+      public:
+        typedef typename compound_clause<result_t>::value_t value_t;
+
+        bool try_clause()
+        {
+          left_t l(compound_clause<result_t>::stream());
+          if(l.try_clause())
+          {
+            value_t v(l.value());
+            
+            right_t r(compound_clause<result_t>::stream());
+            if(r.try_clause())
+            {
+              v.append(r.value());
+              return true;
+            }
+            else
+              compound_clause<result_t>::unwind();
+          }
+          return false;
+        }
+      };
+
+      template <typename result_t, typename subclause_t>
+      class one_or_more : public clause
+      {
+      public:
+        typedef typename compound_clause<result_t>::value_t value_t;
+
+        bool try_clause()
+        {
+          subclause_t s(compound_clause<result_t>::stream());
+          if(s.try_clause())
+          {
+            value_t v;
+            do
+            {
+              v.append(s.value());
+            } while(s.try_clause());
+            set(v);
+            return true;
+          }
+          return false;
+        }
+      };
+
+      template <typename result_t, typename subclause_t>
+      class zero_or_more : public clause
+      {
+      public:
+        typedef typename compound_clause<result_t>::value_t value_t;
+
+        bool try_clause()
+        {
+          subclause_t s(compound_clause<result_t>::stream());
+          value_t v;
+          while(s.try_clause())
+            v.append(s.value());
+          set(v);
+          return true;
+        }
+      };
+    }
   }
 }
 
