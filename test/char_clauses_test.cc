@@ -1,5 +1,6 @@
 #include "char_clauses.hh"
 #include <sstream>
+#include <algorithm>
 #include <vector>
 #include <initializer_list>
 #include <gtest/gtest.h>

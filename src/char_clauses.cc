@@ -4,6 +4,8 @@ using namespace std;
 using namespace kyaml;
 using namespace kyaml::clauses;
 
+static_assert(sizeof(char_t) == 4, "");
+
 bool printable::try_clause()
 {
   char_t c;
@@ -13,7 +15,7 @@ bool printable::try_clause()
      c == '\xa' ||
      c == '\xd' ||
      (c >= '\x20' && c <= '\x7e') ||
-     c == '\x85')
+     c == static_cast<char_t>('\x85'))
   {
     consume(c);
     return true;
@@ -59,7 +61,7 @@ bool byte_order_mark::try_clause()
   {
     consume(c);
     return true;
-    if(stream().peek(c) && c == '\xff')
+    if(stream().peek(c) && c == static_cast<char_t>('\xff'))
     {
       consume(c);
       return true;
