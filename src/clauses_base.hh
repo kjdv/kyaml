@@ -127,13 +127,16 @@ namespace kyaml
       public:
         typedef typename compound_clause<result_t>::value_t value_t;
 
+        or_clause(char_stream &s) : compound_clause<result_t>(s)
+        {}
+
         bool try_clause()
         {
           left_t l(compound_clause<result_t>::stream());
           if(l.try_clause())
           {
             value_t v(l.value());
-            set(v);
+            compound_clause<result_t>::set(v);
             return true;
           }
 
@@ -141,7 +144,7 @@ namespace kyaml
           if(r.try_clause())
           {
             value_t v(r.value());
-            set(v);
+            compound_clause<result_t>::set(v);
             return true;
           }
           return false;
@@ -154,6 +157,9 @@ namespace kyaml
       public:
         typedef typename compound_clause<result_t>::value_t value_t;
 
+        and_clause(char_stream &s) : compound_clause<result_t>(s)
+        {}
+
         bool try_clause()
         {
           left_t l(compound_clause<result_t>::stream());
@@ -165,6 +171,7 @@ namespace kyaml
             if(r.try_clause())
             {
               v.append(r.value());
+              compound_clause<result_t>::set(v);
               return true;
             }
             else
@@ -175,10 +182,13 @@ namespace kyaml
       };
 
       template <typename result_t, typename subclause_t>
-      class one_or_more : public clause
+      class one_or_more : public compound_clause<result_t>
       {
       public:
         typedef typename compound_clause<result_t>::value_t value_t;
+
+        one_or_more(char_stream &s) : compound_clause<result_t>(s)
+        {}
 
         bool try_clause()
         {
@@ -190,7 +200,7 @@ namespace kyaml
             {
               v.append(s.value());
             } while(s.try_clause());
-            set(v);
+            compound_clause<result_t>::set(v);
             return true;
           }
           return false;
@@ -198,10 +208,13 @@ namespace kyaml
       };
 
       template <typename result_t, typename subclause_t>
-      class zero_or_more : public clause
+      class zero_or_more : public compound_clause<result_t>
       {
       public:
         typedef typename compound_clause<result_t>::value_t value_t;
+
+        zero_or_more(char_stream &s) : compound_clause<result_t>(s)
+        {}
 
         bool try_clause()
         {

@@ -158,3 +158,4 @@ indent_clause_test_case indent_clause_le_test_cases[] =
 INSTANTIATE_TEST_CASE_P(indent_clause_le_tests,
                         indent_clause_le_test,
                         testing::ValuesIn(indent_clause_le_test_cases));
+

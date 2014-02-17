@@ -26,6 +26,9 @@ namespace kyaml
     // peek the next character without modifying the stream
     bool peek(char_t &c);
 
+    // peek one back
+    bool rpeek(char_t &c);
+
     void advance(size_t n = 1);
 
     // mark the current position in the stream

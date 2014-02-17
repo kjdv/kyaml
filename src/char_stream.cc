@@ -27,6 +27,16 @@ bool char_stream::peek(char_t &c)
   return true;
 }
 
+bool char_stream::rpeek(char_t &c)
+{
+  if(d_pos)
+  {
+    c = d_buffer[d_pos - 1];
+    return true;
+  }
+  return false;
+}
+
 void char_stream::advance(size_t n)
 {
   d_pos += n;
