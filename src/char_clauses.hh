@@ -3,6 +3,7 @@
 
 #include <string>
 #include "clauses_base.hh"
+#include "utils.hh"
 
 namespace kyaml
 {
@@ -13,36 +14,66 @@ namespace kyaml
       class single_char_clause : public clause
       {
       public:
+        typedef char_t value_t;
+
         single_char_clause(char_stream &stream) : 
           clause(stream),
           d_value(0)
         {}
         
-        char value()
+        value_t value() const
         {
           return d_value;
         }
         
       protected:
-        void consume(char c)
+        void consume(value_t c)
         {
           set(c);
           advance();
         }
-        void set(char c)
+        void set(value_t c)
         {
           d_value = c;
         }
       private:
-        char d_value;
+        value_t d_value;
       };
 
+      // utility for clauses where only one char value is allowed
+      template <char_t char_value>
+      class simple_char_clause : public clause
+      {
+      public:
+        typedef char_t value_t;
+        using clause::clause;
+        
+        bool try_clause()
+        {
+          char_t c;
+          if(stream().peek(c) && c == char_value)
+          {
+            advance();
+            return true;
+          }
+          return false;
+        }
+
+        value_t value() const
+        {
+          return char_value;
+        }
+      };
+
+      // few char-clauses can have multiple characters, think of line breaks or escaped sequences
       class multi_char_clause : public clause
       {
       public:
+        typedef std::string value_t;
+
         using clause::clause;
 
-        std::string const &value()
+        value_t const &value() const
         {
           return d_value;
         }
@@ -52,14 +83,22 @@ namespace kyaml
         {
           d_value.clear();
         }
-        void consume(char c)
+        void consume(char_t c)
         {
-          d_value += c;
+          append_utf8(d_value, c);
           advance();
         }          
         void set(std::string const &s)
         {
           d_value = s;
+        }
+        void append(std::string const &s)
+        {
+          d_value.append(s);
+        }
+        void append(char_t c)
+        {
+          append_utf8(d_value, c);
         }
       private:
         std::string d_value;
@@ -69,52 +108,31 @@ namespace kyaml
     // [1] 	c-printable 	::= 	  #x9 | #xA | #xD | [#x20-#x7E]
     //                                  | #x85 | [#xA0-#xD7FF] | [#xE000-#xFFFD]
     //                                  | [#x10000-#x10FFFF]
-    class printable : public internal::multi_char_clause
+    class printable : public internal::single_char_clause
     {
     public:
-      using internal::multi_char_clause::multi_char_clause;
+      using internal::single_char_clause::single_char_clause;
 
       bool try_clause();
     };
     
     // [2] 	nb-json 	::= 	#x9 | [#x20-#x10FFFF] 
-    class json : public internal::multi_char_clause
+    class json : public internal::single_char_clause
     {
     public:
-      using internal::multi_char_clause::multi_char_clause;
+      using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
     };
 
     // [3] 	c-byte-order-mark 	::= 	#xFEFF 
-    class byte_order_mark : public internal::multi_char_clause
+    class byte_order_mark : public internal::single_char_clause
     {
     public:
-      using internal::multi_char_clause::multi_char_clause;
+      using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
     };
-
-    namespace internal
-    {
-      template <char char_value>
-      class simple_char_clause : public internal::single_char_clause
-      {
-      public:
-        using internal::single_char_clause::single_char_clause;
-        
-        bool try_clause()
-        {
-          char c;
-          if(stream().peek(c) && c == char_value)
-          {
-            consume(char_value);
-            return true;
-          }
-          return false;
-        }
-      };
-    }
 
     // [4]	c-sequence-entry	::=	“-” 
     typedef internal::simple_char_clause<'-'> sequence_entry;
@@ -212,10 +230,10 @@ namespace kyaml
     };
 
     // [27] 	nb-char 	::= 	c-printable - b-char - c-byte-order-mark
-    class non_break_char : public internal::multi_char_clause
+    class non_break_char : public internal::single_char_clause
     {
     public:
-      using internal::multi_char_clause::multi_char_clause;
+      using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
     };
@@ -223,19 +241,12 @@ namespace kyaml
     // [28] 	b-break 	::= 	  ( b-carriage-return b-line-feed ) DOS, Windows 
     //                                  | b-carriage-return                 MacOS upto 9.x
     //                                  | b-line-feed                       UNIX, MacOS X
-    class line_break : public clause
+    class line_break : public internal::multi_char_clause
     {
     public:
-      using clause::clause;
+      using multi_char_clause::multi_char_clause;
       
       bool try_clause();
-      
-      std::string value()
-      {
-        return d_value;
-      }
-    private:
-      std::string d_value;
     };
 
     // [29] 	b-as-line-feed 	::= 	b-break
@@ -260,10 +271,10 @@ namespace kyaml
     };
 
     // [34] 	ns-char 	::= 	nb-char - s-white
-    class non_white_char : public internal::multi_char_clause
+    class non_white_char : public internal::single_char_clause
     {
     public:
-      using internal::multi_char_clause::multi_char_clause;
+      using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
     };
@@ -308,36 +319,55 @@ namespace kyaml
     // [39] 	ns-uri-char 	::= 	  “%” ns-hex-digit ns-hex-digit | ns-word-char | “#”
     //                                  | “;” | “/” | “?” | “:” | “@” | “&” | “=” | “+” | “$” | “,”
     //                                  | “_” | “.” | “!” | “~” | “*” | “'” | “(” | “)” | “[” | “]” 
-    class uri_char : public clause
+    class uri_char : public internal::multi_char_clause
     {
     public:
-      using clause::clause;
+      using multi_char_clause::multi_char_clause;
       
       bool try_clause();
-       
-      std::string value()
-      {
-        return d_value;
-      }
-    private:
-      std::string d_value;
     };
 
     // [40] 	ns-tag-char 	::= 	ns-uri-char - “!” - c-flow-indicator
-    class tag_char : public clause
+    class tag_char : public internal::multi_char_clause
     {
     public:
-      using clause::clause;
+      using multi_char_clause::multi_char_clause;
       
       bool try_clause();
-       
-      std::string value()
-      {
-        return d_value;
-      }
-    private:
-      std::string d_value;
     };
+
+    namespace internal
+    {
+      template <char_t escape, size_t size>
+      class esc_unicode : public multi_char_clause
+      {
+      public:
+        using multi_char_clause::multi_char_clause;
+        
+        bool try_clause()
+        {
+          clear();
+          char_t c;
+          if(stream().peek(c) && c == escape)
+          {
+            consume(c);
+            for(size_t i = 0; i < size; ++i)
+            {
+              hex_digit_char h(stream());
+              if(h.try_clause())
+                append(h.value());
+              else
+              {
+                unwind();
+              return false;
+              }
+            }
+            return true;
+          }
+          return false;
+        }
+      };
+    }
 
     // [41] 	c-escape 	::= 	“\” 
     typedef internal::simple_char_clause<'\\'> escape;
@@ -395,43 +425,7 @@ namespace kyaml
 
     namespace internal
     {
-      template <char escape, size_t size>
-      class esc_unicode : public clause
-      {
-      public:
-        using clause::clause;
-        
-        bool try_clause()
-        {
-          d_value.clear();
-          char c;
-          if(stream().peek(c) && c == escape)
-          {
-            d_value += (char)c;
-            advance(1);
-            for(size_t i = 0; i < size; ++i)
-            {
-              hex_digit_char h(stream());
-              if(h.try_clause())
-                d_value += h.value();
-              else
-              {
-                unwind();
-              return false;
-              }
-            }
-            return true;
-          }
-          return false;
-        }
-        
-        std::string const &value()
-        {
-          return d_value;
-        }
-      private:
-        std::string d_value;
-      };
+  
     }
 
     // [59]	ns-esc-8-bit	::=	“x”
@@ -455,19 +449,12 @@ namespace kyaml
     //                                | ns-esc-next-line | ns-esc-non-breaking-space
     //                                | ns-esc-line-separator | ns-esc-paragraph-separator
     //                                | ns-esc-8-bit | ns-esc-16-bit | ns-esc-32-bit )
-    class esc_char : public clause
+    class esc_char : public internal::multi_char_clause
     {
     public:
-      using clause::clause;
+      using multi_char_clause::multi_char_clause;
       
       bool try_clause();
-      
-      std::string value()
-      {
-        return d_value;
-      }
-    private:
-      std::string d_value;
     };
   }
 }

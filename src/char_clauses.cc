@@ -1,47 +1,27 @@
-/*
-
 #include "char_clauses.hh"
 
 using namespace std;
 using namespace kyaml;
 using namespace kyaml::clauses;
 
-namespace
-{
-  bool is_utf8_lead_byte(char b)
-  {
-    return (b & 0xc0) == 0xc0;
-  }
-
-  bool is_utf8_cont_byte(char b)
-  {
-    return (b & 0xc0) == 0x80;
-  }
-}
-
 bool printable::try_clause()
 {
-  char c;
+  char_t c;
   if(!stream().peek(c))
     return false;
-  if(c >=0 &&
-     (
-       c == '\x9' ||
-       c == '\xa' ||
-       c == '\xd' ||
-       (c >= '\x20' && c <= '\x7e') ||
-       c == '\x85'
-     ))
+  if(c == '\x9' ||
+     c == '\xa' ||
+     c == '\xd' ||
+     (c >= '\x20' && c <= '\x7e') ||
+     c == '\x85')
   {
     consume(c);
     return true;
   }
-  else if(is_utf8_lead_byte(c))
+  else if(c >= 0xff) // must be utf8
   {
-    consume(c);
     // no extensive checking done, we just assume all utf8 is printable (to improve)
-    while(stream().peek(c) && is_utf8_cont_byte(c))
-      consume(c);
+    consume(c);
     return true;
   }
 
@@ -50,25 +30,20 @@ bool printable::try_clause()
 
 bool json::try_clause()
 {
-  char c;
+  char_t c;
   if(!stream().peek(c))
     return false;
 
-  if(c >=0 &&
-     (
-       c == '\x9' ||
-       (c >= '\x20' && c <= '\x7f')
-     ))
+  if(c == '\x9' ||
+     (c >= '\x20' && c <= '\x7f'))
   {
     consume(c);
     return true;
   }
-  else if(is_utf8_lead_byte(c))
+  else if(c >= 0xff) // must be utf8
   {
-    consume(c);
     // no extensive checking done, we just assume all utf8 is printable (to improve)
-    while(stream().peek(c) && is_utf8_cont_byte(c))
-      consume(c);
+    consume(c);
     return true;
   }
 
@@ -77,12 +52,13 @@ bool json::try_clause()
 
 bool byte_order_mark::try_clause()
 {
-  char c;
+  char_t c;
   if(!stream().peek(c))
     return false;
-  if(c == '\xfe')
+  if(c == 0x0000feff)
   {
     consume(c);
+    return true;
     if(stream().peek(c) && c == '\xff')
     {
       consume(c);
@@ -96,9 +72,8 @@ bool byte_order_mark::try_clause()
 
 bool reserved::try_clause()
 {
-  char c;
+  char_t c;
   if(stream().peek(c) &&
-     c >=0 &&
      ( c == '@' || c == '`' ))
   {
     consume(c);
@@ -109,7 +84,7 @@ bool reserved::try_clause()
 
 bool indicator::try_clause()
 {
-  char c = 0;
+  char_t c = 0;
   stream().peek(c);
 
   switch(c)
@@ -142,7 +117,7 @@ bool indicator::try_clause()
 
 bool flow_indicator::try_clause()
 {
-  char c = 0;
+  char_t c = 0;
   stream().peek(c);
   
   switch(c)
@@ -188,6 +163,13 @@ bool non_break_char::try_clause()
     return false;
   }
 
+  byte_order_mark bo(stream());
+  if(bo.try_clause())
+  {
+    bo.unwind();
+    return false;
+  }
+
   printable pr(stream());
   if(pr.try_clause())
   {
@@ -200,7 +182,7 @@ bool non_break_char::try_clause()
 
 bool line_break::try_clause()
 {
-  d_value.clear();
+  clear();
 
   carriage_return cr(stream());
   line_feed lf(stream());
@@ -219,7 +201,7 @@ bool line_break::try_clause()
 
   if(!val.empty())
   {
-    d_value = val;
+    set(val);
     return true;
   }
   return false;
@@ -265,7 +247,7 @@ bool non_white_char::try_clause()
 
 bool dec_digit_char::try_clause()
 {
-  char c;
+  char_t c;
   if(stream().peek(c) && 
      (c >= '0' && c <= '9'))
   {
@@ -285,7 +267,7 @@ bool hex_digit_char::try_clause()
   }
   else
   {
-    char c;
+    char_t c;
     if(stream().peek(c) && 
        ((c >= 'a' && c <= 'f') ||
         (c >= 'A' && c <= 'F')))
@@ -299,7 +281,7 @@ bool hex_digit_char::try_clause()
 
 bool ascii_letter::try_clause()
 {
-  char c;
+  char_t c;
   if(stream().peek(c) &&
      ((c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z')))
@@ -326,7 +308,7 @@ bool word_char::try_clause()
     return true;
   }
   
-  char c;
+  char_t c;
   if(stream().peek(c) &&
      c == '-')
   {
@@ -338,23 +320,29 @@ bool word_char::try_clause()
 
 bool uri_char::try_clause()
 {
-  d_value.clear();
+  clear();
 
-  char c;
+  word_char wc(stream());
+  if(wc.try_clause())
+  {
+    append(wc.value());
+    return true;
+  }
+
+  char_t c;
   if(!stream().peek(c))
     return false;
 
   if(c == '%')
   {
-    d_value += (char)c;
-    advance(1);
+    consume(c);
 
     hex_digit_char h1(stream());
     hex_digit_char h2(stream());
     if(h1.try_clause() && h2.try_clause())
     {
-      d_value += h1.value();
-      d_value += h2.value();
+      append(h1.value());
+      append(h2.value());
       return true;
     }
     else
@@ -387,8 +375,8 @@ bool uri_char::try_clause()
   case ')':
   case '[':
   case ']':
-    d_value += (char)c;
-    advance(1);
+    append(c);
+    advance();
     return true;
 
   default:
@@ -398,7 +386,7 @@ bool uri_char::try_clause()
 
 bool tag_char::try_clause()
 {
-  char c;
+  char_t c;
   if(!stream().peek(c))
     return false;
 
@@ -415,7 +403,7 @@ bool tag_char::try_clause()
   uri_char u(stream());
   if(u.try_clause())
   {
-    d_value = u.value();
+    append(u.value());
     return true;
   }
 
@@ -429,7 +417,7 @@ bool tryclause(char_stream &str, string &value)
   C c(str);
   if(c.try_clause())
   {
-    value += c.value();
+    append_utf8(value, c.value());
     return true;
   }
   return false;
@@ -437,36 +425,37 @@ bool tryclause(char_stream &str, string &value)
 
 bool esc_char::try_clause()
 {
-  char c;
+  char_t c;
   if(!stream().peek(c))
     return false;
 
   if(c == '\\')
   {
-    d_value += (char)c;
-    advance(1);
+    consume(c);
 
-    if(tryclause<esc_null>(stream(), d_value) ||
-       tryclause<esc_bell>(stream(), d_value) ||
-       tryclause<esc_backspace>(stream(), d_value) ||
-       tryclause<esc_htab>(stream(), d_value) ||
-       tryclause<esc_linefeed>(stream(), d_value) ||
-       tryclause<esc_vtab>(stream(), d_value) ||
-       tryclause<esc_form_feed>(stream(), d_value) ||
-       tryclause<esc_carriage_return>(stream(), d_value) ||
-       tryclause<esc_escape>(stream(), d_value) ||
-       tryclause<esc_space>(stream(), d_value) ||
-       tryclause<esc_slash>(stream(), d_value) ||
-       tryclause<esc_bslash>(stream(), d_value) ||
-       tryclause<esc_dquote>(stream(), d_value) ||
-       tryclause<esc_next_line>(stream(), d_value) ||
-       tryclause<esc_non_break_space>(stream(), d_value) ||
-       tryclause<esc_line_separator>(stream(), d_value) ||       
-       tryclause<esc_paragraph_separator>(stream(), d_value) ||
-       tryclause<esc_unicode_8b>(stream(), d_value) ||
-       tryclause<esc_unicode_16b>(stream(), d_value) ||
-       tryclause<esc_unicode_32b>(stream(), d_value))
+    string val;
+    if(tryclause<esc_null>(stream(), val) ||
+       tryclause<esc_bell>(stream(), val) ||
+       tryclause<esc_backspace>(stream(), val) ||
+       tryclause<esc_htab>(stream(), val) ||
+       tryclause<esc_linefeed>(stream(), val) ||
+       tryclause<esc_vtab>(stream(), val) ||
+       tryclause<esc_form_feed>(stream(), val) ||
+       tryclause<esc_carriage_return>(stream(), val) ||
+       tryclause<esc_escape>(stream(), val) ||
+       tryclause<esc_space>(stream(), val) ||
+       tryclause<esc_slash>(stream(), val) ||
+       tryclause<esc_bslash>(stream(), val) ||
+       tryclause<esc_dquote>(stream(), val) ||
+       tryclause<esc_next_line>(stream(), val) ||
+       tryclause<esc_non_break_space>(stream(), val) ||
+       tryclause<esc_line_separator>(stream(), val) ||       
+       tryclause<esc_paragraph_separator>(stream(), val) ||
+       tryclause<esc_unicode_8b>(stream(), val) ||
+       tryclause<esc_unicode_16b>(stream(), val) ||
+       tryclause<esc_unicode_32b>(stream(), val))
     {
+      append(val);
       return true;
     }
     else
@@ -476,4 +465,3 @@ bool esc_char::try_clause()
   }
   return false;
 }
-*/
