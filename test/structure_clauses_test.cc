@@ -1,4 +1,5 @@
 #include "structure_clauses.hh"
+#include "clause_test.hh"
 #include <iostream>
 #include <gtest/gtest.h>
 
@@ -6,7 +7,42 @@ using namespace std;
 using namespace kyaml;
 using namespace kyaml::clauses;
 
-//// separet in line 
+//// separate in line 
+
+template<>
+void setup(separate_in_line &sil)
+{
+  sil.advance();
+}
+
+clause_testcase sil_tc(string const &input, bool result, unsigned indent_level)
+{
+  clause_testcase tc =
+  {
+    input, 
+    indent_level,
+    context::NA,
+    result,
+    result ? (indent_level + 1) : 1,
+    ""
+  };
+  return tc;
+}
+
+clause_testcase sil_testcases[] = 
+{
+  sil_tc("s ", true, 1),
+  sil_tc("s  ", true, 2),
+  sil_tc("s", false, 0),
+  sil_tc("sa", false, 0),
+  sil_tc("s \t ", true, 3),
+  sil_tc("sa ", false, 1),
+  sil_tc("\n ", true, 1),
+  sil_tc("\na", true, 0),
+  sil_tc("\rb", true, 0),
+};
+
+CLAUSE_TEST(separate_in_line, sil_testcases)
 
 struct separate_in_line_test_case
 {
