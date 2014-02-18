@@ -12,9 +12,21 @@ namespace kyaml
     class context : private no_copy
     {
     public:
-      context(char_stream &str, unsigned indent_level = 0) :
+      typedef enum
+      {
+        NA,
+        BLOCK_OUT,
+        BLOCK_IN,
+        FLOW_OUT,
+        FLOW_IN,
+      } blockflow_t;
+
+      context(char_stream &str, 
+              unsigned indent_level = 0,
+              blockflow_t bf = NA) :
         d_stream(str),
-        d_indent_level(indent_level)
+        d_indent_level(indent_level),
+        d_bf(bf)
       {}
 
       char_stream const &stream() const
@@ -32,19 +44,27 @@ namespace kyaml
         return d_indent_level;
       }
 
+      blockflow_t blockflow() const
+      {
+        return d_bf;
+      }
+
     private:
       char_stream &d_stream;
       unsigned const d_indent_level;
+      blockflow_t const d_bf;
     };
 
     // mostly useful for testing purposes: construct a blank self-contained context from a string
     class context_wrap
     {
     public:
-      context_wrap(std::string const &s, unsigned indent_level = 0):
+      context_wrap(std::string const &s,
+                   unsigned indent_level = 0,
+                   context::blockflow_t bf = context::NA) :
         d_sstream(s),
         d_stream(d_sstream),
-        d_ctx(d_stream, indent_level)
+        d_ctx(d_stream, indent_level, bf)
       {}
 
       context const &get() const

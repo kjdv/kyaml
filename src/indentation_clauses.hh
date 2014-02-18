@@ -29,6 +29,31 @@ namespace kyaml
       }
     };
 
+    namespace internal
+    {
+      // special case of [63] needed to fulfill clause [69]
+      class indent_clause_ge : public clause
+      {
+      public:
+        typedef unsigned value_t;
+        
+        indent_clause_ge(context &c) : clause(c)
+        {}
+        
+        bool try_clause();
+        
+        value_t value() const
+        {
+          return level();
+        }
+      private:
+        unsigned level() const
+        {
+          return ctx().indent_level();
+        }
+      };  
+    }
+
     // [64] 	s-indent(<n) 	::= 	s-space × m Where m < n 
     class indent_clause_lt : public clause
     {

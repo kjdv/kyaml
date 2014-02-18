@@ -1,5 +1,6 @@
 #include "indentation_clauses.hh"
 #include "char_clauses.hh"
+#include <iostream>
 
 using namespace std;
 using namespace kyaml;
@@ -26,6 +27,23 @@ bool indent_clause_eq::try_clause()
     unsigned n = number_of_white(ctx());
     if(n == level())
       return true;
+    else
+      unwind();
+  }
+  return false;
+}
+
+bool internal::indent_clause_ge::try_clause()
+{
+  if(level())
+  {
+    unsigned n = number_of_white(ctx());
+    if(n >= level())
+    {
+      unwind();
+      advance(level());
+      return true;
+    }
     else
       unwind();
   }

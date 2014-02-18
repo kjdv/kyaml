@@ -1,4 +1,5 @@
 #include "structure_clauses.hh"
+#include <cassert>
 
 using namespace std;
 using namespace kyaml;
@@ -17,4 +18,37 @@ bool internal::start_of_line::try_clause()
       return true;
   }
   return false;
+}
+
+line_prefix::line_prefix(context &ctx) :
+  void_clause(ctx),
+  d_dispatch(nullptr)
+{
+  context::blockflow_t bf = ctx.blockflow();
+
+  switch(bf)
+  {
+  case context::BLOCK_OUT:
+  case context::BLOCK_IN:
+    d_dispatch = &line_prefix::try_block;
+    break;
+  case context::FLOW_IN:
+  case context::FLOW_OUT:
+    d_dispatch = &line_prefix::try_flow;
+    break;
+  default:
+    assert(false); // NA or something else not allowed
+  }
+}
+
+bool line_prefix::try_block()
+{
+  block_line_prefix bl(ctx());
+  return bl.try_clause();
+}
+
+bool line_prefix::try_flow()
+{
+  flow_line_prefix fl(ctx());
+  return fl.try_clause();
 }
