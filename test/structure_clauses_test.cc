@@ -80,7 +80,8 @@ INSTANTIATE_TEST_CASE_P(separate_in_line_tests,
                         separate_in_line_test,
                         testing::ValuesIn(separate_in_line_test_cases));
 
-// line prefix
+//// line prefix
+
 struct line_prefix_test_case
 {
   string input;
@@ -130,6 +131,7 @@ TEST_P(line_prefix_test, advance)
 
 line_prefix_test_case line_prefix_test_cases[] = 
 {
+  {" ", 1, context::NA, false},
   {" ", 1, context::BLOCK_OUT, true},
   {"  ", 2, context::BLOCK_IN, true},
   {"  identifier", 2, context::BLOCK_IN, true},
@@ -142,3 +144,69 @@ line_prefix_test_case line_prefix_test_cases[] =
 INSTANTIATE_TEST_CASE_P(line_prefix_tests,
                         line_prefix_test,
                         testing::ValuesIn(line_prefix_test_cases));
+
+//// empty line
+
+struct empty_line_test_case
+{
+  string input;
+  unsigned indent;
+  context::blockflow_t bf;
+  bool result;
+};
+
+class empty_line_test : public testing::TestWithParam<empty_line_test_case>
+{
+public:
+  empty_line_test() :
+    d_ctx(GetParam().input, GetParam().indent, GetParam().bf),
+    d_clause(d_ctx.get())
+  {}
+
+  empty_line &clause()
+  {
+    return d_clause;
+  }
+  
+  context &ctx()
+  {
+    return d_ctx.get();
+  }
+
+private:
+  context_wrap d_ctx;
+  empty_line d_clause;
+};
+
+TEST_P(empty_line_test, match)
+{
+  EXPECT_EQ(GetParam().result, clause().try_clause());
+}
+
+TEST_P(empty_line_test, advance)
+{
+  size_t n = GetParam().input.find_first_not_of(" \t\r\n");
+  size_t const expected = GetParam().result ?
+    ((n == string::npos) ? GetParam().input.size() : n) :
+    0;
+
+  clause().try_clause();
+  EXPECT_EQ(expected, ctx().stream().pos());
+}
+
+empty_line_test_case empty_line_test_cases[] = 
+{
+  {" ", 1, context::NA, false},
+  {" \n", 2, context::NA, true},
+  {" \r", 2, context::NA, true},
+  {" \r\n", 3, context::NA, true},
+  {"a", 3, context::NA, false},
+  {"  \n", 3, context::BLOCK_IN, true},
+  {"  \n", 2, context::BLOCK_IN, true},
+  {"  \n", 2, context::FLOW_IN, false},
+  {"  \n", 1, context::FLOW_IN, true},
+};
+
+INSTANTIATE_TEST_CASE_P(empty_line_tests,
+                        empty_line_test,
+                        testing::ValuesIn(empty_line_test_cases));

@@ -54,6 +54,14 @@ namespace kyaml
                                  internal::indent_clause_ge,
                                  internal::one_or_more<void_result, separate_in_line> 
                                  > flow_line_prefix;
+
+    // [70] 	l-empty(n,c) 	::= 	( s-line-prefix(n,c) | s-indent(<n) )
+    //                                  b-as-line-feed
+    typedef internal::and_clause<void_result,
+                                 internal::or_clause<void_result,
+                                                     line_prefix,
+                                                     indent_clause_lt>,
+                                 as_line_feed> empty_line;
   }
 }
 

@@ -1,5 +1,4 @@
 #include "structure_clauses.hh"
-#include <cassert>
 
 using namespace std;
 using namespace kyaml;
@@ -37,7 +36,7 @@ line_prefix::line_prefix(context &ctx) :
     d_dispatch = &line_prefix::try_flow;
     break;
   default:
-    assert(false); // NA or something else not allowed
+    break;
   }
 }
 
