@@ -7,12 +7,12 @@ using namespace kyaml::clauses;
 
 namespace
 {
-  unsigned number_of_white(char_stream &s, unsigned max) // will return max+1 when overflowing
+  unsigned number_of_white(context &ctx) // will return max+1 when overflowing
   {
     unsigned count = 0;
 
-    space sp(s);
-    while(sp.try_clause() && count <= max)
+    space sp(ctx);
+    while(sp.try_clause() && count <= ctx.indent_level())
       ++count;
 
     return count;
@@ -21,10 +21,10 @@ namespace
 
 bool indent_clause_eq::try_clause()
 {
-  if(d_n)
+  if(level())
   {
-    unsigned n = number_of_white(stream(), d_n);
-    if(n == d_n)
+    unsigned n = number_of_white(ctx());
+    if(n == level())
       return true;
     else
       unwind();
@@ -34,10 +34,10 @@ bool indent_clause_eq::try_clause()
 
 bool indent_clause_lt::try_clause()
 {
-  if(d_n)
+  if(higher_level())
   {
-    unsigned n = number_of_white(stream(), d_n);
-    if(n < d_n)
+    unsigned n = number_of_white(ctx());
+    if(n < higher_level())
     {
       d_m = n;
       return true;
@@ -50,10 +50,10 @@ bool indent_clause_lt::try_clause()
 
 bool indent_clause_le::try_clause()
 {
-  if(d_n)
+  if(higher_level())
   {
-    unsigned n = number_of_white(stream(), d_n);
-    if(n <= d_n)
+    unsigned n = number_of_white(ctx());
+    if(n <= higher_level())
     {
       d_m = n;
       return true;

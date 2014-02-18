@@ -13,17 +13,20 @@ namespace kyaml
     public:
       typedef unsigned value_t;
 
-      indent_clause_eq(char_stream &s, unsigned n) : clause(s), d_n(n)
+      indent_clause_eq(context &c) : clause(c)
       {}
 
       bool try_clause();
 
       value_t value() const
       {
-        return d_n;
+        return level();
       }
     private:
-      const unsigned d_n;
+      unsigned level() const
+      {
+        return ctx().indent_level();
+      }
     };
 
     // [64] 	s-indent(<n) 	::= 	s-space × m Where m < n 
@@ -32,9 +35,8 @@ namespace kyaml
     public:
       typedef unsigned value_t;
 
-      indent_clause_lt(char_stream &s, unsigned n) : 
-        clause(s),
-        d_n(n),
+      indent_clause_lt(context &c) : 
+        clause(c),
         d_m(0)
       {}
 
@@ -42,10 +44,18 @@ namespace kyaml
 
       value_t value() const
       {
-        return d_m;
+        return lower_level();
       }
     private:
-      const unsigned d_n;
+      unsigned lower_level() const
+      {
+        return d_m;
+      }
+      unsigned higher_level() const
+      {
+        return ctx().indent_level();
+      }
+      
       unsigned d_m;
     };
 
@@ -55,9 +65,8 @@ namespace kyaml
     public:
       typedef unsigned value_t;
 
-      indent_clause_le(char_stream &s, unsigned n) : 
-        clause(s),
-        d_n(n),
+      indent_clause_le(context &c) :
+        clause(c),
         d_m(0)
       {}
 
@@ -65,10 +74,17 @@ namespace kyaml
 
       value_t value() const
       {
-        return d_m;
+        return lower_level();
       }
     private:
-      const unsigned d_n;
+      unsigned lower_level() const
+      {
+        return d_m;
+      }
+      unsigned higher_level() const
+      {
+        return ctx().indent_level();
+      }
       unsigned d_m;
     };
   }

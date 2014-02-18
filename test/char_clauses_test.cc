@@ -1,5 +1,4 @@
 #include "char_clauses.hh"
-#include <sstream>
 #include <algorithm>
 #include <vector>
 #include <initializer_list>
@@ -32,10 +31,8 @@ class char_clause_test : public testing::TestWithParam<string>
 {
 public:
   char_clause_test() :
-    d_input(GetParam()),
-    d_stream(d_input),
-    d_cstream(d_stream),
-    d_clause(d_cstream)
+    d_ctx(GetParam()),
+    d_clause(d_ctx.get())
   {}
 
   bool try_clause()
@@ -50,12 +47,12 @@ public:
 
   string const &input() const
   {
-    return d_input;
+    return GetParam();
   }
 
-  char_stream const &stream() const
+  context const &ctx() const
   {
-    return d_cstream;
+    return d_ctx.get();
   }
 
   // tests
@@ -69,7 +66,7 @@ public:
   void test_advance()
   {
     try_clause();
-    EXPECT_EQ(non_continuation(input()), stream().pos());
+    EXPECT_EQ(non_continuation(input()), ctx().stream().pos());
   }
 
   void test_value()
@@ -91,12 +88,10 @@ public:
   void test_noadvance()
   {
     try_clause();
-    EXPECT_EQ(0, stream().pos());
+    EXPECT_EQ(0, ctx().stream().pos());
   }
 private:
-  string d_input;
-  stringstream d_stream;
-  char_stream d_cstream;
+  context_wrap d_ctx;
   clause_t d_clause;
 };
 

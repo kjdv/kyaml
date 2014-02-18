@@ -139,8 +139,8 @@ bool flow_indicator::try_clause()
 
 bool break_char::try_clause()
 {
-  line_feed lf(stream());
-  carriage_return cr(stream());
+  line_feed lf(ctx());
+  carriage_return cr(ctx());
 
   if(lf.try_clause())
   {
@@ -158,21 +158,21 @@ bool break_char::try_clause()
 
 bool non_break_char::try_clause()
 {
-  break_char bc(stream());
+  break_char bc(ctx());
   if(bc.try_clause())
   {
-    bc.unwind();
+    unwind();
     return false;
   }
 
-  byte_order_mark bo(stream());
+  byte_order_mark bo(ctx());
   if(bo.try_clause())
   {
-    bo.unwind();
+    unwind();
     return false;
   }
 
-  printable pr(stream());
+  printable pr(ctx());
   if(pr.try_clause())
   {
     set(pr.value());
@@ -186,8 +186,8 @@ bool line_break::try_clause()
 {
   clear();
 
-  carriage_return cr(stream());
-  line_feed lf(stream());
+  carriage_return cr(ctx());
+  line_feed lf(ctx());
 
   string val;
   if(cr.try_clause())
@@ -211,8 +211,8 @@ bool line_break::try_clause()
 
 bool white::try_clause()
 {
-  space s(stream());
-  tab t(stream());
+  space s(ctx());
+  tab t(ctx());
 
   if(s.try_clause())
   {
@@ -230,14 +230,14 @@ bool white::try_clause()
 
 bool non_white_char::try_clause()
 {
-  white w(stream());
+  white w(ctx());
   if(w.try_clause())
   {
-    w.unwind();
+    unwind();
     return false;
   }
 
-  non_break_char nb(stream());
+  non_break_char nb(ctx());
   if(nb.try_clause())
   {
     set(nb.value());
@@ -261,7 +261,7 @@ bool dec_digit_char::try_clause()
 
 bool hex_digit_char::try_clause()
 {
-  dec_digit_char d(stream());
+  dec_digit_char d(ctx());
   if(d.try_clause())
   {
     set(d.value());
@@ -296,14 +296,14 @@ bool ascii_letter::try_clause()
 
 bool word_char::try_clause()
 {
-  dec_digit_char d(stream());
+  dec_digit_char d(ctx());
   if(d.try_clause())
   {
     set(d.value());
     return true;
   }
 
-  ascii_letter a(stream());
+  ascii_letter a(ctx());
   if(a.try_clause())
   {
     set(a.value());
@@ -324,7 +324,7 @@ bool uri_char::try_clause()
 {
   clear();
 
-  word_char wc(stream());
+  word_char wc(ctx());
   if(wc.try_clause())
   {
     append(wc.value());
@@ -339,8 +339,8 @@ bool uri_char::try_clause()
   {
     consume(c);
 
-    hex_digit_char h1(stream());
-    hex_digit_char h2(stream());
+    hex_digit_char h1(ctx());
+    hex_digit_char h2(ctx());
     if(h1.try_clause() && h2.try_clause())
     {
       append(h1.value());
@@ -395,14 +395,14 @@ bool tag_char::try_clause()
   if(c == '!')
     return false;
 
-  flow_indicator fi(stream());
+  flow_indicator fi(ctx());
   if(fi.try_clause())
   {
     unwind();
     return false;
   }
 
-  uri_char u(stream());
+  uri_char u(ctx());
   if(u.try_clause())
   {
     append(u.value());
@@ -414,9 +414,9 @@ bool tag_char::try_clause()
 
 // helper for escape_char
 template <typename C>
-bool tryclause(char_stream &str, string &value)
+bool tryclause(context &ctx, string &value)
 {
-  C c(str);
+  C c(ctx);
   if(c.try_clause())
   {
     append_utf8(value, c.value());
@@ -436,26 +436,26 @@ bool esc_char::try_clause()
     consume(c);
 
     string val;
-    if(tryclause<esc_null>(stream(), val) ||
-       tryclause<esc_bell>(stream(), val) ||
-       tryclause<esc_backspace>(stream(), val) ||
-       tryclause<esc_htab>(stream(), val) ||
-       tryclause<esc_linefeed>(stream(), val) ||
-       tryclause<esc_vtab>(stream(), val) ||
-       tryclause<esc_form_feed>(stream(), val) ||
-       tryclause<esc_carriage_return>(stream(), val) ||
-       tryclause<esc_escape>(stream(), val) ||
-       tryclause<esc_space>(stream(), val) ||
-       tryclause<esc_slash>(stream(), val) ||
-       tryclause<esc_bslash>(stream(), val) ||
-       tryclause<esc_dquote>(stream(), val) ||
-       tryclause<esc_next_line>(stream(), val) ||
-       tryclause<esc_non_break_space>(stream(), val) ||
-       tryclause<esc_line_separator>(stream(), val) ||       
-       tryclause<esc_paragraph_separator>(stream(), val) ||
-       tryclause<esc_unicode_8b>(stream(), val) ||
-       tryclause<esc_unicode_16b>(stream(), val) ||
-       tryclause<esc_unicode_32b>(stream(), val))
+    if(tryclause<esc_null>(ctx(), val) ||
+       tryclause<esc_bell>(ctx(), val) ||
+       tryclause<esc_backspace>(ctx(), val) ||
+       tryclause<esc_htab>(ctx(), val) ||
+       tryclause<esc_linefeed>(ctx(), val) ||
+       tryclause<esc_vtab>(ctx(), val) ||
+       tryclause<esc_form_feed>(ctx(), val) ||
+       tryclause<esc_carriage_return>(ctx(), val) ||
+       tryclause<esc_escape>(ctx(), val) ||
+       tryclause<esc_space>(ctx(), val) ||
+       tryclause<esc_slash>(ctx(), val) ||
+       tryclause<esc_bslash>(ctx(), val) ||
+       tryclause<esc_dquote>(ctx(), val) ||
+       tryclause<esc_next_line>(ctx(), val) ||
+       tryclause<esc_non_break_space>(ctx(), val) ||
+       tryclause<esc_line_separator>(ctx(), val) ||       
+       tryclause<esc_paragraph_separator>(ctx(), val) ||
+       tryclause<esc_unicode_8b>(ctx(), val) ||
+       tryclause<esc_unicode_16b>(ctx(), val) ||
+       tryclause<esc_unicode_32b>(ctx(), val))
     {
       append(val);
       return true;

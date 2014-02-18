@@ -16,8 +16,8 @@ namespace kyaml
       public:
         typedef char_t value_t;
 
-        single_char_clause(char_stream &stream) : 
-          clause(stream),
+        single_char_clause(context &ctx) : 
+          clause(ctx),
           d_value(0)
         {}
         
@@ -353,7 +353,7 @@ namespace kyaml
             consume(c);
             for(size_t i = 0; i < size; ++i)
             {
-              hex_digit_char h(stream());
+              hex_digit_char h(ctx());
               if(h.try_clause())
                 append(h.value());
               else

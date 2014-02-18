@@ -1,6 +1,4 @@
 #include "indentation_clauses.hh"
-#include <string>
-#include <sstream>
 #include <iostream>
 #include <gtest/gtest.h>
 
@@ -30,9 +28,8 @@ class indent_clause_test_base : public testing::TestWithParam<indent_clause_test
 {
 public:
   indent_clause_test_base() :
-    d_stream(GetParam().input),
-    d_cstream(d_stream),
-    d_clause(d_cstream, GetParam().n)
+    d_ctx(GetParam().input, GetParam().n),
+    d_clause(d_ctx.get())
   {}
 
   clause_t &clause()
@@ -40,14 +37,13 @@ public:
     return d_clause;
   }
   
-  char_stream &stream()
+  context &ctx()
   {
-    return d_cstream;
+    return d_ctx.get();
   }
-
+  
 private:
-  stringstream d_stream;
-  char_stream d_cstream;
+  context_wrap d_ctx;
   clause_t d_clause;
 };
 
@@ -63,7 +59,7 @@ TEST_P(indent_clause_eq_test, pos)
   clause().try_clause();
 
   char_stream::mark_t expected_pos = GetParam().result ? GetParam().n : 0;
-  EXPECT_EQ(expected_pos, stream().pos());
+  EXPECT_EQ(expected_pos, ctx().stream().pos());
 }
 
 indent_clause_test_case indent_clause_eq_test_cases[] = 
@@ -95,15 +91,15 @@ TEST_P(indent_clause_lt_test, pos)
   clause().try_clause();
   char_stream::mark_t max_pos = GetParam().result ? GetParam().n : 0;
   if(max_pos)
-    EXPECT_LT(stream().pos(), max_pos);
+    EXPECT_LT(ctx().stream().pos(), max_pos);
   else
-    EXPECT_EQ(0, stream().pos());
+    EXPECT_EQ(0, ctx().stream().pos());
 }
 
 TEST_P(indent_clause_lt_test, value)
 {
   clause().try_clause();
-  EXPECT_EQ(stream().pos(), clause().value());
+  EXPECT_EQ(ctx().stream().pos(), clause().value());
 }
 
 indent_clause_test_case indent_clause_lt_test_cases[] = 
@@ -133,15 +129,15 @@ TEST_P(indent_clause_le_test, pos)
   clause().try_clause();
   char_stream::mark_t max_pos = GetParam().result ? GetParam().n : 0;
   if(max_pos)
-    EXPECT_LE(stream().pos(), max_pos);
+    EXPECT_LE(ctx().stream().pos(), max_pos);
   else
-    EXPECT_EQ(0, stream().pos());
+    EXPECT_EQ(0, ctx().stream().pos());
 }
 
 TEST_P(indent_clause_le_test, value)
 {
   clause().try_clause();
-  EXPECT_EQ(stream().pos(), clause().value());
+  EXPECT_EQ(ctx().stream().pos(), clause().value());
 }
 
 indent_clause_test_case indent_clause_le_test_cases[] = 

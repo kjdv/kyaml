@@ -1,6 +1,4 @@
 #include "structure_clauses.hh"
-#include <string>
-#include <sstream>
 #include <iostream>
 #include <gtest/gtest.h>
 
@@ -29,9 +27,8 @@ class separate_in_line_test : public testing::TestWithParam<separate_in_line_tes
 {
 public:
   separate_in_line_test() :
-    d_stream(GetParam().input),
-    d_cstream(d_stream),
-    d_clause(d_cstream)
+    d_ctx(GetParam().input),
+    d_clause(d_ctx.get())
   {
     d_clause.advance();
   }
@@ -41,14 +38,13 @@ public:
     return d_clause;
   }
   
-  char_stream &stream()
+  context &ctx()
   {
-    return d_cstream;
+    return d_ctx.get();
   }
 
 private:
-  stringstream d_stream;
-  char_stream d_cstream;
+  context_wrap d_ctx;
   separate_in_line d_clause;
 };
 
@@ -62,7 +58,7 @@ TEST_P(separate_in_line_test, pos)
   clause().try_clause();
 
   char_stream::mark_t expected_pos = GetParam().result ? GetParam().n : 0;
-  EXPECT_EQ(expected_pos + 1, stream().pos());
+  EXPECT_EQ(expected_pos + 1, ctx().stream().pos());
 }
 
 separate_in_line_test_case separate_in_line_test_cases[] = 
