@@ -1,4 +1,5 @@
 #include "indentation_clauses.hh"
+#include "clause_test.hh"
 #include <iostream>
 #include <gtest/gtest.h>
 
@@ -6,152 +7,53 @@ using namespace std;
 using namespace kyaml;
 using namespace kyaml::clauses;
 
-struct indent_clause_test_case
+namespace 
 {
-  string input;
-  unsigned n;
-  bool result;
-};
-
-namespace std
-{
-  ostream &operator<<(ostream &o, indent_clause_test_case const &ic)
+  clause_testcase tc(string const &input, unsigned indent_level, bool result, unsigned consume)
   {
-    return o << "input = \"" << ic.input 
-             << "\" n = " << ic.n 
-             << " expected result = " << (ic.result ? "true" : "false");
+    clause_testcase t = 
+    {
+      input,
+      indent_level,
+      context::NA,
+      result,
+      consume,
+    };
+    return t;
   }
 }
 
-template <typename clause_t>
-class indent_clause_test_base : public testing::TestWithParam<indent_clause_test_case>
-{
-public:
-  indent_clause_test_base() :
-    d_ctx(GetParam().input, GetParam().n),
-    d_clause(d_ctx.get())
-  {}
+CLAUSE_TEST(indent_clause_eq, 
+            cases({
+                tc(" ", 1, true, 1),
+                tc(" ", 2, false, 0),
+                tc("  ", 2, true, 2),
+                tc("", 1, false, 0),
+                tc("", 0, false, 0),
+                tc("    ", 2, false, 0),
+                tc("  nonwhite", 2, true, 2),
+                tc(" nonwhite", 2, false, 0),
+                tc("   nonwhite", 2, false, 0),
+                  }))
 
-  clause_t &clause()
-  {
-    return d_clause;
-  }
-  
-  context &ctx()
-  {
-    return d_ctx.get();
-  }
-  
-private:
-  context_wrap d_ctx;
-  clause_t d_clause;
-};
+CLAUSE_TEST(indent_clause_lt, 
+            cases({
+                  tc("  ", 3, true, 2),
+                  tc("   ", 3, false, 0),
+                  tc("    ", 3, false, 0),
+                  tc("", 1, true, 0),
+                  tc("  nonwhite", 2, false, 0),
+                  tc(" nonwhite", 2, true, 1),
+                  tc("   nonwhite", 2, false, 0),
+                  }))
 
-typedef indent_clause_test_base<indent_clause_eq> indent_clause_eq_test;
-
-TEST_P(indent_clause_eq_test, match)
-{
-  EXPECT_EQ(GetParam().result, clause().try_clause()) << GetParam();
-}
-
-TEST_P(indent_clause_eq_test, pos)
-{    
-  clause().try_clause();
-
-  char_stream::mark_t expected_pos = GetParam().result ? GetParam().n : 0;
-  EXPECT_EQ(expected_pos, ctx().stream().pos());
-}
-
-indent_clause_test_case indent_clause_eq_test_cases[] = 
-{
-  {" ", 1, true},
-  {" ", 2, false},
-  {"  ", 2, true},
-  {"", 1, false},
-  {"", 0, false},
-  {"    ", 2, false},
-  {"  nonwhite", 2, true},
-  {" nonwhite", 2, false},
-  {"   nonwhite", 2, false},
-};
-
-INSTANTIATE_TEST_CASE_P(indent_clause_eq_tests,
-                        indent_clause_eq_test,
-                        testing::ValuesIn(indent_clause_eq_test_cases));
-
-typedef indent_clause_test_base<indent_clause_lt> indent_clause_lt_test;
-
-TEST_P(indent_clause_lt_test, match)
-{
-  EXPECT_EQ(GetParam().result, clause().try_clause()) << GetParam();
-}
-
-TEST_P(indent_clause_lt_test, pos)
-{
-  clause().try_clause();
-  char_stream::mark_t max_pos = GetParam().result ? GetParam().n : 0;
-  if(max_pos)
-    EXPECT_LT(ctx().stream().pos(), max_pos);
-  else
-    EXPECT_EQ(0, ctx().stream().pos());
-}
-
-TEST_P(indent_clause_lt_test, value)
-{
-  clause().try_clause();
-  EXPECT_EQ(ctx().stream().pos(), clause().value());
-}
-
-indent_clause_test_case indent_clause_lt_test_cases[] = 
-{
-  {"  ", 3, true},
-  {"   ", 3, false},
-  {"    ", 3, false},
-  {"", 1, true},
-  {"  nonwhite", 2, false},
-  {" nonwhite", 2, true},
-  {"   nonwhite", 2, false},
-};
-
-INSTANTIATE_TEST_CASE_P(indent_clause_lt_tests,
-                        indent_clause_lt_test,
-                        testing::ValuesIn(indent_clause_lt_test_cases));
-
-typedef indent_clause_test_base<indent_clause_le> indent_clause_le_test;
-
-TEST_P(indent_clause_le_test, match)
-{
-  EXPECT_EQ(GetParam().result, clause().try_clause()) << GetParam();
-}
-
-TEST_P(indent_clause_le_test, pos)
-{
-  clause().try_clause();
-  char_stream::mark_t max_pos = GetParam().result ? GetParam().n : 0;
-  if(max_pos)
-    EXPECT_LE(ctx().stream().pos(), max_pos);
-  else
-    EXPECT_EQ(0, ctx().stream().pos());
-}
-
-TEST_P(indent_clause_le_test, value)
-{
-  clause().try_clause();
-  EXPECT_EQ(ctx().stream().pos(), clause().value());
-}
-
-indent_clause_test_case indent_clause_le_test_cases[] = 
-{
-  {"  ", 3, true},
-  {"   ", 3, true},
-  {"    ", 3, false},
-  {"", 1, true},
-  {"  nonwhite", 2, true},
-  {" nonwhite", 2, true},
-  {"   nonwhite", 2, false},
-};
-
-INSTANTIATE_TEST_CASE_P(indent_clause_le_tests,
-                        indent_clause_le_test,
-                        testing::ValuesIn(indent_clause_le_test_cases));
-
+CLAUSE_TEST(indent_clause_le,
+            cases({
+                  tc("  ", 3, true, 2),
+                  tc("   ", 3, true, 3),
+                  tc("    ", 3, false, 0),
+                  tc("", 1, true, 0),
+                  tc("  nonwhite", 2, true, 2),
+                  tc(" nonwhite", 2, true, 1),
+                  tc("   nonwhite", 2, false, 0),
+                  }))

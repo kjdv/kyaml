@@ -126,10 +126,30 @@ namespace kyaml
       char_stream::mark_t const d_mark;
     };
 
+    class void_result
+    {
+    public:
+      void_result()
+      {}
+      template <typename T>
+      void_result(T const &)
+      {}
+      template <typename T>
+      void append(T const &)
+      {}
+
+      bool operator==(void_result const&) const
+      {
+        return true;
+      }
+    };
+
     class string_result : public std::string
     {
     public:
       string_result()
+      {}
+      string_result(void_result const &)
       {}
       string_result(std::string const &s) : std::string(s)
       {}
@@ -142,21 +162,11 @@ namespace kyaml
       {
         append_utf8(*this, c);
       }
+      
+      void append(void_result const &)
+      {}
     private:
       std::string d_val;
-    };
-
-    class void_result
-    {
-    public:
-      void_result()
-      {}
-      template <typename T>
-      void_result(T const &)
-      {}
-      template <typename T>
-      void append(T const &)
-      {}
     };
 
     namespace internal

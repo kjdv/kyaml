@@ -8,20 +8,13 @@ namespace kyaml
   namespace clauses
   {
     // [63] 	s-indent(n) 	::= 	s-space × n 
-    class indent_clause_eq : public clause
+    class indent_clause_eq : public internal::void_clause
     {
     public:
-      typedef unsigned value_t;
-
-      indent_clause_eq(context &c) : clause(c)
+      indent_clause_eq(context &c) : void_clause(c)
       {}
 
       bool try_clause();
-
-      value_t value() const
-      {
-        return level();
-      }
     private:
       unsigned level() const
       {
@@ -32,20 +25,13 @@ namespace kyaml
     namespace internal
     {
       // special case of [63] needed to fulfill clause [69]
-      class indent_clause_ge : public clause
+      class indent_clause_ge : public internal::void_clause
       {
-      public:
-        typedef unsigned value_t;
-        
-        indent_clause_ge(context &c) : clause(c)
+      public:       
+        indent_clause_ge(context &c) : void_clause(c)
         {}
         
         bool try_clause();
-        
-        value_t value() const
-        {
-          return level();
-        }
       private:
         unsigned level() const
         {
@@ -55,22 +41,15 @@ namespace kyaml
     }
 
     // [64] 	s-indent(<n) 	::= 	s-space × m Where m < n 
-    class indent_clause_lt : public clause
+    class indent_clause_lt : public internal::void_clause
     {
     public:
-      typedef unsigned value_t;
-
       indent_clause_lt(context &c) : 
-        clause(c),
+        void_clause(c),
         d_m(0)
       {}
 
       bool try_clause();
-
-      value_t value() const
-      {
-        return lower_level();
-      }
     private:
       unsigned lower_level() const
       {
@@ -85,22 +64,15 @@ namespace kyaml
     };
 
     // [65] 	s-indent(≤n) 	::= 	s-space × m /* Where m ≤ n */ 
-    class indent_clause_le : public clause
+    class indent_clause_le : public internal::void_clause
     {
     public:
-      typedef unsigned value_t;
-
       indent_clause_le(context &c) :
-        clause(c),
+        void_clause(c),
         d_m(0)
       {}
 
       bool try_clause();
-
-      value_t value() const
-      {
-        return lower_level();
-      }
     private:
       unsigned lower_level() const
       {

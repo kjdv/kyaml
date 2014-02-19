@@ -3,6 +3,8 @@
 
 #include "clauses_base.hh"
 #include <iostream>
+#include <vector>
+#include <initializer_list>
 #include <gtest/gtest.h>
 
 struct clause_testcase
@@ -17,6 +19,11 @@ struct clause_testcase
   std::string const value;
 };
 
+inline std::vector<clause_testcase> cases(std::initializer_list<clause_testcase> il)
+{
+  return std::vector<clause_testcase>(il);
+}
+
 namespace std
 {
   inline ostream &operator<<(ostream &o, clause_testcase const &tc)
@@ -25,9 +32,9 @@ namespace std
              << "input = \"" << tc.input << "\"\n"
              << "indent_level = " << tc.indent_level << "\n"
              << "blockflow = " << tc.blockflow << "\n"
-             << "result = " << tc.result << "\n"
+             << "result = " << (tc.result ? "true" : "false") << "\n"
              << "consumed = " << tc.consumed << "\n"
-             << "value = \n" << tc.value << "\n";
+             << "value = " << tc.value << "\n";
   }
 }
 
@@ -86,9 +93,11 @@ public:
   {
     if(GetParam().result)
     {
-      typename clause_t::value_t const expected(GetParam().value);
       clause().try_clause();
-      EXPECT_EQ(expected, clause().value());
+
+      kyaml::clauses::string_result actual;
+      actual.append(clause().value());
+      EXPECT_EQ(GetParam().value, actual);
     }
   }
 
@@ -109,30 +118,13 @@ private:
   {                                                             \
     test_advance();                                             \
   }                                                             \
+  TEST_P(test_##clausetype, value)                              \
+  {                                                             \
+    test_value();                                               \
+  }                                                             \
                                                                 \
   INSTANTIATE_TEST_CASE_P(tests_##clausetype,                   \
                           test_##clausetype,                    \
-                          testing::ValuesIn(values));
-
-#define CLAUSE_TEST_VALUES(clausetype, values)                  \
-  typedef clause_test<clausetype> vtest_##clausetype;           \
-                                                                \
-  TEST_P(vtest_##clausetype, match)                             \
-  {                                                             \
-    test_match();                                               \
-  }                                                             \
-                                                                \
-  TEST_P(vtest_##clausetype, advance)                           \
-  {                                                             \
-    test_advance();                                             \
-  }                                                             \
-  TEST_P(vtest_##clausetype, value)                             \
-  {                                                             \
-    test_advance();                                             \
-  }                                                             \
-                                                                \
-  INSTANTIATE_TEST_CASE_P(vtests_##clausetype,                  \
-                          vtest_##clausetype,                   \
                           testing::ValuesIn(values));
 
 
