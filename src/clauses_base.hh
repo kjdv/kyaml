@@ -54,34 +54,7 @@ namespace kyaml
       unsigned const d_indent_level;
       blockflow_t const d_bf;
     };
-
-    // mostly useful for testing purposes: construct a blank self-contained context from a string
-    class context_wrap
-    {
-    public:
-      context_wrap(std::string const &s,
-                   unsigned indent_level = 0,
-                   context::blockflow_t bf = context::NA) :
-        d_sstream(s),
-        d_stream(d_sstream),
-        d_ctx(d_stream, indent_level, bf)
-      {}
-
-      context const &get() const
-      {
-        return d_ctx;
-      }
-      
-      context &get()
-      {
-        return d_ctx;
-      }
-    private:
-      std::stringstream d_sstream;
-      char_stream d_stream;
-      context d_ctx;
-    };
-    
+  
     // base class is informational only: there are no virtual functions, its here only to document
     // the common signature
     class clause

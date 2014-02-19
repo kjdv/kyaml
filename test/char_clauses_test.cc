@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 using namespace std;
-using namespace kyaml;
+using namespace kyaml::test;
 using namespace kyaml::clauses;
 
 namespace 
@@ -25,116 +25,7 @@ namespace
   {
     return vector<string>(il);
   }
-}
 
-template <typename clause_t>
-class char_clause_test : public testing::TestWithParam<string>
-{
-public:
-  char_clause_test() :
-    d_ctx(GetParam()),
-    d_clause(d_ctx.get())
-  {}
-
-  bool try_clause()
-  {
-    return d_clause.try_clause();
-  }
-
-  typename clause_t::value_t value() const
-  {
-    return d_clause.value();
-  }
-
-  string const &input() const
-  {
-    return GetParam();
-  }
-
-  context const &ctx() const
-  {
-    return d_ctx.get();
-  }
-
-  // tests
-  
-  // (positive)
-  void test_match()
-  {
-    EXPECT_TRUE(try_clause());
-  }
-  
-  void test_advance()
-  {
-    try_clause();
-    EXPECT_EQ(non_continuation(input()), ctx().stream().pos());
-  }
-
-  void test_value()
-  {
-    try_clause();
-
-    string actual;
-    append_utf8(actual, value());
-
-    EXPECT_EQ(input(), actual);
-  }
-
-  // (negative)
-  void test_notmatch()
-  {
-    EXPECT_FALSE(try_clause());
-  }
-  
-  void test_noadvance()
-  {
-    try_clause();
-    EXPECT_EQ(0, ctx().stream().pos());
-  }
-private:
-  context_wrap d_ctx;
-  clause_t d_clause;
-};
-
-// GTest has value-parameterized tests, GTest has type-parameterized tests, but GTest has no 
-// type-and-value parameterized tests, some hackery required.
-
-#define ATP_POS_TEST(clausetype, values)                         \
-  typedef char_clause_test<clausetype> positive_##clausetype;   \
-                                                                \
-  TEST_P(positive_##clausetype, match)                          \
-  {                                                             \
-    test_match();                                               \
-  }                                                             \
-  TEST_P(positive_##clausetype, advance)                        \
-  {                                                             \
-    test_advance();                                             \
-  }                                                             \
-  TEST_P(positive_##clausetype, value)                          \
-  {                                                             \
-    test_match();                                               \
-  }                                                             \
-  INSTANTIATE_TEST_CASE_P(char_test,                            \
-                          positive_##clausetype,                \
-                          testing::ValuesIn(values));
-
-#define ATP_NEG_TEST(clausetype, values)                           \
-  typedef char_clause_test<clausetype> negative_##clausetype;     \
-                                                                  \
-  TEST_P(negative_##clausetype, match)                            \
-  {                                                               \
-    test_notmatch();                                              \
-  }                                                               \
-  TEST_P(negative_##clausetype, advance)                          \
-  {                                                               \
-    test_noadvance();                                             \
-  }                                                               \
-  INSTANTIATE_TEST_CASE_P(char_test,                              \
-                          negative_##clausetype,                  \
-                          testing::ValuesIn(values));
-
-namespace 
-{
   clause_testcase tc(string const &input, bool result)
   {
     clause_testcase t =

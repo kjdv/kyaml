@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 using namespace std;
-using namespace kyaml;
+using namespace kyaml::test;
 using namespace kyaml::clauses;
 
 namespace 

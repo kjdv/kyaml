@@ -461,9 +461,7 @@ bool esc_char::try_clause()
       return true;
     }
     else
-    {
       unwind();
-    }
   }
   return false;
 }
