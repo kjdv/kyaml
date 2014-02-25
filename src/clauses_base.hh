@@ -292,4 +292,12 @@ namespace kyaml
   }
 }
 
+namespace std
+{
+  inline std::ostream &operator<<(std::ostream &out, kyaml::clauses::void_result)
+  {
+    return out << "(void)";
+  }
+}
+
 #endif // CLAUSES_BASE_HH

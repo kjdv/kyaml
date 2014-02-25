@@ -1,5 +1,6 @@
 #include "utils.hh"
 #include <cstdint>
+#include <sstream>
 
 using namespace std;
 using namespace kyaml;
@@ -39,6 +40,12 @@ bool kyaml::extract_utf8(istream &stream, char32_t &result)
     return true;
   }
   return false;
+}
+
+bool kyaml::extract_utf8(string const &str, char32_t &result)
+{
+  stringstream stream(str);
+  return extract_utf8(stream, result);
 }
 
 void kyaml::append_utf8(string &str, char32_t ch)

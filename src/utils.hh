@@ -17,6 +17,7 @@ namespace kyaml
   };
 
   bool extract_utf8(std::istream &stream, char32_t &result);
+  bool extract_utf8(std::string const &str, char32_t &result);
  
   void append_utf8(std::string &str, char32_t ch);
   // just a small helper to support uniform appending

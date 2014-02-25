@@ -9,10 +9,10 @@ using namespace kyaml::clauses;
 
 namespace 
 {
-  clause_testcase tc(string const &input, unsigned indent_level, bool result, unsigned consume)
+  clause_testcase<void_result> tc(string const &input, unsigned indent_level, bool result, unsigned consume)
   {
     return 
-      clause_builder(input, result).
+      testcase_builder<void_result>(input, result).
       with_indent_level(indent_level).
       with_consumed(consume).
       build();

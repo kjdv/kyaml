@@ -26,29 +26,43 @@ namespace
     return vector<string>(il);
   }
 
-  clause_testcase tc(string const &input, bool result)
+  template <typename value_t>
+  clause_testcase<value_t> tc(string const &input, bool result)
   {
     return 
-      clause_builder(input, result).
+      testcase_builder<value_t>(input, result).
       with_consumed(result ? non_continuation(input) : 0).
       with_value(input).
       build();
   }
 
-  vector<clause_testcase> tvalues(vector<string> const &pos,
-                                  vector<string> const &neg)
+  template <>
+  clause_testcase<kyaml::char_t> tc(string const &input, bool result)
   {
-    vector<clause_testcase> rv; rv.reserve(pos.size() + neg.size());
+    kyaml::char_t ch = 0;
+    kyaml::extract_utf8(input, ch);
+    return 
+      testcase_builder<kyaml::char_t>(input, result).
+      with_consumed(result ? non_continuation(input) : 0).
+      with_value(ch).
+      build();
+  }
+
+  template <typename value_t>
+  vector<clause_testcase<value_t> > tvalues(vector<string> const &pos,
+                                            vector<string> const &neg)
+  {
+    vector<clause_testcase<value_t> > rv; rv.reserve(pos.size() + neg.size());
     for(auto item : pos)
-      rv.push_back(tc(item, true));
+      rv.push_back(tc<value_t>(item, true));
     for(auto item : neg)
-      rv.push_back(tc(item, false));
+      rv.push_back(tc<value_t>(item, false));
     return rv;
   }
 }
 
 #define CHAR_CLAUSE_TEST(clausetype, positive, negative)   \
-  CLAUSE_TEST(clausetype, tvalues(positive, negative))
+  CLAUSE_TEST(clausetype, tvalues<clausetype::value_t>(positive, negative))
 
 CHAR_CLAUSE_TEST(printable, 
                  values({"a", "\t", "\n", "\xd5\x82", "\xf0\x9d\x84\x8b"}),

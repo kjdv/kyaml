@@ -37,6 +37,7 @@ namespace kyaml
       kyaml::clauses::context d_ctx;
     };
 
+    template <typename value_t>
     struct clause_testcase
     {
       std::string input;
@@ -46,13 +47,14 @@ namespace kyaml
       bool const result;
       unsigned const consumed;
       
-      std::string const value;
+      value_t const value;
     };
 
-    class clause_builder
+    template <typename value_t>
+    class testcase_builder
     {
     public:
-      clause_builder(std::string const &input, bool result) :
+      testcase_builder(std::string const &input, bool result) :
         d_input(input),
         d_indent_level(0),
         d_blockflow(kyaml::clauses::context::NA),
@@ -60,38 +62,38 @@ namespace kyaml
         d_consumed(input.size())
       {}
 
-      clause_builder &with_indent_level(unsigned l)
+      testcase_builder<value_t> &with_indent_level(unsigned l)
       {
         d_indent_level = l;
         return *this;
       }
       
-      clause_builder &with_blockflow(kyaml::clauses::context::blockflow_t bf)
+      testcase_builder<value_t> &with_blockflow(kyaml::clauses::context::blockflow_t bf)
       {
         d_blockflow = bf;
         return *this;
       }
 
-      clause_builder &with_consumed(unsigned n)
+      testcase_builder<value_t> &with_consumed(unsigned n)
       {
         d_consumed = n;
         return *this;
       }
 
-      clause_builder &with_value(std::string const &v)
+      testcase_builder<value_t> &with_value(value_t const &v)
       {
         d_value = v;
         return *this;
       }      
 
-      clause_testcase build()
+      clause_testcase<value_t> build()
       {
-        clause_testcase result = {d_input,
-                                  d_indent_level,
-                                  d_blockflow,
-                                  d_result,
-                                  d_consumed,
-                                  d_value};
+        clause_testcase<value_t> result = {d_input,
+                                           d_indent_level,
+                                           d_blockflow,
+                                           d_result,
+                                           d_consumed,
+                                           d_value};
         return result;
       }
     private:
@@ -102,12 +104,13 @@ namespace kyaml
       bool d_result;
       unsigned d_consumed;
       
-      std::string d_value;
+      value_t d_value;
     };
 
-    inline std::vector<clause_testcase> cases(std::initializer_list<clause_testcase> il)
+    template <typename value_t>
+    inline std::vector<clause_testcase<value_t> > cases(std::initializer_list<clause_testcase<value_t> > il)
     {
-      return std::vector<clause_testcase>(il);
+      return std::vector<clause_testcase<value_t> >(il);
     }
 
     template <typename clause_t>
@@ -139,7 +142,8 @@ namespace kyaml
     }
 
     template <typename clause_t>
-    class clause_test : public testing::TestWithParam<clause_testcase>
+    class clause_test : public testing::TestWithParam<clause_testcase
+                                                      <typename clause_t::value_t> >
     {
     public:
       clause_test() :
@@ -186,12 +190,19 @@ namespace kyaml
         if(GetParam().result)
         {
           clause().try_clause();
-          std::string const &expected = GetParam().value;
-          EXPECT_EQ(expected, as_string(clause().value()));
+          auto expected = GetParam().value;
+          EXPECT_EQ(expected, clause().value());
         }
       }
       
     private:
+      clause_testcase<typename clause_t::value_t> const &GetParam() const
+      {
+        return testing::TestWithParam<clause_testcase
+                                      <typename clause_t::value_t> >::GetParam();
+      }
+
+
       context_wrap d_ctx;
       clause_t d_clause;
     };
@@ -200,7 +211,8 @@ namespace kyaml
 
 namespace std
 {
-  inline ostream &operator<<(ostream &o, kyaml::test::clause_testcase const &tc)
+  template <typename value_t>
+  inline ostream &operator<<(ostream &o, kyaml::test::clause_testcase<value_t> const &tc)
   {
     return o << "\n"
              << "input = \"" << tc.input << "\"\n"
