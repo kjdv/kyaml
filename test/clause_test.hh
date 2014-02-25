@@ -121,26 +121,6 @@ namespace kyaml
     void teardown(clause_t &)
     {}
 
-    template <typename value_t>
-    std::string as_string(value_t const &v)
-    {
-      return std::string(v);
-    }
-    
-    template<>
-    inline std::string as_string(char32_t const &c)
-    {
-      std::string result;
-      kyaml::append_utf8(result, c);
-      return result;
-    }
-
-    template<>
-    inline std::string as_string(kyaml::clauses::void_result const &v)
-    {
-      return std::string();
-    }
-
     template <typename clause_t>
     class clause_test : public testing::TestWithParam<clause_testcase
                                                       <typename clause_t::value_t> >
