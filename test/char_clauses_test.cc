@@ -28,16 +28,11 @@ namespace
 
   clause_testcase tc(string const &input, bool result)
   {
-    clause_testcase t =
-    {
-      input,
-      0,
-      context::NA,
-      result,
-      result ? non_continuation(input) : 0,
-      input,
-    };
-    return t;
+    return 
+      clause_builder(input, result).
+      with_consumed(result ? non_continuation(input) : 0).
+      with_value(input).
+      build();
   }
 
   vector<clause_testcase> tvalues(vector<string> const &pos,

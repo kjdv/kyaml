@@ -11,15 +11,11 @@ namespace
 {
   clause_testcase tc(string const &input, unsigned indent_level, bool result, unsigned consume)
   {
-    clause_testcase t = 
-    {
-      input,
-      indent_level,
-      context::NA,
-      result,
-      consume,
-    };
-    return t;
+    return 
+      clause_builder(input, result).
+      with_indent_level(indent_level).
+      with_consumed(consume).
+      build();
   }
 }
 

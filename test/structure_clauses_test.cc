@@ -24,16 +24,11 @@ namespace
   //// separate in line 
   clause_testcase sil_tc(string const &input, bool result, unsigned indent_level)
   {
-    clause_testcase tc =
-      {
-        input, 
-        indent_level,
-        context::NA,
-        result,
-        result ? (indent_level + 1) : 1,
-        ""
-      };
-    return tc;
+    return 
+      clause_builder(input, result).
+      with_indent_level(indent_level).
+      with_consumed(result ? (indent_level + 1) : 1).
+      build();
   }
 
   //// line prefix
@@ -45,16 +40,13 @@ namespace
       result ?
       ((n == string::npos) ? input.size() : n) :
       0;
-    clause_testcase tc =
-      {
-        input,
-        indent_level,
-        bf,
-        result,
-        consumed,
-        "",
-      };
-    return tc;
+
+    return
+      clause_builder(input, result).
+      with_blockflow(bf).
+      with_indent_level(indent_level).
+      with_consumed(consumed).
+      build();
   }
 
   //// empty line
@@ -66,17 +58,13 @@ namespace
       result ?
       ((n == string::npos) ? input.size() : n) :
       0;
-    
-    clause_testcase tc =
-      {
-        input, 
-        indent_level,
-        bf,
-        result,
-        consumed,
-        ""
-      };
-    return tc;
+
+    return
+      clause_builder(input, result).
+      with_indent_level(indent_level).
+      with_blockflow(bf).
+      with_consumed(consumed).
+      build();
   }
 }
 

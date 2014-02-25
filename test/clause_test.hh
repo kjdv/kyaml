@@ -49,6 +49,62 @@ namespace kyaml
       std::string const value;
     };
 
+    class clause_builder
+    {
+    public:
+      clause_builder(std::string const &input, bool result) :
+        d_input(input),
+        d_indent_level(0),
+        d_blockflow(kyaml::clauses::context::NA),
+        d_result(result),
+        d_consumed(input.size())
+      {}
+
+      clause_builder &with_indent_level(unsigned l)
+      {
+        d_indent_level = l;
+        return *this;
+      }
+      
+      clause_builder &with_blockflow(kyaml::clauses::context::blockflow_t bf)
+      {
+        d_blockflow = bf;
+        return *this;
+      }
+
+      clause_builder &with_consumed(unsigned n)
+      {
+        d_consumed = n;
+        return *this;
+      }
+
+      clause_builder &with_value(std::string const &v)
+      {
+        d_value = v;
+        return *this;
+      }      
+
+      clause_testcase build()
+      {
+        clause_testcase result = {d_input,
+                                  d_indent_level,
+                                  d_blockflow,
+                                  d_result,
+                                  d_consumed,
+                                  d_value};
+        return result;
+      }
+    private:
+      std::string d_input;
+      unsigned d_indent_level;
+      kyaml::clauses::context::blockflow_t d_blockflow;
+      
+      bool d_result;
+      unsigned d_consumed;
+      
+      std::string d_value;
+    };
+
     inline std::vector<clause_testcase> cases(std::initializer_list<clause_testcase> il)
     {
       return std::vector<clause_testcase>(il);
