@@ -50,6 +50,20 @@ namespace kyaml
       return d_pos;
     }
 
+    bool good() const
+    {
+      return 
+        d_pos < d_buffer.size() ||
+        d_base.good();
+    }
+
+    bool eof() const
+    {
+      return 
+        d_pos >= d_buffer.size() &&
+        d_base.eof();
+    }
+
   private:
     bool underflow();
 
