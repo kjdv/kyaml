@@ -304,6 +304,48 @@ namespace kyaml
           return r;
         }
       };
+
+      template <typename result_t, typename subclause_t>
+      class zero_or_one : public compound_clause<result_t>
+      {
+      public:
+        typedef typename compound_clause<result_t>::value_t value_t;
+
+        zero_or_one(context &ctx) : compound_clause<result_t>(ctx)
+        {}
+
+        bool try_clause()
+        {
+          value_t v;
+          if(try_once(v))
+            compound_clause<result_t>::set(v);
+          return true;
+        }
+
+      private:
+        bool try_once(value_t &v)
+        {
+          subclause_t s(compound_clause<result_t>::ctx());
+          bool r = s.try_clause();
+          if(r)
+            v.append(s.value());
+          return r;
+        }
+      };
+
+      template <typename clause_t, context::blockflow_t blockflow_v>
+      class flow_restriction : public clause_t
+      {
+      public:
+        using clause_t::clause_t;
+
+        bool try_clause()
+        {
+          return
+            clause_t::ctx().blockflow() == blockflow_v &&
+            clause_t::try_clause();
+        }
+      };
     }
   }
 }

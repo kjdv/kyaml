@@ -76,6 +76,17 @@ namespace
       with_consumed(consumed).
       build();
   }
+
+  // flow_folded
+  clause_testcase<void_result> ff_tc(string const &input, unsigned il, context::blockflow_t bf, bool result, unsigned consumed)
+  {
+    return 
+      testcase_builder<void_result>(input, result).
+      with_indent_level(il).
+      with_blockflow(bf).
+      with_consumed(consumed).
+      build();
+  }
 }
 
 CLAUSE_TEST(separate_in_line, 
@@ -120,3 +131,7 @@ CLAUSE_TEST(line_folded,
             cases({tr_tc("\n  \n aap", 3, true, 4),
                    tr_tc("\r\n   \n  \n a", 4, true, 9),
                    tr_tc("\na", 2, true, 1)}))
+
+CLAUSE_TEST(flow_folded,
+            cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9),
+                   ff_tc("\n\n  \n    aap", 3, context::FLOW_OUT, false, 0)}))

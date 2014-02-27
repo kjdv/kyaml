@@ -76,6 +76,15 @@ namespace kyaml
     typedef internal::or_clause<void_result,
                                 trimmed,
                                 as_space> line_folded;
+
+    // [74] 	s-flow-folded(n) 	::= 	s-separate-in-line? b-l-folded(n,flow-in)
+    //                                          s-flow-line-prefix(n)
+    typedef internal::and_clause<void_result,
+                                 internal::zero_or_one<void_result, 
+                                                       separate_in_line>,
+                                 internal::and_clause<void_result,
+                                                      internal::flow_restriction<line_folded, context::FLOW_IN>,
+                                                      flow_line_prefix> > flow_folded;
   }
 }
 
