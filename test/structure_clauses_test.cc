@@ -66,6 +66,16 @@ namespace
       with_consumed(consumed).
       build();
   }
+  
+  //// trimmed
+  clause_testcase<void_result> tr_tc(string const &input, unsigned il, bool result, unsigned consumed)
+  {
+    return 
+      testcase_builder<void_result>(input, result).
+      with_indent_level(il).
+      with_consumed(consumed).
+      build();
+  }
 }
 
 CLAUSE_TEST(separate_in_line, 
@@ -100,3 +110,7 @@ CLAUSE_TEST(empty_line,
                    el_tc("  \n", 2, context::BLOCK_IN, true),
                    el_tc("  \n", 2, context::FLOW_IN, false),
                    el_tc("  \n", 1, context::FLOW_IN, true)}))
+
+CLAUSE_TEST(trimmed,
+            cases({tr_tc("\n  \n aap", 3, true, 4),
+                   tr_tc("\r\n   \n  \n a", 4, true, 9)}))

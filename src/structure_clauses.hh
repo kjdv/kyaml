@@ -62,6 +62,12 @@ namespace kyaml
                                                      line_prefix,
                                                      indent_clause_lt>,
                                  as_line_feed> empty_line;
+
+    // [71] 	b-l-trimmed(n,c) 	::= 	b-non-content l-empty(n,c)+ 
+    typedef internal::and_clause<void_result,
+                                 non_content,
+                                 internal::one_or_more<void_result,
+                                                       empty_line> > trimmed;
   }
 }
 

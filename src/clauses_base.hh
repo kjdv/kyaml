@@ -254,18 +254,25 @@ namespace kyaml
 
         bool try_clause()
         {
-          subclause_t s(compound_clause<result_t>::ctx());
-          if(s.try_clause())
+          value_t v;
+          if(try_once(v))
           {
-            value_t v;
-            do
-            {
-              v.append(s.value());
-            } while(s.try_clause());
+            while(try_once(v));
+
             compound_clause<result_t>::set(v);
             return true;
           }
           return false;
+        }
+
+      private:
+        bool try_once(value_t &v)
+        {
+          subclause_t s(compound_clause<result_t>::ctx());
+          bool r = s.try_clause();
+          if(r)
+            v.append(s.value());
+          return r;
         }
       };
 
@@ -280,12 +287,21 @@ namespace kyaml
 
         bool try_clause()
         {
-          subclause_t s(compound_clause<result_t>::ctx());
           value_t v;
-          while(s.try_clause())
-            v.append(s.value());
+          while(try_once());
+
           set(v);
           return true;
+        }
+
+      private:
+        bool try_once(value_t &v)
+        {
+          subclause_t s(compound_clause<result_t>::ctx());
+          bool r = s.try_clause();
+          if(r)
+            v.append(s.value());
+          return r;
         }
       };
     }
