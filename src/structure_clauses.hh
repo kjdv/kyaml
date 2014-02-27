@@ -68,6 +68,9 @@ namespace kyaml
                                  non_content,
                                  internal::one_or_more<void_result,
                                                        empty_line> > trimmed;
+
+    // [72] 	b-as-space 	::= 	b-break
+    typedef line_break as_space;
   }
 }
 
