@@ -135,6 +135,11 @@ namespace kyaml
       {
         append_utf8(*this, c);
       }
+
+      void append(string_result const &other)
+      {
+        std::string::append(other);
+      }
       
       void append(void_result const &)
       {}
@@ -288,9 +293,9 @@ namespace kyaml
         bool try_clause()
         {
           value_t v;
-          while(try_once());
+          while(try_once(v));
 
-          set(v);
+          compound_clause<result_t>::set(v);
           return true;
         }
 
