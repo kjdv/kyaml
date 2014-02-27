@@ -113,4 +113,10 @@ CLAUSE_TEST(empty_line,
 
 CLAUSE_TEST(trimmed,
             cases({tr_tc("\n  \n aap", 3, true, 4),
-                   tr_tc("\r\n   \n  \n a", 4, true, 9)}))
+                   tr_tc("\r\n   \n  \n a", 4, true, 9),
+                   tr_tc("\na", 2, false, 0)}))
+
+CLAUSE_TEST(line_folded,
+            cases({tr_tc("\n  \n aap", 3, true, 4),
+                   tr_tc("\r\n   \n  \n a", 4, true, 9),
+                   tr_tc("\na", 2, true, 1)}))

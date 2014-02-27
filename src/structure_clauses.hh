@@ -71,6 +71,11 @@ namespace kyaml
 
     // [72] 	b-as-space 	::= 	b-break
     typedef line_break as_space;
+
+    // [73] 	b-l-folded(n,c) 	::= 	b-l-trimmed(n,c) | b-as-space
+    typedef internal::or_clause<void_result,
+                                trimmed,
+                                as_space> line_folded;
   }
 }
 
