@@ -16,6 +16,15 @@ namespace
       with_consumed(result ? val.size() : 0).
       build();
   }
+
+  clause_testcase<string_result> sl_tc(string const &input, bool result, string const &val, unsigned c)
+  {
+    return 
+      testcase_builder<string_result>(input, result).
+      with_value(val).
+      with_consumed(c).
+      build();
+  }
 }
 
 CLAUSE_TEST(non_break_comment_text,
@@ -27,3 +36,6 @@ CLAUSE_TEST(non_break_comment_text,
 
 CLAUSE_TEST(sbreak_comment,
             cases({tc("#klaas\n", true, "#klaas\n")}))
+
+CLAUSE_TEST(sline_comment,
+            cases({sl_tc("    # Comment\n        # lines\n", true, "# Comment\n# lines\n", 30)}))

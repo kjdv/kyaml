@@ -43,6 +43,23 @@ namespace kyaml
                                                                              internal::zero_or_more<string_result,
                                                                                                     non_break_comment_text> > >, // whoei
                                  break_comment> sbreak_comment;
+
+    // [78] 	l-comment 	::= 	s-separate-in-line c-nb-comment-text? b-comment
+    typedef internal::and_clause<string_result,
+                                 separate_in_line,
+                                 internal::and_clause<string_result,
+                                                      internal::zero_or_more<string_result, 
+                                                                             non_break_comment_text>,
+                                                      break_comment> > line_comment;
+
+    // [79] 	s-l-comments 	::= 	( s-b-comment | Start of line )
+    //                                    l-comment* 
+    typedef internal::and_clause<string_result,
+                                 internal::or_clause<string_result,
+                                                     sbreak_comment,
+                                                     internal::start_of_line>,
+                                 internal::zero_or_more<string_result,
+                                                        line_comment> > sline_comment;
   }
 }
 
