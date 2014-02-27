@@ -3,6 +3,7 @@
 
 #include "clauses_base.hh"
 #include "char_clauses.hh"
+#include "structure_clauses.hh"
 
 namespace kyaml
 {
@@ -29,9 +30,19 @@ namespace kyaml
     }
 
     // [76] 	b-comment 	::= 	b-non-content |  End of file 
-    typedef internal::or_clause<void_result,
+    typedef internal::or_clause<string_result,
                                 non_content,
                                 internal::endoffile> break_comment;
+
+    // [77] 	s-b-comment 	::= 	( s-separate-in-line c-nb-comment-text? )?
+    //                                  b-comment
+    typedef internal::and_clause<string_result,
+                                 internal::zero_or_more<string_result,
+                                                        internal::and_clause<string_result,
+                                                                             separate_in_line,
+                                                                             internal::zero_or_more<string_result,
+                                                                                                    non_break_comment_text> > >, // whoei
+                                 break_comment> sbreak_comment;
   }
 }
 

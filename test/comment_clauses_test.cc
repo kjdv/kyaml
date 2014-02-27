@@ -24,3 +24,6 @@ CLAUSE_TEST(non_break_comment_text,
                    tc("#", true, "#"),
                    tc("klaas", false, ""),
                    tc("# klaas\n", true, "# klaas")}))
+
+CLAUSE_TEST(sbreak_comment,
+            cases({tc("#klaas\n", true, "#klaas\n")}))
