@@ -340,6 +340,89 @@ namespace kyaml
         }
       };
 
+      template <typename result_t, typename... clauses_t>
+      class any_of : public compound_clause<result_t>
+      {
+      public:
+        typedef typename compound_clause<result_t>::value_t value_t;
+
+        any_of(context &ctx) : 
+          compound_clause<result_t>(ctx)
+        {}
+
+        bool try_clause()
+        {
+          return try_recurse<clauses_t...>();
+        }
+
+      private:
+        template <typename head_t>
+        bool try_recurse()
+        {
+          head_t head(compound_clause<result_t>::ctx());
+          if(head.try_clause())
+          {
+            value_t v;
+            v.append(head.value());
+            compound_clause<result_t>::set(v);
+            return true;
+          }
+          return false;
+        }
+        
+        template <typename head_t, typename head2_t, typename... tail_t>
+        bool try_recurse()
+        {
+          return
+            try_recurse<head_t>() ||
+            try_recurse<head2_t, tail_t...>();
+        }
+        
+      };
+
+      template <typename result_t, typename... clauses_t>
+      class all_of : public compound_clause<result_t>
+      {
+      public:
+        typedef typename compound_clause<result_t>::value_t value_t;
+
+        all_of(context &ctx) : 
+          compound_clause<result_t>(ctx)
+        {}
+
+        bool try_clause()
+        {
+          value_t v;
+          if(try_recurse<clauses_t...>(v))
+          {
+            compound_clause<result_t>::set(v);
+            return true;
+          }
+          return false;
+        }
+
+      private:
+        template <typename head_t>
+        bool try_recurse(value_t &v)
+        {
+          head_t head(compound_clause<result_t>::ctx());
+          if(head.try_clause())
+          {
+            v.append(head.value());
+            return true;
+          }
+          return false;
+        }
+        
+        template <typename head_t, typename head2_t, typename... tail_t>
+        bool try_recurse(value_t &v)
+        {
+          return
+            try_recurse<head_t>(v) &&
+            try_recurse<head2_t, tail_t...>(v);
+        }
+      };
+
       template <typename clause_t, context::blockflow_t blockflow_v>
       class flow_restriction : public clause_t
       {

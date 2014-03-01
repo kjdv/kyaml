@@ -204,26 +204,29 @@ namespace std
   }
 }
 
-#define CLAUSE_TEST(clausetype, values)                                 \
-  typedef kyaml::test::clause_test<clausetype> test_##clausetype;       \
+#define NAMED_CLAUSE_TEST(name, clausetype, values)                     \
+  typedef kyaml::test::clause_test<clausetype> name;                    \
                                                                         \
-  TEST_P(test_##clausetype, match)                                      \
+  TEST_P(name, match)                                                   \
   {                                                                     \
     test_match();                                                       \
   }                                                                     \
                                                                         \
-  TEST_P(test_##clausetype, advance)                                    \
+  TEST_P(name, advance)                                                 \
   {                                                                     \
     test_advance();                                                     \
   }                                                                     \
-  TEST_P(test_##clausetype, value)                                      \
+  TEST_P(name, value)                                                   \
   {                                                                     \
     test_value();                                                       \
   }                                                                     \
                                                                         \
-  INSTANTIATE_TEST_CASE_P(tests_##clausetype,                           \
-                          test_##clausetype,                            \
+  INSTANTIATE_TEST_CASE_P(tests_##name,                                 \
+                          name,                                         \
                           testing::ValuesIn(values));
+
+#define CLAUSE_TEST(clausetype, values)                                 \
+  NAMED_CLAUSE_TEST(test_##clausetype, clausetype, values)
 
 
 #endif // CLAUSE_TEST_HH
