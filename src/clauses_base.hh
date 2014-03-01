@@ -17,8 +17,10 @@ namespace kyaml
         NA,
         BLOCK_OUT,
         BLOCK_IN,
+        BLOCK_KEY,
         FLOW_OUT,
         FLOW_IN,
+        FLOW_KEY,
       } blockflow_t;
 
       context(char_stream &str, 
@@ -53,7 +55,7 @@ namespace kyaml
       char_stream &d_stream;
       unsigned const d_indent_level;
       blockflow_t const d_bf;
-    };
+    };   
   
     // base class is informational only: there are no virtual functions, its here only to document
     // the common signature

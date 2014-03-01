@@ -85,7 +85,6 @@ namespace kyaml
                                  internal::and_clause<void_result,
                                                       internal::flow_restriction<line_folded, context::FLOW_IN>,
                                                       flow_line_prefix> > flow_folded;
-
   }
 }
 

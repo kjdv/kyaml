@@ -33,3 +33,33 @@ string utf8_testcases[] =
 INSTANTIATE_TEST_CASE_P(utf8_tests,
                         utf8_test,
                         testing::ValuesIn(utf8_testcases));
+
+TEST(logger, one_item)
+{
+  stringstream str;
+  logger<true> l(str);
+
+  l.log("tag", 1);
+
+  EXPECT_EQ("(tag): 1\n", str.str());
+}
+
+TEST(logger, two_items)
+{
+  stringstream str;
+  logger<true> l(str);
+
+  l.log("tag", "pi", 3.1459);
+
+  EXPECT_EQ("(tag): pi 3.1459\n", str.str());
+}
+
+TEST(logger, zero_item)
+{
+  stringstream str;
+  logger<true> l(str);
+
+  l.log("tag");
+
+  EXPECT_EQ("(tag):\n", str.str());
+}
