@@ -15,6 +15,24 @@ namespace kyaml
     //                                          c = block-key ⇒ s-separate-in-line
     //                                          c = flow-key  ⇒ s-separate-in-line
 
+    class separate : public internal::void_clause
+    {
+    public:
+      separate(context &ctx);
+
+      bool try_clause() 
+      {
+        return d_dispatch ? (this->*d_dispatch)() : false;
+      }
+
+    private:
+      bool try_lines();
+      bool try_in_line();
+
+      typedef bool (separate::*dispatch_f)();
+      dispatch_f d_dispatch;
+    };
+
     // [81] 	s-separate-lines(n) 	::= 	  ( s-l-comments s-flow-line-prefix(n) )
     //                                            | s-separate-in-line
 
