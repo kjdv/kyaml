@@ -119,7 +119,6 @@ CLAUSE_TEST(empty_line,
                    el_tc("a", 3, context::NA, false),
                    el_tc("  \n", 3, context::BLOCK_IN, true),
                    el_tc("  \n", 2, context::BLOCK_IN, true),
-                   el_tc("  \n", 2, context::FLOW_IN, false),
                    el_tc("  \n", 1, context::FLOW_IN, true)}))
 
 CLAUSE_TEST(trimmed,

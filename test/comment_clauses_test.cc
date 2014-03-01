@@ -38,4 +38,7 @@ CLAUSE_TEST(sbreak_comment,
             cases({tc("#klaas\n", true, "#klaas\n")}))
 
 CLAUSE_TEST(sline_comment,
-            cases({sl_tc("    # Comment\n        # lines\n", true, "# Comment\n# lines\n", 30)}))
+            cases({sl_tc("    # Comment\n        # lines\n", true, "# Comment\n# lines\n", 30),
+                  sl_tc("\n# comment\n", true, "\n# comment\n", 11),
+                  sl_tc("\n# comment\n  a", true, "\n# comment\n", 11)}))
+

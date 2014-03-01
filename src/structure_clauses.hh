@@ -52,7 +52,7 @@ namespace kyaml
     // [69] 	s-flow-line-prefix(n) 	::= 	s-indent(n) s-separate-in-line? 
     typedef internal::and_clause<void_result,
                                  internal::indent_clause_ge,
-                                 internal::one_or_more<void_result, separate_in_line> 
+                                 internal::zero_or_one<void_result, separate_in_line> 
                                  > flow_line_prefix;
 
     // [70] 	l-empty(n,c) 	::= 	( s-line-prefix(n,c) | s-indent(<n) )
