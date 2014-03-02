@@ -171,11 +171,11 @@ CHAR_CLAUSE_TEST(white,
                  values({" ", "\t"}),
                  values({"", "a"}))
 
-#ifdef COMPILE_GUARD
-PCHAR_CLAUSE_TEST(non_white_char, 
+CHAR_CLAUSE_TEST(non_white_char, 
                  values({"a"}),
                  values({"", " ", "\t", "\r", "\n"}))
 
+#ifdef COMPILE_GUARD
 PCHAR_CLAUSE_TEST(dec_digit_char, 
                  values({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}),
                  values({"", "a"}))

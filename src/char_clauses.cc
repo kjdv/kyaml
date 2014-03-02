@@ -171,26 +171,23 @@ bool non_break_char::parse(document_builder &builder)
   return pr.parse(builder);
 }
 
-#ifdef COMPILE_GUARD
-
-bool non_white_char::try_clause()
+bool non_white_char::parse(document_builder &builder)
 {
+  document_builder::child_t b = builder.child();
+
   white w(ctx());
-  if(w.try_clause())
+  if(w.parse(*b))
   {
     unwind();
     return false;
   }
 
   non_break_char nb(ctx());
-  if(nb.try_clause())
-  {
-    set(nb.value());
-    return true;
-  }
-
-  return false;
+  return nb.parse(builder);
 }
+
+#ifdef COMPILE_GUARD
+
 
 bool dec_digit_char::try_clause()
 {
