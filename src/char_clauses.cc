@@ -56,19 +56,23 @@ bool json::parse(document_builder &builder)
   return false;
 }
 
-#ifdef COMPILE_GUARD
-bool byte_order_mark::try_clause()
+bool byte_order_mark::parse(document_builder &builder)
 {
   char_t c;
   if(!stream().peek(c))
     return false;
   if(c == 0x0000feff)
   {
-    consume(c);
+    document_builder::child_t b = builder.child();
+
+    b->add(name(), c);
+    advance();
     return true;
     if(stream().peek(c) && c == static_cast<char_t>('\xff'))
     {
-      consume(c);
+      b->add(name(), c);
+      advance();
+      builder.add(name(), c);
       return true;
     }
     else
@@ -77,18 +81,20 @@ bool byte_order_mark::try_clause()
   return false;
 }
 
-bool reserved::try_clause()
+bool reserved::parse(document_builder &builder)
 {
   char_t c;
   if(stream().peek(c) &&
      ( c == '@' || c == '`' ))
   {
-    consume(c);
+    builder.add(name(), c);
+    advance();
     return true;
   }
   return false;
 }
 
+#ifdef COMPILE_GUARD
 bool indicator::try_clause()
 {
   char_t c = 0;

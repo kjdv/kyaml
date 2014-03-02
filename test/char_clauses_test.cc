@@ -58,80 +58,80 @@ CHAR_CLAUSE_TEST(json,
                  values({"a", "t", "\xd5\x81"}),
                  values({"\n", ""}))
 
-#ifdef COMPILE_GUARD
-
-
-PCHAR_CLAUSE_TEST(sequence_entry, 
+CHAR_CLAUSE_TEST(sequence_entry, 
                  values({"-"}),
                  values({"a", ""}))
 
-PCHAR_CLAUSE_TEST(mapping_key, 
+CHAR_CLAUSE_TEST(mapping_key, 
                  values({"?"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(mapping_value, 
+CHAR_CLAUSE_TEST(mapping_value, 
                  values({":"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(collect_entry, 
+CHAR_CLAUSE_TEST(collect_entry, 
                  values({","}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(sequence_start, 
+CHAR_CLAUSE_TEST(sequence_start, 
                  values({"["}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(sequence_end, 
+CHAR_CLAUSE_TEST(sequence_end, 
                  values({"]"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(mapping_start, 
+CHAR_CLAUSE_TEST(mapping_start, 
                  values({"{"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(mapping_end, 
+CHAR_CLAUSE_TEST(mapping_end, 
                  values({"}"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(comment, 
+CHAR_CLAUSE_TEST(comment, 
                  values({"#"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(anchor, 
+CHAR_CLAUSE_TEST(anchor, 
                  values({"&"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(alias, 
+CHAR_CLAUSE_TEST(alias, 
                  values({"*"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(tag, 
+CHAR_CLAUSE_TEST(tag, 
                  values({"!"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(literal, 
+CHAR_CLAUSE_TEST(literal, 
                  values({"|"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(folded, 
+CHAR_CLAUSE_TEST(folded, 
                  values({">"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(single_quote, 
+CHAR_CLAUSE_TEST(single_quote, 
                  values({"'"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(double_quote, 
+CHAR_CLAUSE_TEST(double_quote, 
                  values({"\""}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(directive, 
+CHAR_CLAUSE_TEST(directive, 
                  values({"%"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(reserved, 
+CHAR_CLAUSE_TEST(reserved, 
                  values({"@", "`"}),
                  values({"", "a"}))
+
+#ifdef COMPILE_GUARD
+
 
 PCHAR_CLAUSE_TEST(indicator, 
                  values({"-", "?", ":", ",", "[", "]", "{", "}", "#",
