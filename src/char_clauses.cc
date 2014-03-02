@@ -6,30 +6,6 @@ using namespace kyaml::clauses;
 
 static_assert(sizeof(char_t) == 4, "");
 
-bool printable::try_clause()
-{
-  char_t c;
-  if(!stream().peek(c))
-    return false;
-  if(c == '\x9' ||
-     c == '\xa' ||
-     c == '\xd' ||
-     (c >= '\x20' && c <= '\x7e') ||
-     c == static_cast<char_t>('\x85'))
-  {
-    consume(c);
-    return true;
-  }
-  else if(c >= 0xff) // must be utf8
-  {
-    // no extensive checking done, we just assume all utf8 is printable (to improve)
-    consume(c);
-    return true;
-  }
-
-  return false;
-}
-
 bool printable::parse(document_builder &builder)
 {
   char_t c;
@@ -42,17 +18,21 @@ bool printable::parse(document_builder &builder)
      c == static_cast<char_t>('\x85'))
   {
     builder.add(name(), c);
+    advance();
     return true;
   }
   else if(c >= 0xff) // must be utf8
   {
     // no extensive checking done, we just assume all utf8 is printable (to improve)
     builder.add(name(), c);
+    advance();
     return true;
   }
 
   return false;
 }
+
+#ifdef COMPILE_GUARD
 
 bool json::try_clause()
 {
@@ -511,3 +491,5 @@ bool esc_char::try_clause()
   }
   return false;
 }
+
+#endif // COMPILE_GUARD

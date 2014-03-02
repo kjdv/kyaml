@@ -41,7 +41,7 @@ namespace kyaml
     }    
 
     virtual child_t child() = 0;
-    virtual void add(char const *tag, child_t c);
+    virtual void add(char const *tag, child_t c) = 0;
   };
 }
 

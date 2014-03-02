@@ -11,40 +11,6 @@ namespace kyaml
   {
     namespace internal
     {
-      class single_char_clause : public clause
-      {
-      public:
-        typedef char_t value_t;
-
-        single_char_clause(context &ctx) : 
-          clause(ctx),
-          d_value(0)
-        {}
-        
-        value_t value() const
-        {
-          return d_value;
-        }
-
-        char const *name() const
-        {
-          return "(single char nos)";
-        }
-        
-      protected:
-        void consume(value_t c)
-        {
-          set(c);
-          advance();
-        }
-        void set(value_t c)
-        {
-          d_value = c;
-        }
-      private:
-        value_t d_value;
-      };
-
       // utility for clauses where only one char value is allowed
       template <char_t char_value>
       class simple_char_clause : public clause
@@ -135,12 +101,10 @@ namespace kyaml
     // [1] 	c-printable 	::= 	  #x9 | #xA | #xD | [#x20-#x7E]
     //                                  | #x85 | [#xA0-#xD7FF] | [#xE000-#xFFFD]
     //                                  | [#x10000-#x10FFFF]
-    class printable : public internal::single_char_clause
+    class printable : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -149,6 +113,8 @@ namespace kyaml
         return "c-printable";
       }
     };
+
+#ifdef COMPILE_GUARD
     
     // [2] 	nb-json 	::= 	#x9 | [#x20-#x10FFFF] 
     class json : public internal::single_char_clause
@@ -611,6 +577,8 @@ namespace kyaml
         return "c-ns-esc-char";
       }
     };
+
+#endif // COMPILE_GUARD
   }
 }
 
