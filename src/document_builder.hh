@@ -40,6 +40,8 @@ namespace kyaml
     }    
 
     virtual void add_anchor(std::string const &anchor) = 0;
+    virtual void add_scalar(std::string const &val)
+    {} // todo: make pure virtual
   };
 
   class string_builder : public document_builder

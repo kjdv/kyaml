@@ -20,8 +20,8 @@ bool anchor_char::parse(document_builder &builder)
 
 bool anchor_property::parse(document_builder &builder)
 {
-  dummy_document_builder db;
-  if(internal::simple_char_clause<'&'>(ctx()).parse(db))
+  dummy_document_builder dm;
+  if(internal::simple_char_clause<'&'>(ctx()).parse(dm))
   {
     string_builder sb;
     anchor_name an(ctx());
@@ -33,5 +33,23 @@ bool anchor_property::parse(document_builder &builder)
     else
       unwind();
   }
+  return false;
+}
+
+bool verbatim_tag::parse(document_builder &builder)
+{
+  dummy_document_builder db;
+  string_builder sb;
+
+  if(internal::simple_char_clause<'!'>(ctx()).parse(db) &&
+     internal::simple_char_clause<'<'>(ctx()).parse(db) &&
+     internal::one_or_more<uri_char>(ctx()).parse(sb) &&
+     internal::simple_char_clause<'>'>(ctx()).parse(db))
+  {
+    builder.add_scalar(sb.build());
+    return true;
+  }
+  else
+    unwind();
   return false;
 }

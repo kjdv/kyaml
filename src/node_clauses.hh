@@ -23,9 +23,6 @@ namespace kyaml
     typedef internal::one_or_more<anchor_char> anchor_name;
 
     // [101] 	c-ns-anchor-property 	::= 	“&” ns-anchor-name
-//    typedef internal::and_clause<internal::simple_char_clause<'&'>,
-    //                               anchor_name> anchor_property;
-
     class anchor_property : public clause
     {
     public:
@@ -47,10 +44,18 @@ namespace kyaml
                                  internal::one_or_more<tag_char> > shorthand_tag;
 
     // [98] 	c-verbatim-tag 	::= 	“!” “<” ns-uri-char+ “>” 
-    typedef internal::all_of<internal::simple_char_clause<'!'>,
-                             internal::simple_char_clause<'<'>,
-                             internal::one_or_more<uri_char>,
-                             internal::simple_char_clause<'>'> > verbatim_tag;
+    class verbatim_tag : public clause
+    {
+    public:
+      using clause::clause;
+      
+      bool parse(document_builder &builder);
+      
+      char const *name() const
+      {
+        return "c-verbatim-tag";
+      }
+    };
 
     // [97] 	c-ns-tag-property 	::= 	  c-verbatim-tag
     //                                          | c-ns-shorthand-tag

@@ -20,6 +20,7 @@ namespace
     {}
   
     MOCK_METHOD1(add_anchor, void(string const &));
+    MOCK_METHOD1(add_scalar, void(string const &));
   };
 }
 
@@ -43,6 +44,12 @@ public:
     EXPECT_CALL(builder(), add_anchor(name)).
       Times(1);
   }
+
+  void expect_scalar(std::string const &value)
+  {
+    EXPECT_CALL(builder(), add_scalar(value)).
+      Times(1);
+  }
 private:
   mock_builder d_builder;
 };
@@ -53,5 +60,14 @@ TEST_F(properties_test, anchor)
   string input = string("&") + name + " ";
   
   expect_anchor(name);
+  EXPECT_TRUE(parse(input));
+}
+
+TEST_F(properties_test, verbatim_tag)
+{
+  string const value = "kl@2549#[]=0";
+  string input = string("!<") + value + ">";
+  
+  expect_scalar(value);
   EXPECT_TRUE(parse(input));
 }
