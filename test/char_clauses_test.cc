@@ -185,7 +185,6 @@ CHAR_CLAUSE_TEST(hex_digit_char,
                          "A", "B", "C", "D", "E", "F"}),
                  values({"", "g", "G"}))
 
-#ifdef COMPILE_GUARD
 CHAR_CLAUSE_TEST(ascii_letter, 
                  values({"a", "b", "k", "z", "A", "L", "M", "Z"}),
                  values({"", "0", "$"}))
@@ -204,7 +203,8 @@ CHAR_CLAUSE_TEST(tag_char,
                  values({"%01", "%ab", "a", "C", "1", "-", ";", "/", "?", ":", "@", 
                          "&", "=", "+", "$", "_", ".", "~", "*", "#"}),
                  values({"", "!", ",", "[", "]", "{", "}"}))
- 
+
+#ifdef COMPILE_GUARD 
 CHAR_CLAUSE_TEST(escape, 
                  values({"\\"}),
                  values({"", "a"}))

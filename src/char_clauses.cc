@@ -219,58 +219,46 @@ bool hex_digit_char::parse(document_builder &builder)
   return false;
 }
 
-#ifdef COMPILE_GUARD
-
-
-bool ascii_letter::try_clause()
+bool ascii_letter::parse(document_builder &builder)
 {
   char_t c;
   if(stream().peek(c) &&
      ((c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z')))
   {
-    consume(c);
+    builder.add(name(), c);
+    advance();
     return true;
   }
   return false;
 }
 
-bool word_char::try_clause()
+bool word_char::parse(document_builder &builder)
 {
   dec_digit_char d(ctx());
-  if(d.try_clause())
-  {
-    set(d.value());
+  if(d.parse(builder))
     return true;
-  }
-
+  
   ascii_letter a(ctx());
-  if(a.try_clause())
-  {
-    set(a.value());
+  if(a.parse(builder))
     return true;
-  }
   
   char_t c;
   if(stream().peek(c) &&
      c == '-')
   {
-    consume(c);
+    builder.add(name(), c);
+    advance();
     return true;
   }
   return false;
 }
 
-bool uri_char::try_clause()
+bool uri_char::parse(document_builder &builder)
 {
-  clear();
-
   word_char wc(ctx());
-  if(wc.try_clause())
-  {
-    append(wc.value());
+  if(wc.parse(builder))
     return true;
-  }
 
   char_t c;
   if(!stream().peek(c))
@@ -278,14 +266,15 @@ bool uri_char::try_clause()
 
   if(c == '%')
   {
-    consume(c);
+    document_builder::child_t b = builder.child();
+    b->add(name(), c);
+    advance();
 
     hex_digit_char h1(ctx());
     hex_digit_char h2(ctx());
-    if(h1.try_clause() && h2.try_clause())
+    if(h1.parse(*b) && h2.parse(*b))
     {
-      append(h1.value());
-      append(h2.value());
+      builder.add(name(), move(b));
       return true;
     }
     else
@@ -318,7 +307,7 @@ bool uri_char::try_clause()
   case ')':
   case '[':
   case ']':
-    append(c);
+    builder.add(name(), c);
     advance();
     return true;
 
@@ -327,7 +316,7 @@ bool uri_char::try_clause()
   } 
 }
 
-bool tag_char::try_clause()
+bool tag_char::parse(document_builder &builder)
 {
   char_t c;
   if(!stream().peek(c))
@@ -336,22 +325,20 @@ bool tag_char::try_clause()
   if(c == '!')
     return false;
 
+  document_builder::child_t b = builder.child();
   flow_indicator fi(ctx());
-  if(fi.try_clause())
+  if(fi.parse(*b))
   {
     unwind();
     return false;
   }
 
   uri_char u(ctx());
-  if(u.try_clause())
-  {
-    append(u.value());
-    return true;
-  }
-
-  return false;
+  return u.parse(builder);
 }
+
+
+#ifdef COMPILE_GUARD
 
 // helper for escape_char
 template <typename C>

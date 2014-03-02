@@ -271,6 +271,20 @@ namespace kyaml
 
       char const *name() const
       {
+        return "ns-ascii-letter";
+      }
+    };
+
+    // [38] 	ns-word-char 	::= 	ns-dec-digit | ns-ascii-letter | “-”
+    class word_char : public clause
+    {
+    public:
+      using clause::clause;
+      
+      bool parse(document_builder &builder);
+      
+      char const *name() const
+      {
         return "ns-word-char";
       }
     };
