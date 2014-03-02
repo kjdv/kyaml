@@ -50,7 +50,6 @@ namespace kyaml
       {}
 
       bool parse(document_builder &builder);
-      bool try_clause();
     private:
       unsigned lower_level() const
       {
