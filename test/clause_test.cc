@@ -1,5 +1,3 @@
-#ifdef COMPILE_GUARD
-
 #include "char_clauses.hh"
 #include "clause_test.hh"
 #include <gtest/gtest.h>
@@ -14,23 +12,21 @@ using namespace kyaml::clauses::internal;
 
 namespace 
 {
-  clause_testcase<string_result> a_tc(string const &input, bool result, string val, unsigned c = 1)
+  clause_testcase a_tc(string const &input, bool result, string val, unsigned c = 1)
   {
     return
-      testcase_builder<string_result>(input, result).
+      testcase_builder(input, result).
       with_value(val).
       with_consumed(result ? c : 0).
       build();
   }
 }
 
-typedef internal::any_of<string_result,
-                         simple_char_clause<'a'>,
+typedef internal::any_of<simple_char_clause<'a'>,
                          simple_char_clause<'b'>,
                          simple_char_clause<'c'> > any_of_abc;
 
-typedef internal::all_of<string_result,
-                         simple_char_clause<'a'>,
+typedef internal::all_of<simple_char_clause<'a'>,
                          simple_char_clause<'b'>,
                          simple_char_clause<'c'> > all_of_abc;
 
@@ -45,5 +41,3 @@ NAMED_CLAUSE_TEST(all_of_test,
                   all_of_abc,
                   cases({a_tc("abc", true, "abc", 3),
                         a_tc("bca", false, "0")}))
-                  
-#endif // COMPILE_GUARD
