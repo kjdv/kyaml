@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #ifndef DIRECTIVE_CLAUSES_HH
 #define DIRECTIVE_CLAUSES_HH
 
@@ -91,3 +93,5 @@ namespace kyaml
 }
 
 #endif // DIRECTIVE_CLAUSES_HH
+
+#endif // COMPILE_GUARD

@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #ifndef COMMENT_CLAUSES_HH
 #define COMMENT_CLAUSES_HH
 
@@ -64,3 +66,5 @@ namespace kyaml
 }
 
 #endif // COMMENT_CLAUSES_HH
+
+#endif // COMPILE_GUARD

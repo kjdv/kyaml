@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #ifndef INDENDATION_CLAUSES_HH
 #define INDENDATION_CLAUSES_HH
 
@@ -88,3 +90,5 @@ namespace kyaml
 }
 
 #endif // INDENDATION_CLAUSES_HH
+
+#endif // COMPILE_GUARD

@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #ifndef SEPARATION_LINE_CLAUSES_HH
 #define SEPARATION_LINE_CLAUSES_HH
 
@@ -45,3 +47,5 @@ namespace kyaml
 }
 
 #endif // SEPARATION_LINE_CLAUSES_HH
+
+#endif // COMPILE_GUARD

@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "separation_line_clauses.hh"
 #include "clause_test.hh"
 #include <gtest/gtest.h>
@@ -23,3 +25,5 @@ CLAUSE_TEST(separate_in_lines,
                 sl_tc("\n# comment\n  a", true, 2, 13),
                 sl_tc("  # blah\n     65", true, 3, 14),
                   }))
+
+#endif // COMPILE_GUARD

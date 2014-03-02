@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "comment_clauses.hh"
 #include "clause_test.hh"
 #include <gtest/gtest.h>
@@ -42,3 +44,4 @@ CLAUSE_TEST(sline_comment,
                   sl_tc("\n# comment\n", true, "\n# comment\n", 11),
                   sl_tc("\n# comment\n  a", true, "\n# comment\n", 11)}))
 
+#endif // COMPILE_GUARD

@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "char_clauses.hh"
 #include "clause_test.hh"
 #include <algorithm>
@@ -330,3 +332,4 @@ CHAR_CLAUSE_TEST(esc_char,
                        "\\x01", "\\u1234", "\\U12345678"}),
                  values({}))
 
+#endif // COMPILE_GUARD

@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "structure_clauses.hh"
 
 using namespace std;
@@ -51,3 +53,5 @@ bool line_prefix::try_flow()
   flow_line_prefix fl(ctx());
   return fl.try_clause();
 }
+
+#endif // COMPILE_GUARD

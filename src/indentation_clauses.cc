@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "indentation_clauses.hh"
 #include "char_clauses.hh"
 #include <iostream>
@@ -81,3 +83,5 @@ bool indent_clause_le::try_clause()
   }
   return false;
 }
+
+#endif // COMPILE_GUARD

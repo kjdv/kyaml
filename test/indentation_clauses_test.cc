@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "indentation_clauses.hh"
 #include "clause_test.hh"
 #include <iostream>
@@ -54,3 +56,5 @@ CLAUSE_TEST(indent_clause_le,
                   tc(" nonwhite", 2, true, 1),
                   tc("   nonwhite", 2, false, 0),
                   }))
+
+#endif // COMPILE_GUARD

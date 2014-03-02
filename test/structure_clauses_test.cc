@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "structure_clauses.hh"
 #include "clause_test.hh"
 #include <iostream>
@@ -134,3 +136,5 @@ CLAUSE_TEST(line_folded,
 CLAUSE_TEST(flow_folded,
             cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9),
                    ff_tc("\n\n  \n    aap", 3, context::FLOW_OUT, false, 0)}))
+
+#endif // COMPILE_GUARD

@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "separation_line_clauses.hh"
 
 using namespace std;
@@ -38,3 +40,5 @@ bool separate::try_in_line()
   separate_in_line s(ctx());
   return s.try_clause();
 }
+
+#endif // COMPILE_GUARD

@@ -67,7 +67,6 @@ namespace kyaml
       std::string d_str;
     };
 
-    template <typename value_t>
     struct clause_testcase
     {
       std::string input;
@@ -77,10 +76,9 @@ namespace kyaml
       bool const result;
       unsigned const consumed;
       
-      value_t const value;
+      std::string const value;
     };
 
-    template <typename value_t>
     class testcase_builder
     {
     public:
@@ -92,38 +90,38 @@ namespace kyaml
         d_consumed(input.size())
       {}
 
-      testcase_builder<value_t> &with_indent_level(unsigned l)
+      testcase_builder &with_indent_level(unsigned l)
       {
         d_indent_level = l;
         return *this;
       }
       
-      testcase_builder<value_t> &with_blockflow(kyaml::clauses::context::blockflow_t bf)
+      testcase_builder &with_blockflow(kyaml::clauses::context::blockflow_t bf)
       {
         d_blockflow = bf;
         return *this;
       }
 
-      testcase_builder<value_t> &with_consumed(unsigned n)
+      testcase_builder &with_consumed(unsigned n)
       {
         d_consumed = n;
         return *this;
       }
 
-      testcase_builder<value_t> &with_value(value_t const &v)
+      testcase_builder &with_value(std::string const &v)
       {
         d_value = v;
         return *this;
       }      
 
-      clause_testcase<value_t> build()
+      clause_testcase build()
       {
-        clause_testcase<value_t> result = {d_input,
-                                           d_indent_level,
-                                           d_blockflow,
-                                           d_result,
-                                           d_consumed,
-                                           d_value};
+        clause_testcase result = {d_input,
+                                  d_indent_level,
+                                  d_blockflow,
+                                  d_result,
+                                  d_consumed,
+                                  d_value};
         return result;
       }
     private:
@@ -134,13 +132,12 @@ namespace kyaml
       bool d_result;
       unsigned d_consumed;
       
-      value_t d_value;
+      std::string d_value;
     };
 
-    template <typename value_t>
-    inline std::vector<clause_testcase<value_t> > cases(std::initializer_list<clause_testcase<value_t> > il)
+    inline std::vector<clause_testcase> cases(std::initializer_list<clause_testcase> il)
     {
-      return std::vector<clause_testcase<value_t> >(il);
+      return std::vector<clause_testcase>(il);
     }
 
     template <typename clause_t>
@@ -152,8 +149,7 @@ namespace kyaml
     {}
 
     template <typename clause_t>
-    class clause_test : public testing::TestWithParam<clause_testcase
-                                                      <typename clause_t::value_t> >
+    class clause_test : public testing::TestWithParam<clause_testcase>
     {
     public:
       clause_test() :
@@ -185,36 +181,12 @@ namespace kyaml
       void test_match()
       {
         bool const expected = GetParam().result;
-        EXPECT_EQ(expected, clause().try_clause());
-      }
-      
-      void test_advance()
-      {
-        size_t const expected = GetParam().consumed;
-        clause().try_clause();
-        EXPECT_EQ(expected, ctx().stream().pos());
-      }
-      
-      void test_value()
-      {
-        if(GetParam().result)
-        {
-          clause().try_clause();
-          auto expected = GetParam().value;
-          EXPECT_EQ(expected, clause().value());
-        }
-      }
-
-      // tests:
-      void test_pmatch()
-      {
-        bool const expected = GetParam().result;
 
         string_document_builder b;
         EXPECT_EQ(expected, clause().parse(b));
       }
       
-      void test_padvance()
+      void test_advance()
       {
         size_t const expected = GetParam().consumed;
         string_document_builder b;
@@ -222,25 +194,18 @@ namespace kyaml
         EXPECT_EQ(expected, ctx().stream().pos());
       }
       
-      void test_pvalue()
+      void test_value()
       {
         if(GetParam().result)
         {
           string_document_builder b;
           clause().parse(b);
-          auto expected = GetParam().value;
+          std::string const &expected = GetParam().value;
           EXPECT_EQ(expected, b.result());
         }
       }  
       
     private:
-      clause_testcase<typename clause_t::value_t> const &GetParam() const
-      {
-        return testing::TestWithParam<clause_testcase
-                                      <typename clause_t::value_t> >::GetParam();
-      }
-
-
       context_wrap d_ctx;
       clause_t d_clause;
     };
@@ -249,8 +214,7 @@ namespace kyaml
 
 namespace std
 {
-  template <typename value_t>
-  inline ostream &operator<<(ostream &o, kyaml::test::clause_testcase<value_t> const &tc)
+  inline ostream &operator<<(ostream &o, kyaml::test::clause_testcase const &tc)
   {
     return o << "\n"
              << "input = \"" << tc.input << "\"\n"
@@ -285,30 +249,5 @@ namespace std
 
 #define CLAUSE_TEST(clausetype, values)                                 \
   NAMED_CLAUSE_TEST(test_##clausetype, clausetype, values)
-
-#define PNAMED_CLAUSE_TEST(name, clausetype, values)                     \
-  typedef kyaml::test::clause_test<clausetype> name;                    \
-                                                                        \
-  TEST_P(name, match)                                                   \
-  {                                                                     \
-    test_pmatch();                                                       \
-  }                                                                     \
-                                                                        \
-  TEST_P(name, advance)                                                 \
-  {                                                                     \
-    test_padvance();                                                     \
-  }                                                                     \
-  TEST_P(name, value)                                                   \
-  {                                                                     \
-    test_pvalue();                                                       \
-  }                                                                     \
-                                                                        \
-  INSTANTIATE_TEST_CASE_P(tests_##name,                                 \
-                          name,                                         \
-                          testing::ValuesIn(values));
-
-#define PCLAUSE_TEST(clausetype, values)                                 \
-  PNAMED_CLAUSE_TEST(parsetest_##clausetype, clausetype, values)
-
 
 #endif // CLAUSE_TEST_HH

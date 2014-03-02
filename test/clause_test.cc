@@ -1,3 +1,5 @@
+#ifdef COMPILE_GUARD
+
 #include "char_clauses.hh"
 #include "clause_test.hh"
 #include <gtest/gtest.h>
@@ -44,3 +46,4 @@ NAMED_CLAUSE_TEST(all_of_test,
                   cases({a_tc("abc", true, "abc", 3),
                         a_tc("bca", false, "0")}))
                   
+#endif // COMPILE_GUARD
