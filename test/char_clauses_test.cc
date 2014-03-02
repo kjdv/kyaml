@@ -1,4 +1,5 @@
 #include "char_clauses.hh"
+#include "flow_clauses.hh"
 #include "clause_test.hh"
 #include <algorithm>
 #include <vector>
@@ -292,3 +293,7 @@ CHAR_CLAUSE_TEST(esc_char,
                          "\\ ", "\\\\", "\\/", "\\\"", "\\N", "\\_", "\\L", "\\P", 
                        "\\x01", "\\u1234", "\\U12345678"}),
                  values({}))
+
+CHAR_CLAUSE_TEST(b_double_char,
+                 values({"\\t", "\\v", "\\n", "a", "t", "n", " "}),
+                 values({"\\", "\""}))

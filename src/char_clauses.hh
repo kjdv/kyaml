@@ -476,6 +476,7 @@ namespace kyaml
                                                   esc_unicode_8b,
                                                   esc_unicode_16b,
                                                   esc_unicode_32b> > esc_char;
+    // todo: optimize
   }
 }
 

@@ -258,6 +258,24 @@ namespace kyaml
         {}
       };
 
+      template <typename clause_t>
+      class not_clause : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder)
+        {
+          dummy_document_builder db;
+          if(clause_t(ctx()).parse(db))
+          {
+            unwind();
+            return false;
+          }
+          return true;
+        }
+      };
+
       template <typename clause_t, context::blockflow_t blockflow_v>
       class flow_restriction : public clause_t
       {

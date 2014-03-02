@@ -77,8 +77,7 @@ namespace kyaml
                                                        internal::and_clause<separate,
                                                                             tag_property> > >
                                 > properties;
-                                                   
-  
+    
     // [104] 	c-ns-alias-node 	::= 	“*” ns-anchor-name
     class alias_node : public clause
     {
@@ -86,7 +85,7 @@ namespace kyaml
       using clause::clause;
       
       bool parse(document_builder &builder);
-
+      
       char const *name() const
       {
         return "c-ns-alias-node";
