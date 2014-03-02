@@ -1,6 +1,7 @@
 #include "indentation_clauses.hh"
 #include "char_clauses.hh"
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 using namespace kyaml;
@@ -8,13 +9,39 @@ using namespace kyaml::clauses;
 
 namespace
 {
-  unsigned number_of_white(context &ctx) // will return max+1 when overflowing
+  class indent_builder : public document_builder
+  { 
+  public:
+    void add(char const *tag, void_item const &v) override
+    {}
+    void add(char const *tag, std::string const &v) override
+    {
+      d_val.append(v);
+    }
+    child_t child() override
+    {
+      return child_t(new indent_builder);
+    }
+    void add(char const *tag, child_t c) override
+    {
+      assert(false); // never called?
+    }
+
+    string value(size_t n) 
+    {
+      return d_val.substr(0, n);
+    }
+
+  private:
+    string d_val;
+  };
+
+  unsigned number_of_white(context &ctx, document_builder &builder) // will return max+1 when overflowing
   {
     unsigned count = 0;
 
-    dummy_document_builder b;
     space sp(ctx);
-    while(sp.parse(b) && count <= ctx.indent_level())
+    while(sp.parse(builder) && count <= ctx.indent_level())
       ++count;
 
     return count;
@@ -25,9 +52,13 @@ bool indent_clause_eq::parse(document_builder &builder)
 {
   if(level())
   {
-    unsigned n = number_of_white(ctx());
+    indent_builder b;
+    unsigned n = number_of_white(ctx(), b);
     if(n == level())
+    {
+      builder.add(name(), b.value(n));
       return true;
+    }
     else
       unwind();
   }
@@ -38,9 +69,11 @@ bool internal::indent_clause_ge::parse(document_builder &builder)
 {
   if(level())
   {
-    unsigned n = number_of_white(ctx());
+    indent_builder b;
+    unsigned n = number_of_white(ctx(), b);
     if(n >= level())
     {
+      builder.add(name(), b.value(level()));
       unwind();
       advance(level());
       return true;
@@ -55,10 +88,12 @@ bool indent_clause_lt::parse(document_builder &builder)
 {
   if(higher_level())
   {
-    unsigned n = number_of_white(ctx());
+    indent_builder b;
+    unsigned n = number_of_white(ctx(), b);
     if(n < higher_level())
     {
       d_m = n;
+      builder.add(name(), b.value(d_m));
       return true;
     }
     else
@@ -71,10 +106,12 @@ bool indent_clause_le::parse(document_builder &builder)
 {
   if(higher_level())
   {
-    unsigned n = number_of_white(ctx());
+    indent_builder b;
+    unsigned n = number_of_white(ctx(), b);
     if(n <= higher_level())
     {
       d_m = n;
+      builder.add(name(), b.value(d_m));
       return true;
     }
     else

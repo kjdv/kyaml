@@ -1,12 +1,10 @@
-#ifdef COMPILE_GUARD
-
 #include "structure_clauses.hh"
 
 using namespace std;
 using namespace kyaml;
 using namespace kyaml::clauses;
 
-bool internal::start_of_line::try_clause()
+bool internal::start_of_line::parse(document_builder &builder)
 {
   char_t c;
   // the last character was a newline
@@ -22,7 +20,7 @@ bool internal::start_of_line::try_clause()
 }
 
 line_prefix::line_prefix(context &ctx) :
-  void_clause(ctx),
+  clause(ctx),
   d_dispatch(nullptr)
 {
   context::blockflow_t bf = ctx.blockflow();
@@ -31,27 +29,25 @@ line_prefix::line_prefix(context &ctx) :
   {
   case context::BLOCK_OUT:
   case context::BLOCK_IN:
-    d_dispatch = &line_prefix::try_block;
+    d_dispatch = &line_prefix::parse_block;
     break;
   case context::FLOW_IN:
   case context::FLOW_OUT:
-    d_dispatch = &line_prefix::try_flow;
+    d_dispatch = &line_prefix::parse_flow;
     break;
   default:
     break;
   }
 }
 
-bool line_prefix::try_block()
+bool line_prefix::parse_block(document_builder &builder)
 {
   block_line_prefix bl(ctx());
-  return bl.try_clause();
+  return bl.parse(builder);
 }
 
-bool line_prefix::try_flow()
+bool line_prefix::parse_flow(document_builder &builder)
 {
   flow_line_prefix fl(ctx());
-  return fl.try_clause();
+  return fl.parse(builder);
 }
-
-#endif // COMPILE_GUARD
