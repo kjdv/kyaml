@@ -139,23 +139,24 @@ CHAR_CLAUSE_TEST(flow_indicator,
                  values({",", "[", "]", "{", "}"}),
                  values({"", "a"}))
 
-#ifdef COMPILE_GUARD
-PCHAR_CLAUSE_TEST(line_feed, 
+CHAR_CLAUSE_TEST(line_feed, 
                  values({"\n"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(carriage_return, 
+CHAR_CLAUSE_TEST(carriage_return, 
                  values({"\r"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(break_char, 
+CHAR_CLAUSE_TEST(break_char, 
                  values({"\n", "\r"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(non_break_char, 
+CHAR_CLAUSE_TEST(non_break_char, 
                  values({"a"}),
                  values({"", "\r", "\n", "\xfe\xff"}))
 
+
+#ifdef COMPILE_GUARD
 PCHAR_CLAUSE_TEST(line_break, 
                  values({"\n", "\r", "\r\n"}),
                  values({"", "a"}));

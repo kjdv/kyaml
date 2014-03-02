@@ -149,52 +149,29 @@ bool flow_indicator::parse(document_builder &builder)
   }
 }
 
-#ifdef COMPILE_GUARD
-bool break_char::try_clause()
+bool non_break_char::parse(document_builder &builder)
 {
-  line_feed lf(ctx());
-  carriage_return cr(ctx());
+  document_builder::child_t b = builder.child();
 
-  if(lf.try_clause())
-  {
-    set(lf.value());
-    return true;
-  }
-  else if(cr.try_clause())
-  {
-    set(cr.value());
-    return true;
-  }
-
-  return false;
-}
-
-bool non_break_char::try_clause()
-{
   break_char bc(ctx());
-  if(bc.try_clause())
+  if(bc.parse(*b))
   {
     unwind();
     return false;
   }
 
   byte_order_mark bo(ctx());
-  if(bo.try_clause())
+  if(bo.parse(*b))
   {
     unwind();
     return false;
   }
 
   printable pr(ctx());
-  if(pr.try_clause())
-  {
-    set(pr.value());
-    return true;
-  }
-
-  return false;
+  return pr.parse(builder);
 }
 
+#ifdef COMPILE_GUARD
 bool line_break::try_clause()
 {
   clear();

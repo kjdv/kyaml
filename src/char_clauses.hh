@@ -178,18 +178,8 @@ namespace kyaml
     typedef internal::simple_char_clause<'\r'> carriage_return;
 
     // [26] 	b-char 	::= 	b-line-feed | b-carriage-return
-    class break_char : public clause
-    {
-    public:
-      using clause::clause;
-
-      bool parse(document_builder &builder);
-
-      char const *name() const
-      {
-        return "b-char";
-      }
-    };
+    typedef internal::or_clause<line_feed,
+                                carriage_return> break_char;
 
     // [27] 	nb-char 	::= 	c-printable - b-char - c-byte-order-mark
     class non_break_char : public clause
