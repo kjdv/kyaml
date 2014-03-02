@@ -1,5 +1,3 @@
-#ifdef COMPILE_GUARD
-
 #ifndef SEPARATION_LINE_CLAUSES_HH
 #define SEPARATION_LINE_CLAUSES_HH
 
@@ -17,35 +15,31 @@ namespace kyaml
     //                                          c = block-key ⇒ s-separate-in-line
     //                                          c = flow-key  ⇒ s-separate-in-line
 
-    class separate : public internal::void_clause
+    class separate : public clause
     {
     public:
       separate(context &ctx);
 
-      bool try_clause() 
+      bool parse(document_builder &builder)
       {
-        return d_dispatch ? (this->*d_dispatch)() : false;
+        return d_dispatch ? (this->*d_dispatch)(builder) : false;
       }
 
     private:
-      bool try_lines();
-      bool try_in_line();
+      bool parse_lines(document_builder &builder);
+      bool parse_in_line(document_builder &builder);
 
-      typedef bool (separate::*dispatch_f)();
+      typedef bool (separate::*dispatch_f)(document_builder &);
       dispatch_f d_dispatch;
     };
 
     // [81] 	s-separate-lines(n) 	::= 	  ( s-l-comments s-flow-line-prefix(n) )
     //                                            | s-separate-in-line
 
-    typedef internal::or_clause<void_result,
-                                internal::and_clause<void_result, 
-                                                     sline_comment,
+    typedef internal::or_clause<internal::and_clause<sline_comment,
                                                      flow_line_prefix>,
                                 separate_in_line> separate_in_lines;
   }
 }
 
 #endif // SEPARATION_LINE_CLAUSES_HH
-
-#endif // COMPILE_GUARD
