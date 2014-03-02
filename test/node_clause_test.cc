@@ -20,6 +20,7 @@ namespace
     {}
   
     MOCK_METHOD1(add_anchor, void(string const &));
+    MOCK_METHOD1(add_alias, void(string const &));
     MOCK_METHOD1(add_scalar, void(string const &));
   };
 }
@@ -70,4 +71,16 @@ TEST_F(properties_test, verbatim_tag)
   
   expect_scalar(value);
   EXPECT_TRUE(parse(input));
+}
+
+TEST(alias_test, alias)
+{
+  string const name = "anchor";
+  string input = string("*") + name + " ";
+  
+  alias_node an(context_wrap(input).get());
+  mock_builder mb;
+  EXPECT_CALL(mb, add_alias(name)).
+    Times(1);
+  EXPECT_TRUE(an.parse(mb));
 }

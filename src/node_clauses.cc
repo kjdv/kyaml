@@ -53,3 +53,18 @@ bool verbatim_tag::parse(document_builder &builder)
     unwind();
   return false;
 }
+
+bool alias_node::parse(document_builder &builder)
+{
+  dummy_document_builder db;
+  string_builder sb;
+  if(internal::simple_char_clause<'*'>(ctx()).parse(db) &&
+     anchor_name(ctx()).parse(sb))
+  {
+    builder.add_alias(sb.build());
+    return true;
+  }
+  else
+    unwind();
+  return false;
+}

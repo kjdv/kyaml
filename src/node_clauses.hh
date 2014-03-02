@@ -79,6 +79,19 @@ namespace kyaml
                                 > properties;
                                                    
   
+    // [104] 	c-ns-alias-node 	::= 	“*” ns-anchor-name
+    class alias_node : public clause
+    {
+    public:
+      using clause::clause;
+      
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "c-ns-alias-node";
+      }
+    };
   }
 }
 
