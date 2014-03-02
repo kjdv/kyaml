@@ -186,29 +186,24 @@ bool non_white_char::parse(document_builder &builder)
   return nb.parse(builder);
 }
 
-#ifdef COMPILE_GUARD
-
-
-bool dec_digit_char::try_clause()
+bool dec_digit_char::parse(document_builder &builder)
 {
   char_t c;
   if(stream().peek(c) && 
      (c >= '0' && c <= '9'))
   {
-    consume(c);
+    builder.add(name(), c);
+    advance();
     return true;
   }
   return false;
 }
 
-bool hex_digit_char::try_clause()
+bool hex_digit_char::parse(document_builder &builder)
 {
   dec_digit_char d(ctx());
-  if(d.try_clause())
-  {
-    set(d.value());
+  if(d.parse(builder))
     return true;
-  }
   else
   {
     char_t c;
@@ -216,12 +211,16 @@ bool hex_digit_char::try_clause()
        ((c >= 'a' && c <= 'f') ||
         (c >= 'A' && c <= 'F')))
     {
-      consume(c);
+      builder.add(name(), c);
+      advance();
       return true;
     }
   }
   return false;
 }
+
+#ifdef COMPILE_GUARD
+
 
 bool ascii_letter::try_clause()
 {
