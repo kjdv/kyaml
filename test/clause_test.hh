@@ -37,6 +37,36 @@ namespace kyaml
       kyaml::clauses::context d_ctx;
     };
 
+    class string_document_builder : public document_builder
+    {
+    public:
+      void add(char const *tag, void_item const &v) override
+      {}
+
+      void add(char const *tag, std::string const &s) override
+      {
+        append_utf8(d_str, s);
+      }
+
+      document_builder::child_t child() override
+      {
+        return child_t(new string_document_builder);
+      }
+
+      void add(char const *tag, document_builder::child_t c) override
+      {
+        d_str.append(dynamic_cast<string_document_builder *>(c.get())->d_str);
+      }
+
+      std::string const &result() const
+      {
+        return d_str;
+      }
+
+    private:
+      std::string d_str;
+    };
+
     template <typename value_t>
     struct clause_testcase
     {
@@ -174,6 +204,34 @@ namespace kyaml
           EXPECT_EQ(expected, clause().value());
         }
       }
+
+      // tests:
+      void test_pmatch()
+      {
+        bool const expected = GetParam().result;
+
+        string_document_builder b;
+        EXPECT_EQ(expected, clause().parse(b));
+      }
+      
+      void test_padvance()
+      {
+        size_t const expected = GetParam().consumed;
+        string_document_builder b;
+        clause().parse(b);
+        EXPECT_EQ(expected, ctx().stream().pos());
+      }
+      
+      void test_pvalue()
+      {
+        if(GetParam().result)
+        {
+          string_document_builder b;
+          clause().parse(b);
+          auto expected = GetParam().value;
+          EXPECT_EQ(expected, b.result());
+        }
+      }  
       
     private:
       clause_testcase<typename clause_t::value_t> const &GetParam() const
@@ -227,6 +285,30 @@ namespace std
 
 #define CLAUSE_TEST(clausetype, values)                                 \
   NAMED_CLAUSE_TEST(test_##clausetype, clausetype, values)
+
+#define PNAMED_CLAUSE_TEST(name, clausetype, values)                     \
+  typedef kyaml::test::clause_test<clausetype> name;                    \
+                                                                        \
+  TEST_P(name, match)                                                   \
+  {                                                                     \
+    test_pmatch();                                                       \
+  }                                                                     \
+                                                                        \
+  TEST_P(name, advance)                                                 \
+  {                                                                     \
+    test_padvance();                                                     \
+  }                                                                     \
+  TEST_P(name, value)                                                   \
+  {                                                                     \
+    test_pvalue();                                                       \
+  }                                                                     \
+                                                                        \
+  INSTANTIATE_TEST_CASE_P(tests_##name,                                 \
+                          name,                                         \
+                          testing::ValuesIn(values));
+
+#define PCLAUSE_TEST(clausetype, values)                                 \
+  PNAMED_CLAUSE_TEST(parsetest_##clausetype, clausetype, values)
 
 
 #endif // CLAUSE_TEST_HH

@@ -25,6 +25,11 @@ namespace kyaml
         {
           return d_value;
         }
+
+        char const *name() const
+        {
+          return "(single char nos)";
+        }
         
       protected:
         void consume(value_t c)
@@ -59,9 +64,26 @@ namespace kyaml
           return false;
         }
 
+        bool parse(document_builder &builder)
+        {
+          char_t c;
+          if(stream().peek(c) && c == char_value)
+          {
+            builder.add(name(), c);
+            advance();
+            return true;
+          }
+          return false;
+        }
+
         value_t value() const
         {
           return char_value;
+        }
+
+        char const *name() const
+        {
+          return "(simple char nos)";
         }
       };
 
@@ -76,6 +98,11 @@ namespace kyaml
         value_t const &value() const
         {
           return d_value;
+        }
+
+        char const *name() const
+        {
+          return "(multi char nos)";
         }
 
       protected:
@@ -114,6 +141,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
 
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "c-printable";
+      }
     };
     
     // [2] 	nb-json 	::= 	#x9 | [#x20-#x10FFFF] 
@@ -123,6 +157,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "nb-json";
+      }
     };
 
     // [3] 	c-byte-order-mark 	::= 	#xFEFF 
@@ -132,6 +173,8 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
     };
 
     // [4]	c-sequence-entry	::=	“-” 
@@ -192,6 +235,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "c-reserved";
+      }
     };
 
     // [22] 	c-indicator 	::= 	  “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
@@ -203,6 +253,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "c-indicator";
+      }
     };
 
     // [23] 	c-flow-indicator 	::= 	“,” | “[” | “]” | “{” | “}”
@@ -212,6 +269,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "c-flow-indicator";
+      }
     };
 
     // [24] 	b-line-feed 	::= 	#xA    /* LF */ 
@@ -227,6 +291,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "b-char";
+      }
     };
 
     // [27] 	nb-char 	::= 	c-printable - b-char - c-byte-order-mark
@@ -236,6 +307,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "nb-char";
+      }
     };
 
     // [28] 	b-break 	::= 	  ( b-carriage-return b-line-feed ) DOS, Windows 
@@ -247,6 +325,13 @@ namespace kyaml
       using multi_char_clause::multi_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "b-break";
+      }
     };
 
     // [29] 	b-as-line-feed 	::= 	b-break
@@ -268,6 +353,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "s-white";
+      }
     };
 
     // [34] 	ns-char 	::= 	nb-char - s-white
@@ -277,6 +369,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "ns-char";
+      }
     };
 
     // [35] 	ns-dec-digit 	::= 	[#x30-#x39] 0-9 
@@ -286,6 +385,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "ns-dec-digit";
+      }
     };
 
     // [36] 	ns-hex-digit 	::= 	  ns-dec-digit
@@ -296,6 +402,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "ns-hex-digit";
+      }
     };
 
     // [37] 	ns-ascii-letter 	::= 	[#x41-#x5A] A-Z  | [#x61-#x7A] a-z 
@@ -305,6 +418,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "ns-ascii-letter";
+      }
     };
 
     // [38] 	ns-word-char 	::= 	ns-dec-digit | ns-ascii-letter | “-” 
@@ -314,6 +434,13 @@ namespace kyaml
       using internal::single_char_clause::single_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "ns-word-char";
+      }
     };
 
     // [39] 	ns-uri-char 	::= 	  “%” ns-hex-digit ns-hex-digit | ns-word-char | “#”
@@ -325,6 +452,13 @@ namespace kyaml
       using multi_char_clause::multi_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "ns-uri-char";
+      }
     };
 
     // [40] 	ns-tag-char 	::= 	ns-uri-char - “!” - c-flow-indicator
@@ -334,6 +468,13 @@ namespace kyaml
       using multi_char_clause::multi_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "ns-tag-char";
+      }
     };
 
     namespace internal
@@ -365,6 +506,13 @@ namespace kyaml
             return true;
           }
           return false;
+        }
+
+        bool parse(document_builder &builder);
+
+        char const *name() const
+        {
+          return "(escape-char nos";
         }
       };
     }
@@ -455,6 +603,13 @@ namespace kyaml
       using multi_char_clause::multi_char_clause;
       
       bool try_clause();
+
+      bool parse(document_builder &builder);
+
+      char const *name() const
+      {
+        return "c-ns-esc-char";
+      }
     };
   }
 }

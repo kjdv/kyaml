@@ -48,6 +48,15 @@ namespace
       build();
   }
 
+  clause_testcase<string> ptc(string const &input, bool result)
+  {
+    return 
+      testcase_builder<string>(input, result).
+      with_consumed(result ? non_continuation(input) : 0).
+      with_value(input).
+      build();
+  }
+
   template <typename value_t>
   vector<clause_testcase<value_t> > tvalues(vector<string> const &pos,
                                             vector<string> const &neg)
@@ -59,137 +68,151 @@ namespace
       rv.push_back(tc<value_t>(item, false));
     return rv;
   }
+
+  vector<clause_testcase<string> > ptvalues(vector<string> const &pos,
+                                            vector<string> const &neg)
+  {
+    vector<clause_testcase<string> > rv; rv.reserve(pos.size() + neg.size());
+    for(auto item : pos)
+      rv.push_back(ptc(item, true));
+    for(auto item : neg)
+      rv.push_back(ptc(item, false));
+    return rv;
+  }
 }
 
 #define CHAR_CLAUSE_TEST(clausetype, positive, negative)   \
   CLAUSE_TEST(clausetype, tvalues<clausetype::value_t>(positive, negative))
 
-CHAR_CLAUSE_TEST(printable, 
+#define PCHAR_CLAUSE_TEST(clausetype, positive, negative)   \
+  PCLAUSE_TEST(clausetype, ptvalues(positive, negative))
+
+PCHAR_CLAUSE_TEST(printable, 
                  values({"a", "\t", "\n", "\xd5\x82", "\xf0\x9d\x84\x8b"}),
                  values({"\x10", ""}))
 
-CHAR_CLAUSE_TEST(json, 
+PCHAR_CLAUSE_TEST(json, 
                  values({"a", "t", "\xd5\x81"}),
                  values({"\n", ""}))
 
-CHAR_CLAUSE_TEST(sequence_entry, 
+PCHAR_CLAUSE_TEST(sequence_entry, 
                  values({"-"}),
                  values({"a", ""}))
 
-CHAR_CLAUSE_TEST(mapping_key, 
+PCHAR_CLAUSE_TEST(mapping_key, 
                  values({"?"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(mapping_value, 
+PCHAR_CLAUSE_TEST(mapping_value, 
                  values({":"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(collect_entry, 
+PCHAR_CLAUSE_TEST(collect_entry, 
                  values({","}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(sequence_start, 
+PCHAR_CLAUSE_TEST(sequence_start, 
                  values({"["}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(sequence_end, 
+PCHAR_CLAUSE_TEST(sequence_end, 
                  values({"]"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(mapping_start, 
+PCHAR_CLAUSE_TEST(mapping_start, 
                  values({"{"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(mapping_end, 
+PCHAR_CLAUSE_TEST(mapping_end, 
                  values({"}"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(comment, 
+PCHAR_CLAUSE_TEST(comment, 
                  values({"#"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(anchor, 
+PCHAR_CLAUSE_TEST(anchor, 
                  values({"&"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(alias, 
+PCHAR_CLAUSE_TEST(alias, 
                  values({"*"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(tag, 
+PCHAR_CLAUSE_TEST(tag, 
                  values({"!"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(literal, 
+PCHAR_CLAUSE_TEST(literal, 
                  values({"|"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(folded, 
+PCHAR_CLAUSE_TEST(folded, 
                  values({">"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(single_quote, 
+PCHAR_CLAUSE_TEST(single_quote, 
                  values({"'"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(double_quote, 
+PCHAR_CLAUSE_TEST(double_quote, 
                  values({"\""}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(directive, 
+PCHAR_CLAUSE_TEST(directive, 
                  values({"%"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(reserved, 
+PCHAR_CLAUSE_TEST(reserved, 
                  values({"@", "`"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(indicator, 
+PCHAR_CLAUSE_TEST(indicator, 
                  values({"-", "?", ":", ",", "[", "]", "{", "}", "#",
                          "&", "*", "!", ">", "'", "\"", "%", "@", "`"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(flow_indicator, 
+PCHAR_CLAUSE_TEST(flow_indicator, 
                  values({",", "[", "]", "{", "}"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(line_feed, 
+PCHAR_CLAUSE_TEST(line_feed, 
                  values({"\n"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(carriage_return, 
+PCHAR_CLAUSE_TEST(carriage_return, 
                  values({"\r"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(break_char, 
+PCHAR_CLAUSE_TEST(break_char, 
                  values({"\n", "\r"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(non_break_char, 
+PCHAR_CLAUSE_TEST(non_break_char, 
                  values({"a"}),
                  values({"", "\r", "\n", "\xfe\xff"}))
 
-CHAR_CLAUSE_TEST(line_break, 
+PCHAR_CLAUSE_TEST(line_break, 
                  values({"\n", "\r", "\r\n"}),
                  values({"", "a"}));
 
-CHAR_CLAUSE_TEST(space, 
+PCHAR_CLAUSE_TEST(space, 
                  values({" "}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(tab, 
+PCHAR_CLAUSE_TEST(tab, 
                  values({"\t"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(white, 
+PCHAR_CLAUSE_TEST(white, 
                  values({" ", "\t"}),
                  values({"", "a"}))
 
-CHAR_CLAUSE_TEST(non_white_char, 
+PCHAR_CLAUSE_TEST(non_white_char, 
                  values({"a"}),
                  values({"", " ", "\t", "\r", "\n"}))
 
-CHAR_CLAUSE_TEST(dec_digit_char, 
+PCHAR_CLAUSE_TEST(dec_digit_char, 
                  values({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}),
                  values({"", "a"}))
 

@@ -4,6 +4,7 @@
 #include <sstream>
 #include "char_stream.hh"
 #include "utils.hh"
+#include "document_builder.hh"
 
 namespace kyaml
 {
@@ -80,6 +81,7 @@ namespace kyaml
     protected:
       // returns true if the head of the stream is of this type, should leave the stream unmodified
       bool try_clause(); // not implemented, don't call directly 
+      bool parse(document_builder &builder); // not implemented, don't call directly 
       
       context const &ctx() const
       {
@@ -94,6 +96,12 @@ namespace kyaml
       char_stream &stream()
       {
         return ctx().stream();
+      }
+
+      // not mandatory, but advices
+      char const *name() const
+      {
+        return "(clause nos)";
       }
       
     private:
@@ -191,10 +199,11 @@ namespace kyaml
       template <typename result_t, typename subclause_t>
       class one_or_more : public compound_clause<result_t>
       {
+        typedef compound_clause<result_t> base_t;
       public:
         typedef typename compound_clause<result_t>::value_t value_t;
 
-        one_or_more(context &ctx) : compound_clause<result_t>(ctx)
+        one_or_more(context &ctx) : base_t(ctx)
         {}
 
         bool try_clause()
@@ -210,24 +219,42 @@ namespace kyaml
           return false;
         }
 
+        bool parse(document_builder &builder)
+        {
+          if(parse_once(builder))
+          {
+            while(parse_once(builder));
+
+            return true;
+          }
+          return false;            
+        }
+
       private:
         bool try_once(value_t &v)
         {
-          subclause_t s(compound_clause<result_t>::ctx());
+          subclause_t s(base_t::ctx());
           bool r = s.try_clause();
           if(r)
             v.append(s.value());
           return r;
         }
+
+        bool parse_once(document_builder &builder)
+        {
+          subclause_t s(base_t::ctx());
+          return s.parse(builder);
+        }          
       };
 
       template <typename result_t, typename subclause_t>
       class zero_or_more : public compound_clause<result_t>
       {
+        typedef compound_clause<result_t> base_t;
       public:
-        typedef typename compound_clause<result_t>::value_t value_t;
+        typedef typename base_t::value_t value_t;
 
-        zero_or_more(context &ctx) : compound_clause<result_t>(ctx)
+        zero_or_more(context &ctx) : base_t(ctx)
         {}
 
         bool try_clause()
@@ -239,31 +266,10 @@ namespace kyaml
           return true;
         }
 
-      private:
-        bool try_once(value_t &v)
+        bool parse(document_builder &builder)
         {
-          subclause_t s(compound_clause<result_t>::ctx());
-          bool r = s.try_clause();
-          if(r)
-            v.append(s.value());
-          return r;
-        }
-      };
+          while(parse_once(builder));
 
-      template <typename result_t, typename subclause_t>
-      class zero_or_one : public compound_clause<result_t>
-      {
-      public:
-        typedef typename compound_clause<result_t>::value_t value_t;
-
-        zero_or_one(context &ctx) : compound_clause<result_t>(ctx)
-        {}
-
-        bool try_clause()
-        {
-          value_t v;
-          if(try_once(v))
-            compound_clause<result_t>::set(v);
           return true;
         }
 
@@ -276,21 +282,74 @@ namespace kyaml
             v.append(s.value());
           return r;
         }
+
+        bool parse_once(document_builder &builder)
+        {
+          subclause_t s(base_t::ctx());
+          return s.parse(builder);
+        }          
+      };
+
+      template <typename result_t, typename subclause_t>
+      class zero_or_one : public compound_clause<result_t>
+      {
+        typedef compound_clause<result_t> base_t;
+      public:
+        typedef typename base_t::value_t value_t;
+
+        zero_or_one(context &ctx) : base_t(ctx)
+        {}
+
+        bool try_clause()
+        {
+          value_t v;
+          if(try_once(v))
+            compound_clause<result_t>::set(v);
+          return true;
+        }
+
+        bool parse(document_builder &builder)
+        {
+          parse_once(builder);
+          return true;
+        }
+
+      private:
+        bool try_once(value_t &v)
+        {
+          subclause_t s(compound_clause<result_t>::ctx());
+          bool r = s.try_clause();
+          if(r)
+            v.append(s.value());
+          return r;
+        }
+
+        bool parse_once(document_builder &builder)
+        {
+          subclause_t s(base_t::ctx());
+          return s.parse(builder);
+        }
       };
 
       template <typename result_t, typename... clauses_t>
       class any_of : public compound_clause<result_t>
       {
+        typedef compound_clause<result_t> base_t;
       public:
-        typedef typename compound_clause<result_t>::value_t value_t;
+        typedef typename base_t::value_t value_t;
 
         any_of(context &ctx) : 
-          compound_clause<result_t>(ctx)
+          base_t(ctx)
         {}
 
         bool try_clause()
         {
           return try_recurse<clauses_t...>();
+        }
+
+        bool parse(document_builder &builder)
+        {
+          return parse_recurse<clauses_t...>(builder);
         }
 
       private:
@@ -315,17 +374,32 @@ namespace kyaml
             try_recurse<head_t>() ||
             try_recurse<head2_t, tail_t...>();
         }
+
+        template <typename head_t>
+        bool parse_recurse(document_builder &builder)
+        {
+          head_t head(base_t::ctx());
+          return head.parse(builder);
+        }
         
+        template <typename head_t, typename head2_t, typename... tail_t>
+        bool parse_recurse(document_builder &builder)
+        {
+          return
+            parse_recurse<head_t>(builder) ||
+            parse_recurse<head2_t, tail_t...>(builder);
+        }        
       };
 
       template <typename result_t, typename... clauses_t>
       class all_of : public compound_clause<result_t>
       {
+        typedef compound_clause<result_t> base_t;
       public:
         typedef typename compound_clause<result_t>::value_t value_t;
 
         all_of(context &ctx) : 
-          compound_clause<result_t>(ctx)
+          base_t(ctx)
         {}
 
         bool try_clause()
@@ -338,6 +412,17 @@ namespace kyaml
           }
           else
             compound_clause<result_t>::unwind();
+          return false;
+        }
+        
+        bool parse(document_builder &builder)
+        {
+          document_builder::child_t c = builder.child();
+          if(parse_recurse<clauses_t...>(c))
+          {
+            builder.add(base_t::name(), c);
+            return true;
+          }
           return false;
         }
 
@@ -360,6 +445,21 @@ namespace kyaml
           return
             try_recurse<head_t>(v) &&
             try_recurse<head2_t, tail_t...>(v);
+        }
+
+         template <typename head_t>
+        bool parse_recurse(document_builder &builder)
+        {
+          head_t head(base_t::ctx());
+          return head.parse(builder);
+        }
+        
+        template <typename head_t, typename head2_t, typename... tail_t>
+        bool parse_recurse(document_builder &builder)
+        {
+          return
+            parse_recurse<head_t>(builder) &&
+            parse_recurse<head2_t, tail_t...>(builder);
         }
       };
 
@@ -390,6 +490,13 @@ namespace kyaml
           return
             clause_t::ctx().blockflow() == blockflow_v &&
             clause_t::try_clause();
+        }
+
+        bool parse(document_builder &builder)
+        {
+          return
+            clause_t::ctx().blockflow() == blockflow_v &&
+            clause_t::parse(builder);
         }
       };
     }

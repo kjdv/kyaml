@@ -30,6 +30,30 @@ bool printable::try_clause()
   return false;
 }
 
+bool printable::parse(document_builder &builder)
+{
+  char_t c;
+  if(!stream().peek(c))
+    return false;
+  if(c == '\x9' ||
+     c == '\xa' ||
+     c == '\xd' ||
+     (c >= '\x20' && c <= '\x7e') ||
+     c == static_cast<char_t>('\x85'))
+  {
+    builder.add(name(), c);
+    return true;
+  }
+  else if(c >= 0xff) // must be utf8
+  {
+    // no extensive checking done, we just assume all utf8 is printable (to improve)
+    builder.add(name(), c);
+    return true;
+  }
+
+  return false;
+}
+
 bool json::try_clause()
 {
   char_t c;
@@ -46,6 +70,28 @@ bool json::try_clause()
   {
     // no extensive checking done, we just assume all utf8 is printable (to improve)
     consume(c);
+    return true;
+  }
+
+  return false;
+}
+
+bool json::parse(document_builder &builder)
+{
+  char_t c;
+  if(!stream().peek(c))
+    return false;
+
+  if(c == '\x9' ||
+     (c >= '\x20' && c <= '\x7f'))
+  {
+    builder.add(name(), c);
+    return true;
+  }
+  else if(c >= 0xff) // must be utf8
+  {
+    // no extensive checking done, we just assume all utf8 is printable (to improve)
+    builder.add(name(), c);
     return true;
   }
 
