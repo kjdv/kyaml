@@ -58,19 +58,23 @@ bool json::parse(document_builder &builder)
 
 bool byte_order_mark::parse(document_builder &builder)
 {
+  inner ic(ctx());
+  return internal::try_parse(ic, builder);
+}
+
+bool byte_order_mark::inner::parse(document_builder &builder)
+{
   char_t c;
   if(!stream().peek(c))
     return false;
   if(c == 0x0000feff)
   {
-    document_builder::child_t b = builder.child();
-
-    b->add(name(), c);
+    builder.add(name(), c);
     advance();
     return true;
     if(stream().peek(c) && c == static_cast<char_t>('\xff'))
     {
-      b->add(name(), c);
+      builder.add(name(), c);
       advance();
       builder.add(name(), c);
       return true;
@@ -151,17 +155,16 @@ bool flow_indicator::parse(document_builder &builder)
 
 bool non_break_char::parse(document_builder &builder)
 {
-  document_builder::child_t b = builder.child();
-
+  dummy_document_builder dm;
   break_char bc(ctx());
-  if(bc.parse(*b))
+  if(bc.parse(dm))
   {
     unwind();
     return false;
   }
 
   byte_order_mark bo(ctx());
-  if(bo.parse(*b))
+  if(bo.parse(dm))
   {
     unwind();
     return false;
@@ -173,10 +176,9 @@ bool non_break_char::parse(document_builder &builder)
 
 bool non_white_char::parse(document_builder &builder)
 {
-  document_builder::child_t b = builder.child();
-
+  dummy_document_builder dm;
   white w(ctx());
-  if(w.parse(*b))
+  if(w.parse(dm))
   {
     unwind();
     return false;
@@ -256,6 +258,12 @@ bool word_char::parse(document_builder &builder)
 
 bool uri_char::parse(document_builder &builder)
 {
+  inner ic(ctx());
+  return internal::try_parse(ic, builder);
+}
+
+bool uri_char::inner::parse(document_builder &builder)
+{
   word_char wc(ctx());
   if(wc.parse(builder))
     return true;
@@ -266,22 +274,12 @@ bool uri_char::parse(document_builder &builder)
 
   if(c == '%')
   {
-    document_builder::child_t b = builder.child();
-    b->add(name(), c);
+    builder.add(name(), c);
     advance();
 
     hex_digit_char h1(ctx());
     hex_digit_char h2(ctx());
-    if(h1.parse(*b) && h2.parse(*b))
-    {
-      builder.add(name(), move(b));
-      return true;
-    }
-    else
-    {
-      unwind();
-      return false;
-    }
+    return h1.parse(builder) && h2.parse(builder);
   }
 
   switch(c)
@@ -325,9 +323,9 @@ bool tag_char::parse(document_builder &builder)
   if(c == '!')
     return false;
 
-  document_builder::child_t b = builder.child();
+  dummy_document_builder dm;
   flow_indicator fi(ctx());
-  if(fi.parse(*b))
+  if(fi.parse(dm))
   {
     unwind();
     return false;

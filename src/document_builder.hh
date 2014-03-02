@@ -5,6 +5,7 @@
 #include <ostream>
 #include <memory>
 #include <utils.hh>
+#include <cassert>
 
 namespace kyaml
 {
@@ -26,8 +27,6 @@ namespace kyaml
   class document_builder
   {
   public:
-    typedef std::unique_ptr<document_builder> child_t;
-
     virtual ~document_builder()
     {}
 
@@ -40,8 +39,42 @@ namespace kyaml
       add(tag, s);
     }    
 
-    virtual child_t child() = 0;
-    virtual void add(char const *tag, child_t c) = 0;
+    virtual void add_anchor(std::string const &anchor) = 0;
+  };
+
+  class string_builder : public document_builder
+  {
+  public:
+    void add(char const *tag, void_item const &v) override
+    {}
+
+    void add(char const *tag, std::string const &v) override
+    {
+      d_value.append(v);
+    }
+
+    void add_anchor(std::string const &anchor) override
+    {}
+
+    std::string const &build() const
+    {
+      return d_value;
+    }
+
+  private:
+    std::string d_value;
+  };
+
+  class dummy_document_builder : public document_builder
+  {
+  public:
+    void add(char const *tag, void_item const &v) override
+    {}
+    void add(char const *tag, std::string const &v) override
+    {}
+
+    void add_anchor(std::string const &anchor) override
+    {}
   };
 }
 

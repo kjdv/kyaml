@@ -51,16 +51,9 @@ namespace kyaml
         append_utf8(d_str, s);
       }
 
-      document_builder::child_t child() override
+      void add_anchor(std::string const &anchor) override
       {
-        return child_t(new string_document_builder);
-      }
-
-      void add(char const *tag, document_builder::child_t c) override
-      {
-        string_document_builder *sb = dynamic_cast<string_document_builder *>(c.get());
-        d_log(tag, "adding child", sb->d_str);
-        d_str.append(sb->d_str);
+        d_log("anchor", anchor);
       }
 
       std::string const &result() const

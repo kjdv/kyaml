@@ -18,14 +18,9 @@ namespace
     {
       d_val.append(v);
     }
-    child_t child() override
-    {
-      return child_t(new indent_builder);
-    }
-    void add(char const *tag, child_t c) override
-    {
-      assert(false); // never called?
-    }
+
+    void add_anchor(std::string const &anchor)
+    {}
 
     string value(size_t n) 
     {

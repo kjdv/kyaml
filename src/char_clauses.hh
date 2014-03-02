@@ -74,6 +74,15 @@ namespace kyaml
       using clause::clause;
 
       bool parse(document_builder &builder);
+
+    private:
+      class inner : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder);
+      };
     };
 
     // [4]	c-sequence-entry	::=	“-” 
@@ -303,6 +312,14 @@ namespace kyaml
       {
         return "ns-uri-char";
       }
+    private:
+      class inner : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder);
+      };
     };
 
     // [40] 	ns-tag-char 	::= 	ns-uri-char - “!” - c-flow-indicator
@@ -329,29 +346,37 @@ namespace kyaml
 
         bool parse(document_builder &builder)
         {
-          internal::simple_char_clause<escape> head(ctx());
-          document_builder::child_t b = builder.child();
-          if(head.parse(*b))
-          {
-            hex_digit_char hd(ctx());
-            for(size_t i = 0; i < size; ++i)
-            {
-              if(!hd.parse(*b))
-              {
-                unwind();
-                return false;
-              }
-            }
-            builder.add(name(), std::move(b));
-            return true;
-          }
-          return false;
+          inner ic(ctx());
+          return internal::try_parse(ic, builder);
         }
       
         char const *name() const
         {
           return "(escape-char nos";
         }
+
+      private:
+        class inner : public clause
+        {
+        public:
+          using clause::clause;
+          
+          bool parse(document_builder &builder)
+          {
+            internal::simple_char_clause<escape> head(ctx());
+            if(head.parse(builder))
+            {
+              hex_digit_char hd(ctx());
+              for(size_t i = 0; i < size; ++i)
+              {
+                if(!hd.parse(builder))
+                  return false;
+              }
+              return true;
+            }
+            return false;
+          }
+        };
       };
     }
 

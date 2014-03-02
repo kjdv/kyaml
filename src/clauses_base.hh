@@ -212,11 +212,13 @@ namespace kyaml
         
         bool parse(document_builder &builder)
         {
-          document_builder::child_t c = builder.child();
-          if(parse_recurse<clauses_t...>(*c))
+          // we need two passes, one for checking, on for collecting results
+          // todo: find something smarter
+          dummy_document_builder db;
+          if(parse_recurse<clauses_t...>(db)) // pass 1
           {
-            builder.add(clause::name(), std::move(c));
-            return true;
+            unwind();
+            return parse_recurse<clauses_t...>(builder);
           }
           else
             unwind();
@@ -269,6 +271,21 @@ namespace kyaml
             clause_t::parse(builder);
         }
       };
+
+      template <typename clause_t>
+      bool try_parse(clause_t &cl, document_builder &builder)
+      {
+        dummy_document_builder dm;
+        if(cl.parse(dm))
+        {
+          cl.unwind();
+          return cl.parse(builder);
+        }
+        else
+          cl.unwind();
+        
+        return false;
+      }
     }
   }
 }
