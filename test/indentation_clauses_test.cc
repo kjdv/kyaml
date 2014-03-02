@@ -1,5 +1,3 @@
-#ifdef COMPILE_GUARD
-
 #include "indentation_clauses.hh"
 #include "clause_test.hh"
 #include <iostream>
@@ -11,10 +9,10 @@ using namespace kyaml::clauses;
 
 namespace 
 {
-  clause_testcase<void_result> tc(string const &input, unsigned indent_level, bool result, unsigned consume)
+  clause_testcase tc(string const &input, unsigned indent_level, bool result, unsigned consume)
   {
     return 
-      testcase_builder<void_result>(input, result).
+      testcase_builder(input, result).
       with_indent_level(indent_level).
       with_consumed(consume).
       build();
@@ -56,5 +54,3 @@ CLAUSE_TEST(indent_clause_le,
                   tc(" nonwhite", 2, true, 1),
                   tc("   nonwhite", 2, false, 0),
                   }))
-
-#endif // COMPILE_GUARD

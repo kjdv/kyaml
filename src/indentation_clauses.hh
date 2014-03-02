@@ -1,5 +1,3 @@
-#ifdef COMPILE_GUARD
-
 #ifndef INDENDATION_CLAUSES_HH
 #define INDENDATION_CLAUSES_HH
 
@@ -10,13 +8,13 @@ namespace kyaml
   namespace clauses
   {
     // [63] 	s-indent(n) 	::= 	s-space × n 
-    class indent_clause_eq : public internal::void_clause
+    class indent_clause_eq : public clause
     {
     public:
-      indent_clause_eq(context &c) : void_clause(c)
+      indent_clause_eq(context &c) : clause(c)
       {}
 
-      bool try_clause();
+      bool parse(document_builder &builder);
     private:
       unsigned level() const
       {
@@ -27,13 +25,13 @@ namespace kyaml
     namespace internal
     {
       // special case of [63] needed to fulfill clause [69]
-      class indent_clause_ge : public internal::void_clause
+      class indent_clause_ge : public clause
       {
       public:       
-        indent_clause_ge(context &c) : void_clause(c)
+        indent_clause_ge(context &c) : clause(c)
         {}
         
-        bool try_clause();
+        bool parse(document_builder &builder);
       private:
         unsigned level() const
         {
@@ -43,14 +41,15 @@ namespace kyaml
     }
 
     // [64] 	s-indent(<n) 	::= 	s-space × m Where m < n 
-    class indent_clause_lt : public internal::void_clause
+    class indent_clause_lt : public clause
     {
     public:
       indent_clause_lt(context &c) : 
-        void_clause(c),
+        clause(c),
         d_m(0)
       {}
 
+      bool parse(document_builder &builder);
       bool try_clause();
     private:
       unsigned lower_level() const
@@ -66,15 +65,15 @@ namespace kyaml
     };
 
     // [65] 	s-indent(≤n) 	::= 	s-space × m /* Where m ≤ n */ 
-    class indent_clause_le : public internal::void_clause
+    class indent_clause_le : public clause
     {
     public:
       indent_clause_le(context &c) :
-        void_clause(c),
+        clause(c),
         d_m(0)
       {}
 
-      bool try_clause();
+      bool parse(document_builder &builder);
     private:
       unsigned lower_level() const
       {
@@ -90,5 +89,3 @@ namespace kyaml
 }
 
 #endif // INDENDATION_CLAUSES_HH
-
-#endif // COMPILE_GUARD

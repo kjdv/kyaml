@@ -1,5 +1,3 @@
-#ifdef COMPILE_GUARD
-
 #include "indentation_clauses.hh"
 #include "char_clauses.hh"
 #include <iostream>
@@ -14,15 +12,16 @@ namespace
   {
     unsigned count = 0;
 
+    dummy_document_builder b;
     space sp(ctx);
-    while(sp.try_clause() && count <= ctx.indent_level())
+    while(sp.parse(b) && count <= ctx.indent_level())
       ++count;
 
     return count;
   }
 }
 
-bool indent_clause_eq::try_clause()
+bool indent_clause_eq::parse(document_builder &builder)
 {
   if(level())
   {
@@ -35,7 +34,7 @@ bool indent_clause_eq::try_clause()
   return false;
 }
 
-bool internal::indent_clause_ge::try_clause()
+bool internal::indent_clause_ge::parse(document_builder &builder)
 {
   if(level())
   {
@@ -52,7 +51,7 @@ bool internal::indent_clause_ge::try_clause()
   return false;
 }
 
-bool indent_clause_lt::try_clause()
+bool indent_clause_lt::parse(document_builder &builder)
 {
   if(higher_level())
   {
@@ -68,7 +67,7 @@ bool indent_clause_lt::try_clause()
   return false;
 }
 
-bool indent_clause_le::try_clause()
+bool indent_clause_le::parse(document_builder &builder)
 {
   if(higher_level())
   {
@@ -84,4 +83,3 @@ bool indent_clause_le::try_clause()
   return false;
 }
 
-#endif // COMPILE_GUARD

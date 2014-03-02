@@ -43,6 +43,21 @@ namespace kyaml
     virtual child_t child() = 0;
     virtual void add(char const *tag, child_t c) = 0;
   };
+
+  class dummy_document_builder : public document_builder
+  {
+  public:
+    void add(char const *tag, void_item const &v) override
+    {}
+    void add(char const *tag, std::string const &v) override
+    {}
+    child_t child() override
+    {
+      return child_t(new dummy_document_builder);
+    }
+    void add(char const *tag, child_t c) override
+    {}
+  };
 }
 
 namespace std
