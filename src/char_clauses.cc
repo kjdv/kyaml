@@ -94,8 +94,7 @@ bool reserved::parse(document_builder &builder)
   return false;
 }
 
-#ifdef COMPILE_GUARD
-bool indicator::try_clause()
+bool indicator::parse(document_builder &builder)
 {
   char_t c = 0;
   stream().peek(c);
@@ -120,7 +119,8 @@ bool indicator::try_clause()
   case '%':
   case '@':
   case '`':
-    consume(c);
+    builder.add(name(), c);
+    advance();
     return true;
 
   default:
@@ -128,7 +128,7 @@ bool indicator::try_clause()
   }
 }
 
-bool flow_indicator::try_clause()
+bool flow_indicator::parse(document_builder &builder)
 {
   char_t c = 0;
   stream().peek(c);
@@ -140,7 +140,8 @@ bool flow_indicator::try_clause()
   case ']':
   case '{':
   case '}':
-    consume(c);
+    builder.add(name(), c);
+    advance();
     return true;
 
   default:
@@ -148,6 +149,7 @@ bool flow_indicator::try_clause()
   }
 }
 
+#ifdef COMPILE_GUARD
 bool break_char::try_clause()
 {
   line_feed lf(ctx());

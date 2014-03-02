@@ -130,18 +130,16 @@ CHAR_CLAUSE_TEST(reserved,
                  values({"@", "`"}),
                  values({"", "a"}))
 
-#ifdef COMPILE_GUARD
-
-
-PCHAR_CLAUSE_TEST(indicator, 
+CHAR_CLAUSE_TEST(indicator, 
                  values({"-", "?", ":", ",", "[", "]", "{", "}", "#",
                          "&", "*", "!", ">", "'", "\"", "%", "@", "`"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(flow_indicator, 
+CHAR_CLAUSE_TEST(flow_indicator, 
                  values({",", "[", "]", "{", "}"}),
                  values({"", "a"}))
 
+#ifdef COMPILE_GUARD
 PCHAR_CLAUSE_TEST(line_feed, 
                  values({"\n"}),
                  values({"", "a"}))
