@@ -143,8 +143,6 @@ namespace kyaml
         std::string::append(other);
       }
       
-      void append(void_result const &)
-      {}
     private:
       std::string d_val;
     };
@@ -188,66 +186,6 @@ namespace kyaml
 
       private:
         value_t d_value;
-      };
-
-      template <typename result_t, typename left_t, typename right_t>
-      class or_clause : public compound_clause<result_t>
-      {
-      public:
-        typedef typename compound_clause<result_t>::value_t value_t;
-
-        or_clause(context &ctx) : compound_clause<result_t>(ctx)
-        {}
-
-        bool try_clause()
-        {
-          left_t l(compound_clause<result_t>::ctx());
-          if(l.try_clause())
-          {
-            value_t v(l.value());
-            compound_clause<result_t>::set(v);
-            return true;
-          }
-
-          right_t r(compound_clause<result_t>::ctx());
-          if(r.try_clause())
-          {
-            value_t v(r.value());
-            compound_clause<result_t>::set(v);
-            return true;
-          }
-          return false;
-        }
-      };
-
-      template <typename result_t, typename left_t, typename right_t>
-      class and_clause : public compound_clause<result_t>
-      {
-      public:
-        typedef typename compound_clause<result_t>::value_t value_t;
-
-        and_clause(context &ctx) : compound_clause<result_t>(ctx)
-        {}
-
-        bool try_clause()
-        {
-          left_t l(compound_clause<result_t>::ctx());
-          if(l.try_clause())
-          {
-            value_t v(l.value());
-            
-            right_t r(compound_clause<result_t>::ctx());
-            if(r.try_clause())
-            {
-              v.append(r.value());
-              compound_clause<result_t>::set(v);
-              return true;
-            }
-            else
-              compound_clause<result_t>::unwind();
-          }
-          return false;
-        }
       };
 
       template <typename result_t, typename subclause_t>
@@ -398,6 +336,8 @@ namespace kyaml
             compound_clause<result_t>::set(v);
             return true;
           }
+          else
+            compound_clause<result_t>::unwind();
           return false;
         }
 
@@ -421,6 +361,22 @@ namespace kyaml
             try_recurse<head_t>(v) &&
             try_recurse<head2_t, tail_t...>(v);
         }
+      };
+
+      template <typename result_t, typename left_t, typename right_t>
+      class or_clause : public any_of<result_t, left_t, right_t>
+      {
+      public:
+        or_clause(context &ctx) : any_of<result_t, left_t, right_t>(ctx)
+        {}
+      };
+
+      template <typename result_t, typename left_t, typename right_t>
+      class and_clause : public all_of<result_t, left_t, right_t>
+      {
+      public:
+        and_clause(context &ctx) : all_of<result_t, left_t, right_t>(ctx)
+        {}
       };
 
       template <typename clause_t, context::blockflow_t blockflow_v>
