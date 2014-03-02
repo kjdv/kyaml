@@ -297,3 +297,7 @@ CHAR_CLAUSE_TEST(esc_char,
 CHAR_CLAUSE_TEST(b_double_char,
                  values({"\\t", "\\v", "\\n", "a", "t", "n", " "}),
                  values({"\\", "\""}))
+
+CHAR_CLAUSE_TEST(s_double_char,
+                 values({"\\t", "\\v", "\\n", "a", "t", "n"}),
+                 values({"\\", "\", " ""}))
