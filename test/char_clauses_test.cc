@@ -204,7 +204,6 @@ CHAR_CLAUSE_TEST(tag_char,
                          "&", "=", "+", "$", "_", ".", "~", "*", "#"}),
                  values({"", "!", ",", "[", "]", "{", "}"}))
 
-#ifdef COMPILE_GUARD 
 CHAR_CLAUSE_TEST(escape, 
                  values({"\\"}),
                  values({"", "a"}))
@@ -293,5 +292,3 @@ CHAR_CLAUSE_TEST(esc_char,
                          "\\ ", "\\\\", "\\/", "\\\"", "\\N", "\\_", "\\L", "\\P", 
                        "\\x01", "\\u1234", "\\U12345678"}),
                  values({}))
-
-#endif // COMPILE_GUARD

@@ -327,8 +327,27 @@ namespace kyaml
       public:
         using clause::clause;
 
-        bool parse(document_builder &builder);
-
+        bool parse(document_builder &builder)
+        {
+          internal::simple_char_clause<escape> head(ctx());
+          document_builder::child_t b = builder.child();
+          if(head.parse(*b))
+          {
+            hex_digit_char hd(ctx());
+            for(size_t i = 0; i < size; ++i)
+            {
+              if(!hd.parse(*b))
+              {
+                unwind();
+                return false;
+              }
+            }
+            builder.add(name(), std::move(b));
+            return true;
+          }
+          return false;
+        }
+      
         char const *name() const
         {
           return "(escape-char nos";
@@ -390,11 +409,6 @@ namespace kyaml
     // [58]	ns-esc-paragraph-separator	::=	“P” 
     typedef internal::simple_char_clause<'P'> esc_paragraph_separator;
 
-    namespace internal
-    {
-  
-    }
-
     // [59]	ns-esc-8-bit	::=	“x”
     //                                 ( ns-hex-digit × 2 ) 
     typedef internal::esc_unicode<'x', 2> esc_unicode_8b;
@@ -416,18 +430,27 @@ namespace kyaml
     //                                | ns-esc-next-line | ns-esc-non-breaking-space
     //                                | ns-esc-line-separator | ns-esc-paragraph-separator
     //                                | ns-esc-8-bit | ns-esc-16-bit | ns-esc-32-bit )
-    class esc_char : public clause
-    {
-    public:
-      using clause::clause;
-  
-      bool parse(document_builder &builder);
-
-      char const *name() const
-      {
-        return "c-ns-esc-char";
-      }
-    };
+    typedef internal::and_clause<internal::simple_char_clause<'\\'>,
+                                 internal::any_of<esc_null,
+                                                  esc_bell,
+                                                  esc_backspace,
+                                                  esc_htab,
+                                                  esc_linefeed,
+                                                  esc_vtab,
+                                                  esc_form_feed,
+                                                  esc_carriage_return,
+                                                  esc_escape,
+                                                  esc_space,
+                                                  esc_dquote,
+                                                  esc_slash,
+                                                  esc_bslash,
+                                                  esc_next_line,
+                                                  esc_non_break_space,
+                                                  esc_line_separator,
+                                                  esc_paragraph_separator,
+                                                  esc_unicode_8b,
+                                                  esc_unicode_16b,
+                                                  esc_unicode_32b> > esc_char;
   }
 }
 
