@@ -78,7 +78,8 @@ TEST(alias_test, alias)
   string const name = "anchor";
   string input = string("*") + name + " ";
   
-  alias_node an(context_wrap(input).get());
+  context_wrap cw(input);
+  alias_node an(cw.get());
   mock_builder mb;
   EXPECT_CALL(mb, add_alias(name)).
     Times(1);
