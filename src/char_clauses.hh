@@ -16,20 +16,8 @@ namespace kyaml
       class simple_char_clause : public clause
       {
       public:
-        typedef char_t value_t;
         using clause::clause;
-        
-        bool try_clause()
-        {
-          char_t c;
-          if(stream().peek(c) && c == char_value)
-          {
-            advance();
-            return true;
-          }
-          return false;
-        }
-
+     
         bool parse(document_builder &builder)
         {
           char_t c;
@@ -42,59 +30,10 @@ namespace kyaml
           return false;
         }
 
-        value_t value() const
-        {
-          return char_value;
-        }
-
         char const *name() const
         {
           return "(simple char nos)";
         }
-      };
-
-      // few char-clauses can have multiple characters, think of line breaks or escaped sequences
-      class multi_char_clause : public clause
-      {
-      public:
-        typedef std::string value_t;
-
-        using clause::clause;
-
-        value_t const &value() const
-        {
-          return d_value;
-        }
-
-        char const *name() const
-        {
-          return "(multi char nos)";
-        }
-
-      protected:
-        void clear()
-        {
-          d_value.clear();
-        }
-        void consume(char_t c)
-        {
-          append_utf8(d_value, c);
-          advance();
-        }          
-        void set(std::string const &s)
-        {
-          d_value = s;
-        }
-        void append(std::string const &s)
-        {
-          d_value.append(s);
-        }
-        void append(char_t c)
-        {
-          append_utf8(d_value, c);
-        }
-      private:
-        std::string d_value;
       };
     }
     
@@ -114,15 +53,11 @@ namespace kyaml
       }
     };
 
-#ifdef COMPILE_GUARD
-    
     // [2] 	nb-json 	::= 	#x9 | [#x20-#x10FFFF] 
-    class json : public internal::single_char_clause
+    class json : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -133,12 +68,10 @@ namespace kyaml
     };
 
     // [3] 	c-byte-order-mark 	::= 	#xFEFF 
-    class byte_order_mark : public internal::single_char_clause
+    class byte_order_mark : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
     };
@@ -195,12 +128,10 @@ namespace kyaml
     typedef internal::simple_char_clause<'%'> directive;
 
     // [21]	c-reserved	::=	“@” | “`” 
-    class reserved : public internal::single_char_clause
+    class reserved : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -213,12 +144,10 @@ namespace kyaml
     // [22] 	c-indicator 	::= 	  “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
     //                                  | “#” | “&” | “*” | “!” | “|” | “>” | “'” | “"”
     //                                  | “%” | “@” | “`”
-    class indicator : public internal::single_char_clause
+    class indicator : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -229,12 +158,10 @@ namespace kyaml
     };
 
     // [23] 	c-flow-indicator 	::= 	“,” | “[” | “]” | “{” | “}”
-    class flow_indicator : public internal::single_char_clause
+    class flow_indicator : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -251,12 +178,10 @@ namespace kyaml
     typedef internal::simple_char_clause<'\r'> carriage_return;
 
     // [26] 	b-char 	::= 	b-line-feed | b-carriage-return
-    class break_char : public internal::single_char_clause
+    class break_char : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -267,12 +192,10 @@ namespace kyaml
     };
 
     // [27] 	nb-char 	::= 	c-printable - b-char - c-byte-order-mark
-    class non_break_char : public internal::single_char_clause
+    class non_break_char : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -285,12 +208,10 @@ namespace kyaml
     // [28] 	b-break 	::= 	  ( b-carriage-return b-line-feed ) DOS, Windows 
     //                                  | b-carriage-return                 MacOS upto 9.x
     //                                  | b-line-feed                       UNIX, MacOS X
-    class line_break : public internal::multi_char_clause
+    class line_break : public clause
     {
     public:
-      using multi_char_clause::multi_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -313,12 +234,10 @@ namespace kyaml
     typedef internal::simple_char_clause<'\t'> tab;
 
     // [33] 	s-white 	::= 	s-space | s-tab
-    class white : public internal::single_char_clause
+    class white : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -329,12 +248,10 @@ namespace kyaml
     };
 
     // [34] 	ns-char 	::= 	nb-char - s-white
-    class non_white_char : public internal::single_char_clause
+    class non_white_char : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -345,12 +262,10 @@ namespace kyaml
     };
 
     // [35] 	ns-dec-digit 	::= 	[#x30-#x39] 0-9 
-    class dec_digit_char : public internal::single_char_clause
+    class dec_digit_char : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -362,12 +277,10 @@ namespace kyaml
 
     // [36] 	ns-hex-digit 	::= 	  ns-dec-digit
     //                                  | [#x41-#x46] A-F | [#x61-#x66]  a-f  
-    class hex_digit_char : public internal::single_char_clause
+    class hex_digit_char : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -378,28 +291,10 @@ namespace kyaml
     };
 
     // [37] 	ns-ascii-letter 	::= 	[#x41-#x5A] A-Z  | [#x61-#x7A] a-z 
-    class ascii_letter : public internal::single_char_clause
+    class ascii_letter : public clause
     {
     public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
-
-      bool parse(document_builder &builder);
-
-      char const *name() const
-      {
-        return "ns-ascii-letter";
-      }
-    };
-
-    // [38] 	ns-word-char 	::= 	ns-dec-digit | ns-ascii-letter | “-” 
-    class word_char : public internal::single_char_clause
-    {
-    public:
-      using internal::single_char_clause::single_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -412,12 +307,10 @@ namespace kyaml
     // [39] 	ns-uri-char 	::= 	  “%” ns-hex-digit ns-hex-digit | ns-word-char | “#”
     //                                  | “;” | “/” | “?” | “:” | “@” | “&” | “=” | “+” | “$” | “,”
     //                                  | “_” | “.” | “!” | “~” | “*” | “'” | “(” | “)” | “[” | “]” 
-    class uri_char : public internal::multi_char_clause
+    class uri_char : public clause
     {
     public:
-      using multi_char_clause::multi_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -428,12 +321,10 @@ namespace kyaml
     };
 
     // [40] 	ns-tag-char 	::= 	ns-uri-char - “!” - c-flow-indicator
-    class tag_char : public internal::multi_char_clause
+    class tag_char : public clause
     {
     public:
-      using multi_char_clause::multi_char_clause;
-      
-      bool try_clause();
+      using clause::clause;
 
       bool parse(document_builder &builder);
 
@@ -446,33 +337,10 @@ namespace kyaml
     namespace internal
     {
       template <char_t escape, size_t size>
-      class esc_unicode : public multi_char_clause
+      class esc_unicode : public clause
       {
       public:
-        using multi_char_clause::multi_char_clause;
-        
-        bool try_clause()
-        {
-          clear();
-          char_t c;
-          if(stream().peek(c) && c == escape)
-          {
-            consume(c);
-            for(size_t i = 0; i < size; ++i)
-            {
-              hex_digit_char h(ctx());
-              if(h.try_clause())
-                append(h.value());
-              else
-              {
-                unwind();
-              return false;
-              }
-            }
-            return true;
-          }
-          return false;
-        }
+        using clause::clause;
 
         bool parse(document_builder &builder);
 
@@ -563,13 +431,11 @@ namespace kyaml
     //                                | ns-esc-next-line | ns-esc-non-breaking-space
     //                                | ns-esc-line-separator | ns-esc-paragraph-separator
     //                                | ns-esc-8-bit | ns-esc-16-bit | ns-esc-32-bit )
-    class esc_char : public internal::multi_char_clause
+    class esc_char : public clause
     {
     public:
-      using multi_char_clause::multi_char_clause;
-      
-      bool try_clause();
-
+      using clause::clause;
+  
       bool parse(document_builder &builder);
 
       char const *name() const
@@ -577,8 +443,6 @@ namespace kyaml
         return "c-ns-esc-char";
       }
     };
-
-#endif // COMPILE_GUARD
   }
 }
 

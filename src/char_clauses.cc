@@ -32,30 +32,6 @@ bool printable::parse(document_builder &builder)
   return false;
 }
 
-#ifdef COMPILE_GUARD
-
-bool json::try_clause()
-{
-  char_t c;
-  if(!stream().peek(c))
-    return false;
-
-  if(c == '\x9' ||
-     (c >= '\x20' && c <= '\x7f'))
-  {
-    consume(c);
-    return true;
-  }
-  else if(c >= 0xff) // must be utf8
-  {
-    // no extensive checking done, we just assume all utf8 is printable (to improve)
-    consume(c);
-    return true;
-  }
-
-  return false;
-}
-
 bool json::parse(document_builder &builder)
 {
   char_t c;
@@ -66,18 +42,21 @@ bool json::parse(document_builder &builder)
      (c >= '\x20' && c <= '\x7f'))
   {
     builder.add(name(), c);
+    advance();
     return true;
   }
   else if(c >= 0xff) // must be utf8
   {
     // no extensive checking done, we just assume all utf8 is printable (to improve)
     builder.add(name(), c);
+    advance();
     return true;
   }
 
   return false;
 }
 
+#ifdef COMPILE_GUARD
 bool byte_order_mark::try_clause()
 {
   char_t c;

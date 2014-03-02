@@ -54,11 +54,12 @@ CHAR_CLAUSE_TEST(printable,
                  values({"a", "\t", "\n", "\xd5\x82", "\xf0\x9d\x84\x8b"}),
                  values({"\x10", ""}))
 
-#ifdef COMPILE_GUARD
-
-PCHAR_CLAUSE_TEST(json, 
+CHAR_CLAUSE_TEST(json, 
                  values({"a", "t", "\xd5\x81"}),
                  values({"\n", ""}))
+
+#ifdef COMPILE_GUARD
+
 
 PCHAR_CLAUSE_TEST(sequence_entry, 
                  values({"-"}),
