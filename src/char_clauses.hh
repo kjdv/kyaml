@@ -198,18 +198,10 @@ namespace kyaml
     // [28] 	b-break 	::= 	  ( b-carriage-return b-line-feed ) DOS, Windows 
     //                                  | b-carriage-return                 MacOS upto 9.x
     //                                  | b-line-feed                       UNIX, MacOS X
-    class line_break : public clause
-    {
-    public:
-      using clause::clause;
-
-      bool parse(document_builder &builder);
-
-      char const *name() const
-      {
-        return "b-break";
-      }
-    };
+    typedef internal::any_of<internal::and_clause<carriage_return,
+                                                  line_feed>,
+                             carriage_return,
+                             line_feed> line_break;
 
     // [29] 	b-as-line-feed 	::= 	b-break
     typedef line_break as_line_feed;
@@ -224,18 +216,7 @@ namespace kyaml
     typedef internal::simple_char_clause<'\t'> tab;
 
     // [33] 	s-white 	::= 	s-space | s-tab
-    class white : public clause
-    {
-    public:
-      using clause::clause;
-
-      bool parse(document_builder &builder);
-
-      char const *name() const
-      {
-        return "s-white";
-      }
-    };
+    typedef internal::or_clause<space, tab> white;
 
     // [34] 	ns-char 	::= 	nb-char - s-white
     class non_white_char : public clause

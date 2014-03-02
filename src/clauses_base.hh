@@ -213,11 +213,13 @@ namespace kyaml
         bool parse(document_builder &builder)
         {
           document_builder::child_t c = builder.child();
-          if(parse_recurse<clauses_t...>(c))
+          if(parse_recurse<clauses_t...>(*c))
           {
-            builder.add(clause::name(), c);
+            builder.add(clause::name(), std::move(c));
             return true;
           }
+          else
+            unwind();
           return false;
         }
 

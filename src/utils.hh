@@ -36,7 +36,7 @@ namespace kyaml
 
     // does nothing, compiler should optimize out everything
     template<typename... args_t>
-    void log(std::string const &, args_t...)
+    void operator()(std::string const &, args_t...)
     {}
   };
 
@@ -50,7 +50,7 @@ namespace kyaml
     {}
 
     template<typename... args_t>
-    void log(std::string const &tag, args_t... args)
+    void operator()(std::string const &tag, args_t... args)
     {
       d_out << "(" << tag << "):";
       log_recurse(args...);

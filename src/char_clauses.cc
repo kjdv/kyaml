@@ -172,51 +172,6 @@ bool non_break_char::parse(document_builder &builder)
 }
 
 #ifdef COMPILE_GUARD
-bool line_break::try_clause()
-{
-  clear();
-
-  carriage_return cr(ctx());
-  line_feed lf(ctx());
-
-  string val;
-  if(cr.try_clause())
-  {
-    val += cr.value();
-    if(lf.try_clause())
-      val += lf.value();
-  }
-  else if(lf.try_clause())
-  {
-    val += lf.value();
-  }
-
-  if(!val.empty())
-  {
-    set(val);
-    return true;
-  }
-  return false;
-}
-
-bool white::try_clause()
-{
-  space s(ctx());
-  tab t(ctx());
-
-  if(s.try_clause())
-  {
-    set(s.value());
-    return true;
-  }
-  else if(t.try_clause())
-  {
-    set(t.value());
-    return true;
-  }
-
-  return false;
-}
 
 bool non_white_char::try_clause()
 {

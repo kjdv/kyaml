@@ -155,24 +155,23 @@ CHAR_CLAUSE_TEST(non_break_char,
                  values({"a"}),
                  values({"", "\r", "\n", "\xfe\xff"}))
 
-
-#ifdef COMPILE_GUARD
-PCHAR_CLAUSE_TEST(line_break, 
+CHAR_CLAUSE_TEST(line_break, 
                  values({"\n", "\r", "\r\n"}),
                  values({"", "a"}));
 
-PCHAR_CLAUSE_TEST(space, 
+CHAR_CLAUSE_TEST(space, 
                  values({" "}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(tab, 
+CHAR_CLAUSE_TEST(tab, 
                  values({"\t"}),
                  values({"", "a"}))
 
-PCHAR_CLAUSE_TEST(white, 
+CHAR_CLAUSE_TEST(white, 
                  values({" ", "\t"}),
                  values({"", "a"}))
 
+#ifdef COMPILE_GUARD
 PCHAR_CLAUSE_TEST(non_white_char, 
                  values({"a"}),
                  values({"", " ", "\t", "\r", "\n"}))

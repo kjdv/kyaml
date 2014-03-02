@@ -39,7 +39,7 @@ TEST(logger, one_item)
   stringstream str;
   logger<true> l(str);
 
-  l.log("tag", 1);
+  l("tag", 1);
 
   EXPECT_EQ("(tag): 1\n", str.str());
 }
@@ -49,7 +49,7 @@ TEST(logger, two_items)
   stringstream str;
   logger<true> l(str);
 
-  l.log("tag", "pi", 3.1459);
+  l("tag", "pi", 3.1459);
 
   EXPECT_EQ("(tag): pi 3.1459\n", str.str());
 }
@@ -59,7 +59,7 @@ TEST(logger, zero_item)
   stringstream str;
   logger<true> l(str);
 
-  l.log("tag");
+  l("tag");
 
   EXPECT_EQ("(tag):\n", str.str());
 }

@@ -41,10 +41,13 @@ namespace kyaml
     {
     public:
       void add(char const *tag, void_item const &v) override
-      {}
+      {
+        d_log(tag, "adding void", v);
+      }
 
       void add(char const *tag, std::string const &s) override
       {
+        d_log(tag, "adding string", s);
         append_utf8(d_str, s);
       }
 
@@ -55,7 +58,9 @@ namespace kyaml
 
       void add(char const *tag, document_builder::child_t c) override
       {
-        d_str.append(dynamic_cast<string_document_builder *>(c.get())->d_str);
+        string_document_builder *sb = dynamic_cast<string_document_builder *>(c.get());
+        d_log(tag, "adding child", sb->d_str);
+        d_str.append(sb->d_str);
       }
 
       std::string const &result() const
@@ -64,6 +69,7 @@ namespace kyaml
       }
 
     private:
+      kyaml::logger<false> d_log;
       std::string d_str;
     };
 
