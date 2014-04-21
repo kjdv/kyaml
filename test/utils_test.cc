@@ -63,3 +63,40 @@ TEST(logger, zero_item)
 
   EXPECT_EQ("(tag):\n", str.str());
 }
+
+TEST(invalid_utf8, formatter)
+{
+  string sequence("\xfd\x82\x82\x82\x82\x82");
+  invalid_utf8 e("message", sequence);
+
+  EXPECT_EQ("message: \xFD \x82 \x82 \x82 \x82 \x82", string(e.what()));
+}
+
+struct nr_utf8bytes_testcase
+{
+  string input;
+  size_t nr;
+};
+
+class nr_utf8bytes_test : public testing::TestWithParam<nr_utf8bytes_testcase>
+{};
+
+TEST_P(nr_utf8bytes_test, nr)
+{
+  uint8_t c = GetParam().input[0];
+  EXPECT_EQ(GetParam().nr, nr_utf8bytes(c));
+}
+
+nr_utf8bytes_testcase nr_utf8bytes_testcases[] =
+{
+  {"a", 1},
+  {"\xd5\x82", 2},
+  {"\xe1\x82\x82", 3},
+  {"\xf1\x82\x82\x82", 4},
+  {"\xf9\x82\x82\x82\x82", 5},
+  {"\xfd\x82\x82\x82\x82\x82", 6},
+};
+
+INSTANTIATE_TEST_CASE_P(nr_utf8bytes_tests,
+                        nr_utf8bytes_test,
+                        testing::ValuesIn(nr_utf8bytes_testcases));

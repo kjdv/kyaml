@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <stdexcept>
 
 namespace kyaml
 {
@@ -15,6 +16,35 @@ namespace kyaml
     no_copy(no_copy const &);
     no_copy &operator=(no_copy const &);
   };
+
+  class invalid_utf8 : public std::exception
+  {
+  public:
+    invalid_utf8(std::string const &msg, std::string const &sequence) :
+      d_msg(construct(msg, sequence))
+    {}
+
+    char const *what() const throw() override
+    {
+      return d_msg.c_str();
+    }
+  private:
+    static std::string construct(std::string const &msg, std::string const &sequence);
+    std::string d_msg;
+  };
+
+  // return the number of utf8 bytes based on the first byte c (including c)
+  size_t nr_utf8bytes(uint8_t c);
+
+  inline bool is_lead_byte(uint8_t c)
+  {
+    return (c & 0xc0) == 0xc0;
+  }
+
+  inline bool is_continuation_byte(uint8_t c)
+  {
+    return (c & 0xc0) == 0x80;
+  }
 
   bool extract_utf8(std::istream &stream, char32_t &result);
   bool extract_utf8(std::string const &str, char32_t &result);

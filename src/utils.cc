@@ -5,16 +5,6 @@
 using namespace std;
 using namespace kyaml;
 
-inline bool is_lead_byte(uint8_t c)
-{
-  return (c & 0xc0) == 0xc0; 
-}
-
-inline bool is_continuation_byte(uint8_t c)
-{
-  return (c & 0xc0) == 0x80; 
-}
-
 bool kyaml::extract_utf8(istream &stream, char32_t &result)
 {
   uint8_t c;
@@ -68,4 +58,34 @@ void kyaml::append_utf8(string &str, char32_t ch)
   }
   byte = ch & 0x000000ff;
   str.append(1, byte);
+}
+
+
+size_t kyaml::nr_utf8bytes(uint8_t c)
+{
+  if(c < 0x80)
+    return 1;
+  else if(c < 0xe0)
+    return 2;
+  else if(c < 0xf0)
+    return 3;
+  else if(c < 0xf8)
+    return 4;
+  else if(c < 0xfc)
+    return 5;
+  else if(c < 0xfe)
+    return 6;
+  else
+    return 0;
+}
+
+string invalid_utf8::construct(string const &msg, string const &sequence)
+{
+  stringstream str;
+  str.setf(ios::hex);
+  str << msg << ":";
+  for(uint8_t b : sequence)
+    str << ' ' << b;
+
+  return str.str();
 }
