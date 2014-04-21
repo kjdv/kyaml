@@ -12,7 +12,7 @@ namespace kyaml
     namespace internal
     {
       // utility for clauses where only one char value is allowed
-      template <char_t char_value>
+      template <char_t char_value, bool read_value = true>
       class simple_char_clause : public clause
       {
       public:
@@ -23,7 +23,8 @@ namespace kyaml
           char_t c;
           if(stream().peek(c) && c == char_value)
           {
-            builder.add(name(), c);
+            if(read_value)
+              builder.add(name(), c);
             advance();
             return true;
           }

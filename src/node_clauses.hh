@@ -206,9 +206,9 @@ namespace kyaml
     };
 
     // [109] 	c-double-quoted(n,c) 	::= 	“"” nb-double-text(n,c) “"”
-    typedef internal::all_of<internal::simple_char_clause<'"'>,
+    typedef internal::all_of<internal::simple_char_clause<'"', false>,
                              double_text,
-                             internal::simple_char_clause<'"'> > double_quoted;
+                             internal::simple_char_clause<'"', false> > double_quoted;
 
     // [117] 	c-quoted-quote 	::= 	“'” “'”
     typedef internal::and_clause<internal::simple_char_clause<'\''>,

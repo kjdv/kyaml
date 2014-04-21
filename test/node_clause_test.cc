@@ -85,3 +85,34 @@ TEST(alias_test, alias)
     Times(1);
   EXPECT_TRUE(an.parse(mb));
 }
+
+struct dquote_testcase
+{
+  string input;
+  string expect;
+  context::blockflow_t flow;
+};
+
+class dquote_test : public TestWithParam<dquote_testcase>
+{};
+
+TEST_P(dquote_test, extract)
+{
+  context_wrap cw(GetParam().input, 0, GetParam().flow);
+  double_quoted dq(cw.get());
+
+  string_builder sb;
+  EXPECT_TRUE(dq.parse(sb));
+  EXPECT_EQ(GetParam().expect, sb.build());
+}
+
+dquote_testcase dquote_testcases[] =
+{
+  {"\"klaas\"", "klaas", context::FLOW_IN},
+  {"\"klaas  \\\njacob\"", "klaas\njacob", context::FLOW_IN},
+  {"\"folded \nto a space,\t\n \nto a line feed, or \t\\\n   \tnon-content\"", "blah", context::FLOW_IN},
+};
+
+INSTANTIATE_TEST_CASE_P(dquote_tests,
+                        dquote_test,
+                        ValuesIn(dquote_testcases));
