@@ -21,9 +21,8 @@ bool printable::parse(document_builder &builder)
     advance();
     return true;
   }
-  else if(c >= 0xff) // must be utf8
+  else if(c >= 0xff && is_valid_utf8(c))
   {
-    // no extensive checking done, we just assume all utf8 is printable (to improve)
     builder.add(name(), c);
     advance();
     return true;
@@ -45,9 +44,8 @@ bool json::parse(document_builder &builder)
     advance();
     return true;
   }
-  else if(c >= 0xff) // must be utf8
+  else if(c >= 0xff && is_valid_utf8(c))
   {
-    // no extensive checking done, we just assume all utf8 is printable (to improve)
     builder.add(name(), c);
     advance();
     return true;

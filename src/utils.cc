@@ -89,3 +89,29 @@ string invalid_utf8::construct(string const &msg, string const &sequence)
 
   return str.str();
 }
+
+
+bool kyaml::is_valid_utf8(string const &str)
+{
+  if(str.empty())
+    return true;
+
+  uint8_t c = str[0];
+  size_t count = nr_utf8bytes(c);
+  if(str.size() < count)
+    return false;
+
+  for(size_t i = 1; i < count; ++i)
+    if(!is_continuation_byte(str[i]))
+      return false;
+
+  return true;
+}
+
+
+bool kyaml::is_valid_utf8(char32_t c)
+{
+  string str;
+  append_utf8(str, c);
+  return is_valid_utf8(str);
+}

@@ -46,6 +46,10 @@ namespace kyaml
     return (c & 0xc0) == 0x80;
   }
 
+  bool is_valid_utf8(std::string const &str);
+  bool is_valid_utf8(char32_t c);
+
+  // note: these do not check for validity
   bool extract_utf8(std::istream &stream, char32_t &result);
   bool extract_utf8(std::string const &str, char32_t &result);
  
