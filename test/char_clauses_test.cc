@@ -304,5 +304,9 @@ CHAR_CLAUSE_TEST(s_double_char,
                  values({"\\", "\", " ""}))
 
 CHAR_CLAUSE_TEST(nonbreak_double_char,
-                 values({"\\a", "\\b", "a", "1"}),
+                 values({"\\a", "\\b", "a", "1", " "}),
                  values({"\\", "\""}))
+
+CHAR_CLAUSE_TEST(nonspace_double_char,
+                 values({"\\a", "\\b", "a", "1"}),
+                 values({"\\", "\"", " "}))

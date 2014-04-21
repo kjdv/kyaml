@@ -118,6 +118,10 @@ namespace kyaml
                                                  internal::not_clause<internal::simple_char_clause<'"'> >,
                                                  json>
                                > nonbreak_double_char;
+
+    // [108] 	ns-double-char 	::= 	nb-double-char - s-white
+    typedef internal::and_clause<internal::not_clause<white>,
+                                 nonbreak_double_char> nonspace_double_char;
   }
 }
 
