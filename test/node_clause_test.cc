@@ -134,3 +134,5 @@ CLAUSE_TEST(nonbreak_nonspace_double_inline,
             cases({qt("aap noot mies", "aap noot mies"),
                    qt("  klaas", "  klaas")}))
 
+CLAUSE_TEST(double_next_line,
+            cases({qt("\n\n nonempty \n\tblah", "\n\n nonempty \n\tblah")}))
