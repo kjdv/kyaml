@@ -122,6 +122,93 @@ namespace kyaml
     // [108] 	ns-double-char 	::= 	nb-double-char - s-white
     typedef internal::and_clause<internal::not_clause<white>,
                                  nonbreak_double_char> nonspace_double_char;
+
+    // [114] 	nb-ns-double-in-line 	::= 	( s-white* ns-double-char )*
+    typedef internal::zero_or_more<internal::and_clause<internal::zero_or_more<white>,
+                                                        nonspace_double_char>
+                                  > nonbreak_nonspace_double_inline;
+
+    // [112] 	s-double-escaped(n) 	::= 	s-white* “\” b-non-content
+    //                                    l-empty(n,flow-in)* s-flow-line-prefix(n)
+    typedef internal::all_of<internal::zero_or_more<white>,
+                             internal::simple_char_clause<'\\'>,
+                             non_content,
+                             internal::zero_or_more<internal::flow_restriction<empty_line, context::FLOW_IN> >,
+                             flow_line_prefix> double_escaped;
+
+    // [113] 	s-double-break(n) 	::= 	s-double-escaped(n) | s-flow-folded(n)
+    typedef internal::or_clause<double_escaped,
+                                flow_folded> double_break;
+
+
+    // [115] 	s-double-next-line(n) 	::= 	s-double-break(n)
+    //                                      ( ns-double-char nb-ns-double-in-line
+    //                                      ( s-double-next-line(n) | s-white* ) )?
+    class double_next_line : public clause // not as fancy typedef to get around recursive definition
+    {
+    public:
+      double_next_line(context &ctx) :
+        clause(ctx),
+        d_impl(ctx)
+      {}
+
+      bool parse(document_builder &builder)
+      {
+        return d_impl.parse(builder);
+      }
+    private:
+      typedef internal::and_clause<double_break,
+                                   internal::zero_or_one<
+                                     internal::all_of<
+                                       nonspace_double_char,
+                                       nonbreak_nonspace_double_inline,
+                                       internal::or_clause<
+                                         double_next_line,
+                                         internal::zero_or_more<white>
+                                       >
+                                     >
+                                   > > impl_t;
+      impl_t d_impl;
+    };
+
+
+    // [116] 	nb-double-multi-line(n) 	::= 	nb-ns-double-in-line
+    //                                       ( s-double-next-line(n) | s-white* )
+    typedef internal::and_clause<nonbreak_nonspace_double_inline,
+                                 internal::or_clause<double_next_line,
+                                                     internal::zero_or_more<white>
+                                                    >
+                                > double_multi_line;
+
+    // [111] 	nb-double-one-line 	::= 	nb-double-char*
+    typedef internal::zero_or_more<nonbreak_double_char> double_one_line;
+
+    // [110] 	nb-double-text(n,c) 	::= 	c = flow-out  ⇒ nb-double-multi-line(n)
+    //                                    c = flow-in   ⇒ nb-double-multi-line(n)
+    //                                    c = block-key ⇒ nb-double-one-line
+    //                                    c = flow-key  ⇒ nb-double-one-line
+    class double_text : public clause
+    {
+    public:
+      double_text(context &ctx);
+
+      bool parse(document_builder &builder)
+      {
+        return d_dispatch ? (this->*d_dispatch)(builder) : false;
+      }
+
+    private:
+      bool parse_multiline(document_builder &builder);
+      bool parse_oneline(document_builder &builder);
+
+      typedef bool (double_text::*dispatch_f)(document_builder &);
+      dispatch_f d_dispatch;
+    };
+
+    // [109] 	c-double-quoted(n,c) 	::= 	“"” nb-double-text(n,c) “"”
+    typedef internal::all_of<internal::simple_char_clause<'"'>,
+                             double_text,
+                             internal::simple_char_clause<'"'> > double_quoted;
   }
 }
 
