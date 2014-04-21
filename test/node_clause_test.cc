@@ -109,10 +109,28 @@ TEST_P(dquote_test, extract)
 dquote_testcase dquote_testcases[] =
 {
   {"\"klaas\"", "klaas", context::FLOW_IN},
-  {"\"klaas  \\\njacob\"", "klaas\njacob", context::FLOW_IN},
-  {"\"folded \nto a space,\t\n \nto a line feed, or \t\\\n   \tnon-content\"", "blah", context::FLOW_IN},
+//  {"\"klaas  \\\njacob\"", "klaas\njacob", context::FLOW_IN},
+//  {"\"folded \nto a space,\t\n \nto a line feed, or \t\\\n   \tnon-content\"", "blah", context::FLOW_IN},
 };
 
 INSTANTIATE_TEST_CASE_P(dquote_tests,
                         dquote_test,
                         ValuesIn(dquote_testcases));
+
+namespace
+{
+  clause_testcase qt(string const &input, string const &expect, context::blockflow_t bf = context::FLOW_IN)
+  {
+    return
+      testcase_builder(input, true).
+      with_consumed(input.size()).
+      with_value(expect).
+      with_blockflow(bf).
+      build();
+  }
+}
+
+CLAUSE_TEST(nonbreak_nonspace_double_inline,
+            cases({qt("aap noot mies", "aap noot mies"),
+                   qt("  klaas", "  klaas")}))
+
