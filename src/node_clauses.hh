@@ -108,6 +108,11 @@ namespace kyaml
         return "e-scalar";
       }
     };
+
+    // [106] 	e-node 	::= 	e-scalar
+    typedef empty scalar;
+
+
   }
 }
 
