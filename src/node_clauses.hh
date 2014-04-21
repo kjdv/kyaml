@@ -91,6 +91,23 @@ namespace kyaml
         return "c-ns-alias-node";
       }
     };
+
+    // [105] 	e-scalar 	::= 	/* Empty */
+    class empty : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder)
+      {
+        return true;
+      }
+
+      char const *name() const
+      {
+        return "e-scalar";
+      }
+    };
   }
 }
 
