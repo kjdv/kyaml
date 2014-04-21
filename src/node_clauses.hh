@@ -209,6 +209,94 @@ namespace kyaml
     typedef internal::all_of<internal::simple_char_clause<'"'>,
                              double_text,
                              internal::simple_char_clause<'"'> > double_quoted;
+
+    // [117] 	c-quoted-quote 	::= 	“'” “'”
+    typedef internal::and_clause<internal::simple_char_clause<'\''>,
+                                 internal::simple_char_clause<'\''> > quoted_quote;
+
+    // [118] 	nb-single-char 	::= 	c-quoted-quote | ( nb-json - “'” )
+    typedef internal::or_clause<quoted_quote,
+                                internal::and_clause<internal::not_clause<internal::simple_char_clause<'\''> >,
+                                                     json>
+                               > nonbreak_single_char;
+
+    // [119] 	ns-single-char 	::= 	nb-single-char - s-white
+    typedef internal::and_clause<internal::not_clause<white>,
+                                 nonbreak_single_char> nonspace_single_char;
+
+    // [122] 	nb-single-one-line 	::= 	nb-single-char*
+    typedef internal::zero_or_more<nonbreak_single_char> single_one_line;
+
+    // [123] 	nb-ns-single-in-line 	::= 	( s-white* ns-single-char )*
+    typedef internal::zero_or_more<internal::and_clause<internal::zero_or_more<white>,
+                                                        nonspace_single_char>
+                                  > nonbreak_nonspace_single_inline;
+
+    // [124] 	s-single-next-line(n) 	::= 	s-flow-folded(n)
+    //                                    ( ns-single-char nb-ns-single-in-line
+    //                                    ( s-single-next-line(n) | s-white* ) )?
+    class single_next_line : public clause // not as fancy typedef to get around recursive definition
+    {
+    public:
+      single_next_line(context &ctx) :
+        clause(ctx),
+        d_impl(ctx)
+      {}
+
+      bool parse(document_builder &builder)
+      {
+        return d_impl.parse(builder);
+      }
+    private:
+      typedef internal::and_clause<flow_folded,
+                                   internal::zero_or_one<
+                                     internal::all_of<
+                                       nonspace_single_char,
+                                       nonbreak_nonspace_single_inline,
+                                       internal::or_clause<
+                                         single_next_line,
+                                         internal::zero_or_more<white>
+                                       >
+                                     >
+                                   > > impl_t;
+      impl_t d_impl;
+    };
+
+    // [125] 	nb-single-multi-line(n) 	::= 	nb-ns-single-in-line
+    //                                        ( s-single-next-line(n) | s-white* )
+    typedef internal::and_clause<nonbreak_nonspace_single_inline,
+                                 internal::or_clause<single_next_line,
+                                                     internal::zero_or_more<white>
+                                                    >
+                                > single_multi_line;
+
+    // [121] 	nb-single-text(n,c) 	::= 	c = flow-out  ⇒ nb-single-multi-line(n)
+    //                                    c = flow-in   ⇒ nb-single-multi-line(n)
+    //                                    c = block-key ⇒ nb-single-one-line
+    //                                    c = flow-key  ⇒ nb-single-one-line
+    class single_text : public clause
+    {
+    public:
+      single_text(context &ctx);
+
+      bool parse(document_builder &builder)
+      {
+        return d_dispatch ? (this->*d_dispatch)(builder) : false;
+      }
+
+    private:
+      bool parse_multiline(document_builder &builder);
+      bool parse_oneline(document_builder &builder);
+
+      typedef bool (single_text::*dispatch_f)(document_builder &);
+      dispatch_f d_dispatch;
+    };
+
+
+    // [120] 	c-single-quoted(n,c) 	::= 	“'” nb-single-text(n,c) “'”
+    typedef internal::all_of<internal::simple_char_clause<'\''>,
+                             single_text,
+                             internal::simple_char_clause<'\''> > single_quoted;
   }
 }
 

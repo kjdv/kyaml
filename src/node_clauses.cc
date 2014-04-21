@@ -101,3 +101,37 @@ bool double_text::parse_oneline(document_builder &builder)
   double_one_line dol(ctx());
   return dol.parse(builder);
 }
+
+single_text::single_text(context &ctx) :
+  clause(ctx),
+  d_dispatch(nullptr)
+{
+  context::blockflow_t bf = ctx.blockflow();
+
+  switch(bf)
+  {
+  case context::FLOW_OUT:
+  case context::FLOW_IN:
+    d_dispatch = &single_text::parse_multiline;
+    break;
+  case context::BLOCK_KEY:
+  case context::FLOW_KEY:
+    d_dispatch = &single_text::parse_oneline;
+    break;
+  default:
+    break;
+  }
+}
+
+bool single_text::parse_multiline(document_builder &builder)
+{
+  single_multi_line sml(ctx());
+  return sml.parse(builder);
+}
+
+bool single_text::parse_oneline(document_builder &builder)
+{
+  single_one_line sol(ctx());
+  return sol.parse(builder);
+}
+
