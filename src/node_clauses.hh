@@ -112,7 +112,12 @@ namespace kyaml
     // [106] 	e-node 	::= 	e-scalar
     typedef empty scalar;
 
-
+    // [107] 	nb-double-char 	::= 	c-ns-esc-char | ( nb-json - “\” - “"” )
+    typedef internal::or_clause<esc_char,
+                                internal::all_of<internal::not_clause<internal::simple_char_clause<'\\'> >,
+                                                 internal::not_clause<internal::simple_char_clause<'"'> >,
+                                                 json>
+                               > nonbreak_double_char;
   }
 }
 

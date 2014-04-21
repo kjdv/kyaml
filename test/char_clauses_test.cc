@@ -1,6 +1,7 @@
 #include "char_clauses.hh"
 #include "flow_clauses.hh"
 #include "clause_test.hh"
+#include "node_clauses.hh"
 #include <algorithm>
 #include <vector>
 #include <initializer_list>
@@ -301,3 +302,7 @@ CHAR_CLAUSE_TEST(b_double_char,
 CHAR_CLAUSE_TEST(s_double_char,
                  values({"\\t", "\\v", "\\n", "a", "t", "n"}),
                  values({"\\", "\", " ""}))
+
+CHAR_CLAUSE_TEST(nonbreak_double_char,
+                 values({"\\a", "\\b", "a", "1"}),
+                 values({"\\", "\""}))
