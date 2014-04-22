@@ -70,7 +70,8 @@ bool byte_order_mark::inner::parse(document_builder &builder)
     builder.add(name(), c);
     advance();
     return true;
-    if(stream().peek(c) && c == static_cast<char_t>('\xff'))
+
+    /*if(stream().peek(c) && c == static_cast<char_t>('\xff'))
     {
       builder.add(name(), c);
       advance();
@@ -78,7 +79,7 @@ bool byte_order_mark::inner::parse(document_builder &builder)
       return true;
     }
     else
-      unwind();
+      unwind();*/
   }
   return false;
 }

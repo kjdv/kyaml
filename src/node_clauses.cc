@@ -135,3 +135,115 @@ bool single_text::parse_oneline(document_builder &builder)
   return sol.parse(builder);
 }
 
+plain_safe::plain_safe(context &ctx) :
+  clause(ctx),
+  d_dispatch(nullptr)
+{
+  context::blockflow_t bf = ctx.blockflow();
+
+  switch(bf)
+  {
+  case context::FLOW_OUT:
+  case context::BLOCK_KEY:
+    d_dispatch = &plain_safe::parse_safe_out;
+    break;
+
+  case context::FLOW_IN:
+  case context::FLOW_KEY:
+    d_dispatch = &plain_safe::parse_safe_in;
+    break;
+  default:
+    break;
+  }
+}
+
+bool plain_safe::parse_safe_in(document_builder &builder)
+{
+  plain_safe_in psi(ctx());
+  return psi.parse(builder);
+}
+
+bool plain_safe::parse_safe_out(document_builder &builder)
+{
+  plain_safe_out pso(ctx());
+  return pso.parse(builder);
+}
+
+
+
+bool plain_first::parse(document_builder &builder)
+{
+  left_t l(ctx());
+  if(l.parse(builder))
+    return true;
+
+  dummy_document_builder dm;
+  augmented_right_t r(ctx());
+  if(r.parse(dm))
+  {
+    unwind();
+    right_t real(ctx());
+    real.parse(builder);
+    return true;
+  }
+  return false;
+}
+
+
+bool plain_char::parse(document_builder &builder)
+{
+  clause1_t c1(ctx());
+  if(c1.parse(builder))
+    return true;
+  if(preceded_by_nschar(ctx()))
+  {
+    clause2_t c2(ctx());
+    if(c2.parse(builder))
+      return true;
+  }
+  if(followed_by_plain_safe(ctx()))
+  {
+    clause3_t c3(ctx());
+    if(c3.parse(builder))
+      return true;
+  }
+  return false;
+}
+
+bool plain_char::preceded_by_nschar(context &ctx)
+{
+  char32_t c;
+  if(ctx.stream().rpeek(c))
+  {
+    string s;
+    append_utf8(s, c);
+    std::stringstream str(s);
+
+    char_stream cs(str);
+    context c2(cs);
+
+    non_white_char nwc(c2);
+    dummy_document_builder db;
+    return nwc.parse(db);
+  }
+  return false;
+}
+
+bool plain_char::followed_by_plain_safe(context &ctx)
+{
+  char32_t c;
+  if(ctx.stream().peek(c))
+  {
+    string s;
+    append_utf8(s, c);
+    std::stringstream str(s);
+
+    char_stream cs(str);
+    context c2(cs);
+
+    plain_safe ps(c2);
+    dummy_document_builder db;
+    return ps.parse(db);
+  }
+  return false;
+}

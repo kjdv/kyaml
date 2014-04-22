@@ -157,6 +157,16 @@ namespace
       with_indent_level(indent).
       build();
   }
+
+  clause_testcase pt(string const &input, string const &expect, context::blockflow_t bf = context::FLOW_IN)
+  {
+    return
+      testcase_builder(input, true).
+      with_consumed(expect.size()).
+      with_value(expect).
+      with_blockflow(bf).
+      build();
+  }
 }
 
 CLAUSE_TEST(nonbreak_nonspace_double_inline,
@@ -169,3 +179,14 @@ CLAUSE_TEST(double_escaped,
 CLAUSE_TEST(double_break,
             cases({qt(" \t\\\n ", " \t\\\n ", 1),
                    qt("\n ", "\n ", 1)}))
+
+CLAUSE_TEST(plain_first,
+            cases({pt("a", "a"),
+                   pt("?a", "?"),
+                   pt(":a", ":"),
+                   pt("-a", "-")}))
+
+CLAUSE_TEST(plain_char,
+            cases({pt("a", "a"),
+                   pt("?a", "?"),
+                   pt("-a", "-")}))

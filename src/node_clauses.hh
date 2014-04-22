@@ -297,6 +297,77 @@ namespace kyaml
     typedef internal::all_of<internal::simple_char_clause<'\'', false>,
                              single_text,
                              internal::simple_char_clause<'\'', false> > single_quoted;
+
+    // [129] 	ns-plain-safe-in 	::= 	ns-char - c-flow-indicator
+    typedef internal::and_clause<internal::not_clause<flow_indicator>,
+                                 non_white_char> plain_safe_in;
+
+    // [128] 	ns-plain-safe-out 	::= 	ns-char
+    typedef non_white_char plain_safe_out;
+
+    // [127] 	ns-plain-safe(c) 	::= 	c = flow-out  ⇒ ns-plain-safe-out
+    //                                c = flow-in   ⇒ ns-plain-safe-in
+    //                                c = block-key ⇒ ns-plain-safe-out
+    //                                c = flow-key  ⇒ ns-plain-safe-in
+    class plain_safe : public clause
+    {
+    public:
+      plain_safe(context &ctx);
+
+      bool parse(document_builder &builder)
+      {
+        return d_dispatch ? (this->*d_dispatch)(builder) : false;
+      }
+
+    private:
+      bool parse_safe_in(document_builder &builder);
+      bool parse_safe_out(document_builder &builder);
+
+      typedef bool (plain_safe::*dispatch_f)(document_builder &);
+      dispatch_f d_dispatch;
+    };
+
+
+    // [126] 	ns-plain-first(c) 	::= 	  ( ns-char - c-indicator )
+    //                                    | ( ( “?” | “:” | “-” )
+    //                                      Followed by an ns-plain-safe(c)) )
+    class plain_first : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+
+    private:
+      typedef internal::and_clause<internal::not_clause<indicator>,
+                                   non_white_char> left_t;
+      typedef internal::any_of<internal::simple_char_clause<'?'>,
+                               internal::simple_char_clause<':'>,
+                               internal::simple_char_clause<'-'> > right_t;
+      typedef plain_safe tail_t;
+
+      typedef internal::and_clause<right_t, tail_t> augmented_right_t;
+    };
+
+    // [130] 	ns-plain-char(c) 	::= 	  ( ns-plain-safe(c) - “:” - “#” )
+    //                                  | ( An ns-char preceding “#” )
+    //                                  | ( “:” Followed by an ns-plain-safe(c) )
+    class plain_char : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    private:
+      typedef internal::all_of<internal::not_clause<internal::simple_char_clause<':'> >,
+                               internal::not_clause<internal::simple_char_clause<'#'> >,
+                               plain_safe> clause1_t;
+      typedef internal::simple_char_clause<'#'> clause2_t;
+      typedef internal::simple_char_clause<':'> clause3_t;
+
+      bool preceded_by_nschar(context &ctx);
+      bool followed_by_plain_safe(context &ctx);
+    };
   }
 }
 
