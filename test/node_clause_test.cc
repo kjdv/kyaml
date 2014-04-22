@@ -115,6 +115,36 @@ INSTANTIATE_TEST_CASE_P(dquote_tests,
                         dquote_test,
                         ValuesIn(dquote_testcases));
 
+struct squote_testcase
+{
+  string input;
+  string expect;
+  context::blockflow_t flow;
+};
+
+class squote_test : public TestWithParam<squote_testcase>
+{};
+
+TEST_P(squote_test, extract)
+{
+  context_wrap cw(GetParam().input, 0, GetParam().flow);
+  single_quoted dq(cw.get());
+
+  string_builder sb;
+  EXPECT_TRUE(dq.parse(sb));
+  EXPECT_EQ(GetParam().expect, sb.build());
+}
+
+squote_testcase squote_testcases[] =
+{
+  {"'klaas'", "klaas", context::FLOW_IN},
+  {"'kla''as'", "kla'as", context::FLOW_IN},
+  {"'kla\\as'", "kla\\as", context::FLOW_IN},
+};
+
+INSTANTIATE_TEST_CASE_P(squote_tests,
+                        squote_test,
+                        ValuesIn(squote_testcases));
 namespace
 {
   clause_testcase qt(string const &input, string const &expect, unsigned indent = 0, context::blockflow_t bf = context::FLOW_IN)

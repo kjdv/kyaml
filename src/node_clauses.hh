@@ -211,8 +211,8 @@ namespace kyaml
                              internal::simple_char_clause<'"', false> > double_quoted;
 
     // [117] 	c-quoted-quote 	::= 	“'” “'”
-    typedef internal::and_clause<internal::simple_char_clause<'\''>,
-                                 internal::simple_char_clause<'\''> > quoted_quote;
+    typedef internal::and_clause<internal::simple_char_clause<'\'', false>,
+                                 internal::simple_char_clause<'\'', true> > quoted_quote;
 
     // [118] 	nb-single-char 	::= 	c-quoted-quote | ( nb-json - “'” )
     typedef internal::or_clause<quoted_quote,
@@ -294,9 +294,9 @@ namespace kyaml
 
 
     // [120] 	c-single-quoted(n,c) 	::= 	“'” nb-single-text(n,c) “'”
-    typedef internal::all_of<internal::simple_char_clause<'\''>,
+    typedef internal::all_of<internal::simple_char_clause<'\'', false>,
                              single_text,
-                             internal::simple_char_clause<'\''> > single_quoted;
+                             internal::simple_char_clause<'\'', false> > single_quoted;
   }
 }
 
