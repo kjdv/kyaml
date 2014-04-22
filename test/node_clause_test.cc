@@ -109,8 +109,6 @@ TEST_P(dquote_test, extract)
 dquote_testcase dquote_testcases[] =
 {
   {"\"klaas\"", "klaas", context::FLOW_IN},
-//  {"\"klaas  \\\njacob\"", "klaas\njacob", context::FLOW_IN},
-//  {"\"folded \nto a space,\t\n \nto a line feed, or \t\\\n   \tnon-content\"", "blah", context::FLOW_IN},
 };
 
 INSTANTIATE_TEST_CASE_P(dquote_tests,
@@ -119,13 +117,14 @@ INSTANTIATE_TEST_CASE_P(dquote_tests,
 
 namespace
 {
-  clause_testcase qt(string const &input, string const &expect, context::blockflow_t bf = context::FLOW_IN)
+  clause_testcase qt(string const &input, string const &expect, unsigned indent = 0, context::blockflow_t bf = context::FLOW_IN)
   {
     return
       testcase_builder(input, true).
       with_consumed(input.size()).
       with_value(expect).
       with_blockflow(bf).
+      with_indent_level(indent).
       build();
   }
 }
@@ -134,5 +133,9 @@ CLAUSE_TEST(nonbreak_nonspace_double_inline,
             cases({qt("aap noot mies", "aap noot mies"),
                    qt("  klaas", "  klaas")}))
 
-CLAUSE_TEST(double_next_line,
-            cases({qt("\n\n nonempty \n\tblah", "\n\n nonempty \n\tblah")}))
+CLAUSE_TEST(double_escaped,
+            cases({qt(" \t\\\n ", " \t\\\n ", 1)}))
+
+CLAUSE_TEST(double_break,
+            cases({qt(" \t\\\n ", " \t\\\n ", 1),
+                   qt("\n ", "\n ", 1)}))
