@@ -412,6 +412,33 @@ namespace kyaml
           return true;
         }
       };
+
+      class indent_inc_modifier : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder)
+        {
+          unsigned i = ctx().indent_level();
+          ctx().set_indent(++i);
+          return true;
+        }
+      };
+
+      class indent_dec_modifier : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder)
+        {
+          unsigned i = ctx().indent_level();
+          assert(i > 0);
+          ctx().set_indent(--i);
+          return true;
+        }
+      };
     }
   }
 }
