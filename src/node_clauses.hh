@@ -134,7 +134,7 @@ namespace kyaml
     typedef internal::all_of<internal::zero_or_more<white>,
                              internal::simple_char_clause<'\\'>,
                              non_content,
-                             internal::zero_or_more<internal::flow_restriction<empty_line, context::FLOW_IN> >,
+                             internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::FLOW_IN>, empty_line> >,
                              flow_line_prefix> double_escaped;
 
     // [113] 	s-double-break(n) 	::= 	s-double-escaped(n) | s-flow-folded(n)

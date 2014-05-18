@@ -64,7 +64,7 @@ namespace kyaml
 
     // [168] 	l-keep-empty(n) 	::= 	l-empty(n,block-in)*
     //                                          l-trail-comments(n)? 
-    typedef internal::and_clause<internal::zero_or_more<internal::flow_restriction<empty_line, context::BLOCK_IN> >,
+    typedef internal::and_clause<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line > >,
                                  internal::zero_or_one<trail_comments> > keep_empty;
 
     // [167] 	l-strip-empty(n) 	::= 	( s-indent(≤n) b-non-content )*
@@ -85,7 +85,7 @@ namespace kyaml
 
     // [171] 	l-nb-literal-text(n) 	::= 	l-empty(n,block-in)*
     //                                          s-indent(n) nb-char+ 	 
-    typedef internal::all_of<internal::zero_or_more<internal::flow_restriction<empty_line, context::BLOCK_IN> >,
+    typedef internal::all_of<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> >,
                              indent_clause_eq,
                              internal::one_or_more<non_break_char> > line_literal_text;
 
@@ -116,7 +116,7 @@ namespace kyaml
     // [176] 	l-nb-folded-lines(n) 	::= 	s-nb-folded-text(n)
     //                                          ( b-l-folded(n,block-in) s-nb-folded-text(n) )* 
     typedef internal::and_clause<folded_text,
-                                 internal::zero_or_more<internal::and_clause<internal::flow_restriction<line_folded, context::BLOCK_IN>, // TODO: reevaluate flow restriction
+                                 internal::zero_or_more<internal::and_clause<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, line_folded>,
                                                                              folded_text> > > folded_lines;
 
     // [177] 	s-nb-spaced-text(n) 	::= 	s-indent(n) s-white nb-char* 
@@ -127,7 +127,7 @@ namespace kyaml
     // [178] 	b-l-spaced(n) 	::= 	b-as-line-feed
     //                                  l-empty(n,block-in)* 
     typedef internal::and_clause<as_line_feed,
-                                 internal::flow_restriction<empty_line, context::BLOCK_IN> > spaced;
+                                 internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> > spaced;
 
     // [179] 	l-nb-spaced-lines(n) 	::= 	s-nb-spaced-text(n)
     //                                          ( b-l-spaced(n) s-nb-spaced-text(n) )*
@@ -137,7 +137,7 @@ namespace kyaml
 
     // [180] 	l-nb-same-lines(n) 	::= 	l-empty(n,block-in)*
     //                                          ( l-nb-folded-lines(n) | l-nb-spaced-lines(n) ) 
-    typedef internal::and_clause<internal::zero_or_more<internal::flow_restriction<empty_line, context::BLOCK_IN> >,
+    typedef internal::and_clause<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> >,
                                  internal::or_clause<folded_lines,
                                                      spaced_lines>
                                  > same_lines;

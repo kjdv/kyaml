@@ -139,5 +139,4 @@ CLAUSE_TEST(line_folded,
                   tr_tc("\na", 2, true, 1, "\n")}))
 
 CLAUSE_TEST(flow_folded,
-            cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9, "\n\n  \n    "),
-                  ff_tc("\n\n  \n    aap", 3, context::FLOW_OUT, false, 0, "")}))
+            cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9, "\n\n  \n    ")}))

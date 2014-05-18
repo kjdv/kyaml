@@ -399,6 +399,19 @@ namespace kyaml
           return result;
         }
       };
+
+      template <context::blockflow_t blockflow_v>
+      class flow_modifier : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder)
+        {
+          ctx().set_blockflow(blockflow_v);
+          return true;
+        }
+      };
     }
   }
 }

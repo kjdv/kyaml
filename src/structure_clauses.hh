@@ -72,7 +72,7 @@ namespace kyaml
     // [74] 	s-flow-folded(n) 	::= 	s-separate-in-line? b-l-folded(n,flow-in)
     //                                          s-flow-line-prefix(n)
     typedef internal::all_of<internal::zero_or_one<separate_in_line>,
-                             internal::flow_restriction<line_folded, context::FLOW_IN>,
+                             internal::state_scope<internal::flow_modifier<context::FLOW_IN>, line_folded>,
                              flow_line_prefix> flow_folded;
   }
 }
