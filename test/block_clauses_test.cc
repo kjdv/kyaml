@@ -6,58 +6,37 @@ using namespace kyaml;
 using namespace kyaml::test;
 using namespace kyaml::clauses;
 
-TEST(indentation_detect, explicit_indent)
+struct indentation_detect_testcase
 {
-  context_wrap ctx("4");
+  const string input;
+  const unsigned expect;
+  const unsigned consume;
+};
+
+class indentation_detect_test : public testing::TestWithParam<indentation_detect_testcase>
+{};
+
+TEST_P(indentation_detect_test, detect)
+{
+  context_wrap ctx(GetParam().input);
 
   indentation_indicator i(ctx.get());
   string_document_builder b;
+
   i.parse(b);
-  EXPECT_EQ(4, ctx.get().indent_level());
-  EXPECT_EQ(1, ctx.get().stream().pos());
+
+  EXPECT_EQ(GetParam().expect, ctx.get().indent_level());
+  EXPECT_EQ(GetParam().consume, ctx.get().stream().pos());
 }
 
-TEST(indentation_detect, explicit_indent_zero)
-{
-  context_wrap ctx("0");
+indentation_detect_testcase indentation_detect_testcases[] = {
+  {"4", 4, 1},
+  {"0", 0, 0},
+  {"  ", 2, 0},
+  {"\n   ", 3, 0},
+  {"\n \n    ", 4, 0}
+};
 
-  indentation_indicator i(ctx.get());
-  string_document_builder b;
-
-  EXPECT_FALSE(i.parse(b));
-  EXPECT_EQ(0, ctx.get().indent_level());
-  EXPECT_EQ(0, ctx.get().stream().pos());
-}
-
-TEST(indentation_detect, autodetect_oneline)
-{
-  context_wrap ctx("  blah");
-
-  indentation_indicator i(ctx.get());
-  string_document_builder b;
-  i.parse(b);
-  EXPECT_EQ(2, ctx.get().indent_level());
-  EXPECT_EQ(0, ctx.get().stream().pos());
-}
-
-TEST(indentation_detect, autodetect_nextline)
-{
-  context_wrap ctx("\n   blah");
-
-  indentation_indicator i(ctx.get());
-  string_document_builder b;
-  i.parse(b);
-  EXPECT_EQ(3, ctx.get().indent_level());
-  EXPECT_EQ(0, ctx.get().stream().pos());
-}
-
-TEST(indentation_detect, autodetect_multiline)
-{
-  context_wrap ctx("\n \n    blah");
-
-  indentation_indicator i(ctx.get());
-  string_document_builder b;
-  i.parse(b);
-  EXPECT_EQ(4, ctx.get().indent_level());
-  EXPECT_EQ(0, ctx.get().stream().pos());
-}
+INSTANTIATE_TEST_CASE_P(tests_indentent_detect_test,
+                        indentation_detect_test,
+                        testing::ValuesIn(indentation_detect_testcases));
