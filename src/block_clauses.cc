@@ -83,7 +83,7 @@ bool indentation_indicator::parse(document_builder &builder)
 
 bool indentation_indicator::autodetect()
 {
-  return internal::autodetect_indent(ctx(), 0);
+  return internal::autodetect_indent(ctx(), ctx().indent_level());
 }
 
 bool chomping_indicator::parse(document_builder &builder)
