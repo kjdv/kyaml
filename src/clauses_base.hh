@@ -24,22 +24,32 @@ namespace kyaml
         FLOW_KEY,
       } blockflow_t;
 
+      typedef enum
+      {
+        CLIP,
+        STRIP,
+        KEEP,
+      } chomp_t;
+
       struct state
       {
         unsigned indent_level;
         blockflow_t blockflow;
+        chomp_t chomp;
         
-        state(unsigned il, blockflow_t bf) :
+        state(unsigned il, blockflow_t bf, chomp_t c) :
           indent_level(il),
-          blockflow(bf)
+          blockflow(bf),
+          chomp(c)
         {}
       };
 
       context(char_stream &str, 
               unsigned indent_level = 0,
-              blockflow_t bf = NA) :
+              blockflow_t bf = NA,
+              chomp_t c = CLIP) :
         d_stream(str),
-        d_state(indent_level, bf)
+        d_state(indent_level, bf, c)
       {}
 
       char_stream const &stream() const
@@ -62,6 +72,11 @@ namespace kyaml
         return d_state.blockflow;
       }
 
+      chomp_t chomp() const
+      {
+        return d_state.chomp;
+      }
+
       void set_blockflow(blockflow_t bf)
       {
         d_state.blockflow = bf;
@@ -70,6 +85,11 @@ namespace kyaml
       void set_indent(unsigned il)
       {
         d_state.indent_level = il;
+      }
+
+      void set_chomp(chomp_t c)
+      {
+        d_state.chomp = c;
       }
 
       state get_state() const
@@ -136,6 +156,11 @@ namespace kyaml
       void set_indent(unsigned il)
       {
         ctx().set_indent(il);
+      }
+
+      void set_chomp(context::chomp_t c)
+      {
+        ctx().set_chomp(c);
       }
 
       // not mandatory, but advices
