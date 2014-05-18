@@ -24,12 +24,22 @@ namespace kyaml
         FLOW_KEY,
       } blockflow_t;
 
+      struct state
+      {
+        unsigned indent_level;
+        blockflow_t blockflow;
+        
+        state(unsigned il, blockflow_t bf) :
+          indent_level(il),
+          blockflow(bf)
+        {}
+      };
+
       context(char_stream &str, 
               unsigned indent_level = 0,
               blockflow_t bf = NA) :
         d_stream(str),
-        d_indent_level(indent_level),
-        d_bf(bf)
+        d_state(indent_level, bf)
       {}
 
       char_stream const &stream() const
@@ -44,18 +54,43 @@ namespace kyaml
 
       unsigned indent_level() const
       {
-        return d_indent_level;
+        return d_state.indent_level;
       }
 
       blockflow_t blockflow() const
       {
-        return d_bf;
+        return d_state.blockflow;
+      }
+
+      void set_blockflow(blockflow_t bf)
+      {
+        d_state.blockflow = bf;
+      }
+
+      void inc_indent()
+      {
+        ++d_state.indent_level;
+      }
+
+      void dec_indent()
+      {
+        assert(indent_level() > 0);
+        --d_state.indent_level;
+      }
+
+      state get_state() const
+      {
+        return d_state;
+      }
+
+      void set_state(state const &s)
+      {
+        d_state = s;
       }
 
     private:
       char_stream &d_stream;
-      unsigned const d_indent_level;
-      blockflow_t const d_bf;
+      state d_state;
     };   
   
     // base class is informational only: there are no virtual functions, its here only to document
@@ -65,7 +100,8 @@ namespace kyaml
     public:
       clause(context &c) : 
         d_context(c),
-        d_mark(d_context.stream().mark())
+        d_mark(d_context.stream().mark()),
+        d_state(c.get_state())
       {}
 
       void advance(size_t n = 1)
@@ -76,6 +112,7 @@ namespace kyaml
       void unwind()
       {
         stream().unwind(d_mark);
+        ctx().set_state(d_state);
       }  
 
     protected:
@@ -97,6 +134,21 @@ namespace kyaml
         return ctx().stream();
       }
 
+      void set_blockflow(context::blockflow_t bf)
+      {
+        ctx().set_blockflow(bf);
+      }
+
+      void inc_indent()
+      {
+        ctx().inc_indent();
+      }
+
+      void dec_indent()
+      {
+        ctx().dec_indent();
+      }
+
       // not mandatory, but advices
       char const *name() const
       {
@@ -106,10 +158,12 @@ namespace kyaml
     private:
       context &d_context;
       char_stream::mark_t const d_mark;
+      context::state d_state;
     };
 
     namespace internal
     {
+      // +
       template <typename subclause_t>
       class one_or_more : public clause
       {
@@ -135,6 +189,7 @@ namespace kyaml
         }          
       };
 
+      // *
       template <typename subclause_t>
       class zero_or_more : public clause
       {
@@ -156,6 +211,7 @@ namespace kyaml
         }          
       };
 
+      // ?
       template <typename subclause_t>
       class zero_or_one : public clause
       {

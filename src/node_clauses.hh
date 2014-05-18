@@ -108,9 +108,10 @@ namespace kyaml
         return "e-scalar";
       }
     };
+    typedef empty escalar;
 
     // [106] 	e-node 	::= 	e-scalar
-    typedef empty scalar;
+    typedef escalar enode;
 
     // [107] 	nb-double-char 	::= 	c-ns-esc-char | ( nb-json - “\” - “"” )
     typedef internal::or_clause<esc_char,
@@ -397,7 +398,6 @@ namespace kyaml
       using clause::clause;
 
       bool parse(document_builder &builder);
-    private:
     };
   }
 }
