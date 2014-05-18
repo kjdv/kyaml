@@ -12,15 +12,10 @@ namespace
   class indent_builder : public document_builder
   { 
   public:
-    void add(char const *tag, void_item const &v) override
-    {}
-    void add(char const *tag, std::string const &v) override
+    void add_atom(char32_t c) override
     {
-      d_val.append(v);
+      append_utf8(d_val, c);
     }
-
-    void add_anchor(std::string const &anchor)
-    {}
 
     string value(size_t n) 
     {
@@ -50,10 +45,7 @@ bool indent_clause_eq::parse(document_builder &builder)
     indent_builder b;
     unsigned n = number_of_white(ctx(), b);
     if(n == level())
-    {
-      builder.add(name(), b.value(n));
       return true;
-    }
     else
       unwind();
   }
@@ -68,7 +60,6 @@ bool internal::indent_clause_ge::parse(document_builder &builder)
     unsigned n = number_of_white(ctx(), b);
     if(n >= level())
     {
-      builder.add(name(), b.value(level()));
       unwind();
       advance(level());
       return true;
@@ -88,7 +79,6 @@ bool indent_clause_lt::parse(document_builder &builder)
     if(n < higher_level())
     {
       d_m = n;
-      builder.add(name(), b.value(d_m));
       return true;
     }
     else
@@ -106,7 +96,6 @@ bool indent_clause_le::parse(document_builder &builder)
     if(n <= higher_level())
     {
       d_m = n;
-      builder.add(name(), b.value(d_m));
       return true;
     }
     else

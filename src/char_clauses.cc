@@ -17,13 +17,13 @@ bool printable::parse(document_builder &builder)
      (c >= '\x20' && c <= '\x7e') ||
      c == static_cast<char_t>('\x85'))
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
   else if(c >= 0xff && is_valid_utf8(c))
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
@@ -40,13 +40,13 @@ bool json::parse(document_builder &builder)
   if(c == '\x9' ||
      (c >= '\x20' && c <= '\x7f'))
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
   else if(c >= 0xff && is_valid_utf8(c))
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
@@ -67,15 +67,15 @@ bool byte_order_mark::inner::parse(document_builder &builder)
     return false;
   if(c == 0x0000feff)
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
 
     /*if(stream().peek(c) && c == static_cast<char_t>('\xff'))
     {
-      builder.add(name(), c);
+      builder.add_atom(c);
       advance();
-      builder.add(name(), c);
+      builder.add_atom(c);
       return true;
     }
     else
@@ -90,7 +90,7 @@ bool reserved::parse(document_builder &builder)
   if(stream().peek(c) &&
      ( c == '@' || c == '`' ))
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
@@ -122,7 +122,7 @@ bool indicator::parse(document_builder &builder)
   case '%':
   case '@':
   case '`':
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
 
@@ -143,7 +143,7 @@ bool flow_indicator::parse(document_builder &builder)
   case ']':
   case '{':
   case '}':
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
 
@@ -193,7 +193,7 @@ bool dec_digit_char::parse(document_builder &builder)
   if(stream().peek(c) && 
      (c >= '0' && c <= '9'))
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
@@ -212,7 +212,7 @@ bool hex_digit_char::parse(document_builder &builder)
        ((c >= 'a' && c <= 'f') ||
         (c >= 'A' && c <= 'F')))
     {
-      builder.add(name(), c);
+      builder.add_atom(c);
       advance();
       return true;
     }
@@ -227,7 +227,7 @@ bool ascii_letter::parse(document_builder &builder)
      ((c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z')))
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
@@ -248,7 +248,7 @@ bool word_char::parse(document_builder &builder)
   if(stream().peek(c) &&
      c == '-')
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
   }
@@ -273,7 +273,7 @@ bool uri_char::inner::parse(document_builder &builder)
 
   if(c == '%')
   {
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
 
     hex_digit_char h1(ctx());
@@ -304,7 +304,7 @@ bool uri_char::inner::parse(document_builder &builder)
   case ')':
   case '[':
   case ']':
-    builder.add(name(), c);
+    builder.add_atom(c);
     advance();
     return true;
 

@@ -14,9 +14,11 @@ namespace
     indent_builder() : d_value(0)
     {}
 
-    void add(char const *tag, std::string const &v) override
+    void add_atom(char32_t c) override
     {
-      stringstream str(v);
+      string s;
+      append_utf8(s, c);
+      stringstream str(s);
       str >> d_value;
     }
     

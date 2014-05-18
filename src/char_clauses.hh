@@ -24,7 +24,7 @@ namespace kyaml
           if(stream().peek(c) && c == char_value)
           {
             if(read_value)
-              builder.add(name(), c);
+              builder.add_atom(c);
             advance();
             return true;
           }

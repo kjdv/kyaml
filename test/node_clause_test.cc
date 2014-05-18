@@ -13,12 +13,6 @@ namespace
   class mock_builder : public document_builder
   {
   public:
-    // not (yet?) interested in these:
-    void add(char const *tag, void_item const &v) override
-    {}
-    void add(char const *tag, std::string const &v) override
-    {}
-  
     MOCK_METHOD1(add_anchor, void(string const &));
     MOCK_METHOD1(add_alias, void(string const &));
     MOCK_METHOD1(add_scalar, void(string const &));
