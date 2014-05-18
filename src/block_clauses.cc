@@ -28,6 +28,37 @@ namespace
   private:
     unsigned d_value;
   };
+
+  class dummy_builder : public document_builder
+  {};
+}
+
+bool kyaml::clauses::internal::autodetect_indent(context &ctx, unsigned minumum)
+{
+  char_stream::mark_t m = ctx.stream().mark();
+
+  line_break lb(ctx);
+  space s(ctx);
+  dummy_builder b;
+
+  unsigned count;
+  do
+  {
+    count = 0;
+    while(s.parse(b))
+      ++count;
+
+  } while(lb.parse(b));
+
+  ctx.stream().unwind(m);
+
+  if(count > minumum)
+  {
+    ctx.set_indent(count);          
+    return true;
+  }
+  else
+    return false;
 }
 
 bool indentation_indicator::parse(document_builder &builder)
@@ -47,26 +78,12 @@ bool indentation_indicator::parse(document_builder &builder)
     ctx().set_indent(ib.build());
     return true;
   }
-  return autodetect(ib);
+  return autodetect();
 }
 
-bool indentation_indicator::autodetect(document_builder &builder)
+bool indentation_indicator::autodetect()
 {
-  line_break lb(ctx());
-  space s(ctx());
-
-  unsigned count;
-  do
-  {
-    count = 0;
-    while(s.parse(builder))
-      ++count;
-
-  } while(lb.parse(builder));
-
-  unwind();
-  ctx().set_indent(count);          
-  return true;
+  return internal::autodetect_indent(ctx(), 0);
 }
 
 bool chomping_indicator::parse(document_builder &builder)

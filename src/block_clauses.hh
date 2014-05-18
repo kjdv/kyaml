@@ -10,6 +10,12 @@ namespace kyaml
 {
   namespace clauses
   {
+    // generic helper for indendation
+    namespace internal
+    {
+      bool autodetect_indent(context &ctx, unsigned minumum);
+    }
+
     // [163] 	c-indentation-indicator(m) 	::= 	ns-dec-digit ⇒ m = ns-dec-digit - #x30
     //                                                  /* Empty */  ⇒ m = auto-detect() 
     class indentation_indicator : public clause
@@ -19,7 +25,7 @@ namespace kyaml
 
       bool parse(document_builder &builder);
     private:
-      bool autodetect(document_builder &builder);
+      bool autodetect();
     };
 
     // [164] 	c-chomping-indicator(t) 	::= 	“-”         ⇒ t = strip
