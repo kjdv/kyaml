@@ -30,8 +30,10 @@ namespace kyaml
     virtual ~document_builder()
     {}
 
-    virtual void add(char const *tag, void_item const &v) = 0;
-    virtual void add(char const *tag, std::string const &v) = 0;
+    virtual void add(char const *tag, void_item const &v)
+    {}
+    virtual void add(char const *tag, std::string const &v)
+    {}
     void add(char const *tag, char32_t c)
     {
       std::string s;
@@ -39,7 +41,8 @@ namespace kyaml
       add(tag, s);
     }    
 
-    virtual void add_anchor(std::string const &anchor) = 0;
+    virtual void add_anchor(std::string const &anchor)
+    {}
     virtual void add_alias(std::string const &alias)
     {}
     virtual void add_scalar(std::string const &val)

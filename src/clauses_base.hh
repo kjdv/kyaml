@@ -67,15 +67,9 @@ namespace kyaml
         d_state.blockflow = bf;
       }
 
-      void inc_indent()
+      void set_indent(unsigned il)
       {
-        ++d_state.indent_level;
-      }
-
-      void dec_indent()
-      {
-        assert(indent_level() > 0);
-        --d_state.indent_level;
+        d_state.indent_level = il;
       }
 
       state get_state() const
@@ -139,14 +133,9 @@ namespace kyaml
         ctx().set_blockflow(bf);
       }
 
-      void inc_indent()
+      void set_indent(unsigned il)
       {
-        ctx().inc_indent();
-      }
-
-      void dec_indent()
-      {
-        ctx().dec_indent();
+        ctx().set_indent(il);
       }
 
       // not mandatory, but advices
