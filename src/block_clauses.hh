@@ -8,6 +8,35 @@ namespace kyaml
 {
   namespace clauses
   {
+    namespace internal
+    {
+      template <typename indent_modifier_t, typename base_clause_t>
+      class indent_scope : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder)
+        {
+          bool result = false;
+          unsigned mem = ctx().blockflow();
+          indent_modifier_t fm(ctx());
+          if(fm.parse(builder))
+          {
+            base_clause_t bc(ctx());
+            result = bc.parse(builder);
+          }
+
+          if(!result)
+            unwind();
+
+          ctx().set_indent_level(mem);
+          return result;
+        }
+      };
+    }
+
+
     // [163] 	c-indentation-indicator(m) 	::= 	ns-dec-digit ⇒ m = ns-dec-digit - #x30
     //                                                  /* Empty */  ⇒ m = auto-detect() 
     class indentation_indicator : public clause
