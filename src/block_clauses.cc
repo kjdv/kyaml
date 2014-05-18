@@ -68,3 +68,47 @@ bool indentation_indicator::autodetect(document_builder &builder)
   ctx().set_indent(count);          
   return true;
 }
+
+bool chomping_indicator::parse(document_builder &builder)
+{
+  internal::simple_char_clause<'-', false> strip(ctx());
+  if(strip.parse(builder))
+    ctx().set_chomp(context::STRIP);
+  else
+  {
+    internal::simple_char_clause<'+', false> keep(ctx());
+    if(keep.parse(builder))
+      ctx().set_chomp(context::KEEP);
+    else
+      ctx().set_chomp(context::CLIP);
+  }
+  return true;
+}
+
+bool chomped_last::parse(document_builder &builder)
+{
+  if(ctx().chomp() == context::STRIP)
+  {
+    internal::or_clause<non_content, internal::endoffile> d(ctx());
+    return d.parse(builder);
+  }
+  else
+  {
+    internal::or_clause<as_line_feed, internal::endoffile> d(ctx());
+    return d.parse(builder);
+  }
+}
+
+bool chomped_empty::parse(document_builder &builder)
+{
+  if(ctx().chomp() == context::KEEP)
+  {
+    keep_empty d(ctx());
+    return d.parse(builder);
+  }
+  else
+  {
+    strip_empty d(ctx());
+    return d.parse(builder);
+  }
+}
