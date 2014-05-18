@@ -85,8 +85,13 @@ namespace kyaml
 
     // [157] 	c-flow-json-content(n,c) 	::= 	  c-flow-sequence(n,c) | c-flow-mapping(n,c)
     //                                                  | c-single-quoted(n,c) | c-double-quoted(n,c)
-    // TODO!!
-    typedef flow_yaml_content flow_json_content;
+    class flow_json_content : public clause // not as typedef to break cyclic dependencies
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [158] 	ns-flow-content(n,c) 	::= 	ns-flow-yaml-content(n,c) | c-flow-json-content(n,c)
     typedef internal::or_clause<flow_yaml_content, flow_json_content> flow_content;

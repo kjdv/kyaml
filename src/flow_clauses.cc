@@ -22,3 +22,12 @@ bool in_flow::parse(document_builder &builder)
     return false;
   }
 }
+
+bool flow_json_content::parse(document_builder &builder)
+{
+  internal::any_of<flow_sequence,
+                   flow_mapping,
+                   single_quoted,
+                   double_quoted> delegate(ctx());
+  return delegate.parse(builder);
+};
