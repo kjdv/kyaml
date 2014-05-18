@@ -374,6 +374,31 @@ namespace kyaml
         
         return false;
       }
+      
+      template <typename state_modifier_t, typename base_clause_t>
+      class state_scope : public clause
+      {
+      public:
+        using clause::clause;
+        
+        bool parse(document_builder &builder)
+        {
+          bool result = false;
+          context::state mem = ctx().get_state();
+          state_modifier_t sm(ctx());
+          if(sm.parse(builder))
+          {
+            base_clause_t bc(ctx());
+            result = bc.parse(builder);
+          }
+          
+          if(!result)
+            unwind();
+          
+          ctx().set_state(mem);
+          return result;
+        }
+      };
     }
   }
 }

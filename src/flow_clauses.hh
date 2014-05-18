@@ -52,34 +52,6 @@ namespace kyaml
       bool parse(document_builder &builder);
     };
 
-    namespace internal
-    {
-      template <typename flow_modifier_t, typename base_clause_t>
-      class flow_scope : public clause
-      {
-      public:
-        using clause::clause;
-
-        bool parse(document_builder &builder)
-        {
-          bool result = false;
-          context::blockflow_t mem = ctx().blockflow();
-          flow_modifier_t fm(ctx());
-          if(fm.parse(builder))
-          {
-            base_clause_t bc(ctx());
-            result = bc.parse(builder);
-          }
-
-          if(!result)
-            unwind();
-
-          ctx().set_blockflow(mem);
-          return result;
-        }
-      };
-    }
-
     // [156] 	ns-flow-yaml-content(n,c) 	::= 	ns-plain(n,c)
     typedef plain flow_yaml_content;
 
@@ -270,7 +242,7 @@ namespace kyaml
     //                                              ns-s-flow-map-entries(n,in-flow(c))? “}”
     typedef internal::all_of<internal::simple_char_clause<'{', false>,
                              internal::zero_or_one<separate>,
-                             internal::zero_or_one<internal::flow_scope<in_flow, flow_map_entries> >,
+                             internal::zero_or_one<internal::state_scope<in_flow, flow_map_entries> >,
                              internal::simple_char_clause<'}', false>
                              > flow_mapping;
 
@@ -306,7 +278,7 @@ namespace kyaml
     //                                              ns-s-flow-seq-entries(n,in-flow(c))? “]”
     typedef internal::all_of<internal::simple_char_clause<'[', false>,
                              internal::zero_or_one<separate>,
-                             internal::zero_or_one<internal::flow_scope<in_flow, flow_seq_entries> >,
+                             internal::zero_or_one<internal::state_scope<in_flow, flow_seq_entries> >,
                              internal::simple_char_clause<']', false> > flow_sequence;
                                                              
                                 
