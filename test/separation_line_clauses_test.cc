@@ -10,12 +10,10 @@ namespace
 {
   clause_testcase sl_tc(string const &input, bool result, unsigned indent_level, unsigned consume)
   {
-    string value = input.substr(0, consume);
     return 
       testcase_builder(input, result).
       with_indent_level(indent_level).
       with_consumed(consume).
-      with_value(value).
       build();
   }
 }

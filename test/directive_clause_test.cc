@@ -10,12 +10,10 @@ namespace
   clause_testcase tc(string const &input, bool result, unsigned consume = 0)
   {
     unsigned consumed = consume ? consume : (result ? input.size() : 0);
-    string value = input.substr(0, consumed);
 
     return
       testcase_builder(input, result).
       with_consumed(consumed).
-      with_value(value).
       build();
   }
 }

@@ -69,8 +69,6 @@ namespace kyaml
       
       bool const result;
       unsigned const consumed;
-      
-      std::string const value;
     };
 
     class testcase_builder
@@ -102,20 +100,13 @@ namespace kyaml
         return *this;
       }
 
-      testcase_builder &with_value(std::string const &v)
-      {
-        d_value = v;
-        return *this;
-      }      
-
       clause_testcase build()
       {
         clause_testcase result = {d_input,
                                   d_indent_level,
                                   d_blockflow,
                                   d_result,
-                                  d_consumed,
-                                  d_value};
+                                  d_consumed};
         return result;
       }
     private:
@@ -187,18 +178,7 @@ namespace kyaml
         clause().parse(b);
         EXPECT_EQ(expected, ctx().stream().pos());
       }
-      
-      void test_value()
-      {
-        if(GetParam().result)
-        {
-          string_document_builder b;
-          clause().parse(b);
-          std::string const &expected = GetParam().value;
-          EXPECT_EQ(expected, b.result());
-        }
-      }  
-      
+       
     private:
       context_wrap d_ctx;
       clause_t d_clause;
@@ -215,8 +195,7 @@ namespace std
              << "indent_level = " << tc.indent_level << "\n"
              << "blockflow = " << tc.blockflow << "\n"
              << "result = " << (tc.result ? "true" : "false") << "\n"
-             << "consumed = " << tc.consumed << "\n"
-             << "value = " << tc.value << "\n";
+             << "consumed = " << tc.consumed << "\n";
   }
 }
 
@@ -231,10 +210,6 @@ namespace std
   TEST_P(name, advance)                                                 \
   {                                                                     \
     test_advance();                                                     \
-  }                                                                     \
-  TEST_P(name, DISABLED_value)                                          \
-  {                                                                     \
-    test_value();                                                       \
   }                                                                     \
                                                                         \
   INSTANTIATE_TEST_CASE_P(tests_##name,                                 \

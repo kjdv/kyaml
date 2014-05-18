@@ -33,7 +33,6 @@ namespace
     return 
       testcase_builder(input, result).
       with_consumed(result ? non_continuation(input) : 0).
-      with_value(input).
       build();
   }
 

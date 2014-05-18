@@ -12,11 +12,10 @@ using namespace kyaml::clauses::internal;
 
 namespace 
 {
-  clause_testcase a_tc(string const &input, bool result, string val, unsigned c = 1)
+  clause_testcase a_tc(string const &input, bool result, unsigned c = 1)
   {
     return
       testcase_builder(input, result).
-      with_value(val).
       with_consumed(result ? c : 0).
       build();
   }
@@ -32,12 +31,12 @@ typedef internal::all_of<simple_char_clause<'a'>,
 
 NAMED_CLAUSE_TEST(any_of_test,
                   any_of_abc,
-                  cases({a_tc("a", true, "a"),
-                         a_tc("b", true, "b"),
-                         a_tc("c", true, "c"),
-                         a_tc("d", false, "d")}))
+                  cases({a_tc("a", true),
+                         a_tc("b", true),
+                         a_tc("c", true),
+                         a_tc("d", false)}))
                   
 NAMED_CLAUSE_TEST(all_of_test,
                   all_of_abc,
-                  cases({a_tc("abc", true, "abc", 3),
-                        a_tc("bca", false, "0")}))
+                  cases({a_tc("abc", true, 3),
+                        a_tc("bca", false)}))

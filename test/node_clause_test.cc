@@ -141,12 +141,11 @@ INSTANTIATE_TEST_CASE_P(squote_tests,
                         ValuesIn(squote_testcases));
 namespace
 {
-  clause_testcase qt(string const &input, string const &expect, unsigned indent = 0, context::blockflow_t bf = context::FLOW_IN)
+  clause_testcase qt(string const &input, unsigned indent = 0, context::blockflow_t bf = context::FLOW_IN)
   {
     return
       testcase_builder(input, true).
       with_consumed(input.size()).
-      with_value(expect).
       with_blockflow(bf).
       with_indent_level(indent).
       build();
@@ -157,22 +156,21 @@ namespace
     return
       testcase_builder(input, true).
       with_consumed(expect.size()).
-      with_value(expect).
       with_blockflow(bf).
       build();
   }
 }
 
 CLAUSE_TEST(nonbreak_nonspace_double_inline,
-            cases({qt("aap noot mies", "aap noot mies"),
-                   qt("  klaas", "  klaas")}))
+            cases({qt("aap noot mies"),
+                   qt("  klaas")}))
 
 CLAUSE_TEST(double_escaped,
-            cases({qt(" \t\\\n ", " \t\\\n ", 1)}))
+            cases({qt(" \t\\\n ", 1)}))
 
 CLAUSE_TEST(double_break,
-            cases({qt(" \t\\\n ", " \t\\\n ", 1),
-                   qt("\n ", "\n ", 1)}))
+            cases({qt(" \t\\\n ", 1),
+                   qt("\n ", 1)}))
 
 CLAUSE_TEST(plain_first,
             cases({pt("a", "a"),

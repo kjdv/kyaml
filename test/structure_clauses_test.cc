@@ -22,13 +22,12 @@ namespace kyaml
 namespace
 {
   //// separate in line 
-  clause_testcase sil_tc(string const &input, bool result, unsigned indent_level, string const &value)
+  clause_testcase sil_tc(string const &input, bool result, unsigned indent_level)
   {
     return 
       testcase_builder(input, result).
       with_indent_level(indent_level).
       with_consumed(result ? (indent_level + 1) : 1).
-      with_value(value).
       build();
   }
 
@@ -42,14 +41,11 @@ namespace
       ((n == string::npos) ? input.size() : n) :
       0;
 
-    string value = input.substr(0, consumed);
-
     return
       testcase_builder(input, result).
       with_blockflow(bf).
       with_indent_level(indent_level).
       with_consumed(consumed).
-      with_value(value).
       build();
   }
 
@@ -68,44 +64,41 @@ namespace
       with_indent_level(indent_level).
       with_blockflow(bf).
       with_consumed(consumed).
-      with_value(value).
       build();
   }
   
   //// trimmed
-  clause_testcase tr_tc(string const &input, unsigned il, bool result, unsigned consumed, string const &value)
+  clause_testcase tr_tc(string const &input, unsigned il, bool result, unsigned consumed)
   {
     return 
       testcase_builder(input, result).
       with_indent_level(il).
       with_consumed(consumed).
-      with_value(value).
       build();
   }
 
   // flow_folded
-  clause_testcase  ff_tc(string const &input, unsigned il, context::blockflow_t bf, bool result, unsigned consumed, string const &value)
+  clause_testcase  ff_tc(string const &input, unsigned il, context::blockflow_t bf, bool result, unsigned consumed)
   {
     return 
       testcase_builder(input, result).
       with_indent_level(il).
       with_blockflow(bf).
       with_consumed(consumed).
-      with_value(value).
       build();
   }
 }
 
 CLAUSE_TEST(separate_in_line, 
-            cases({sil_tc("s ", true, 1, " "),
-                  sil_tc("s  ", true, 2, "  "),
-                  sil_tc("s", false, 0, ""),
-                  sil_tc("sa", false, 0, ""),
-                  sil_tc("s \t ", true, 3, " \t "),
-                  sil_tc("sa ", false, 1, " "),
-                  sil_tc("\n ", true, 1, " "),
-                  sil_tc("\na", true, 0, ""),
-                  sil_tc("\rb", true, 0, "")}))
+            cases({sil_tc("s ", true, 1),
+                  sil_tc("s  ", true, 2),
+                  sil_tc("s", false, 0),
+                  sil_tc("sa", false, 0),
+                  sil_tc("s \t ", true, 3),
+                  sil_tc("sa ", false, 1),
+                  sil_tc("\n ", true, 1),
+                  sil_tc("\na", true, 0),
+                  sil_tc("\rb", true, 0)}))
 
 CLAUSE_TEST(line_prefix,
             cases({lp_tc(" ", 1, context::NA, false),
@@ -129,14 +122,14 @@ CLAUSE_TEST(empty_line,
                    el_tc("  \n", 1, context::FLOW_IN, true)}))
 
 CLAUSE_TEST(trimmed,
-            cases({tr_tc("\n  \n aap", 3, true, 4, "\n  \n"),
-                  tr_tc("\r\n   \n  \n a", 4, true, 9, "\r\n   \n  \n"),
-                  tr_tc("\na", 2, false, 0, "\n")}))
+            cases({tr_tc("\n  \n aap", 3, true, 4),
+                  tr_tc("\r\n   \n  \n a", 4, true, 9),
+                  tr_tc("\na", 2, false, 0)}))
 
 CLAUSE_TEST(line_folded,
-            cases({tr_tc("\n  \n aap", 3, true, 4, "\n  \n"),
-                  tr_tc("\r\n   \n  \n a", 4, true, 9, "\r\n   \n  \n"),
-                  tr_tc("\na", 2, true, 1, "\n")}))
+            cases({tr_tc("\n  \n aap", 3, true, 4),
+                  tr_tc("\r\n   \n  \n a", 4, true, 9),
+                  tr_tc("\na", 2, true, 1)}))
 
 CLAUSE_TEST(flow_folded,
-            cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9, "\n\n  \n    ")}))
+            cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9)}))
