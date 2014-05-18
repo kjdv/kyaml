@@ -368,6 +368,37 @@ namespace kyaml
       bool preceded_by_nschar(context &ctx);
       bool followed_by_plain_safe(context &ctx);
     };
+
+    // [132] 	nb-ns-plain-in-line(c) 	::= 	( s-white* ns-plain-char(c) )*
+    typedef internal::zero_or_more<internal::and_clause<internal::zero_or_more<white>,
+                                                        plain_char> > plain_in_line;
+
+    // [133] 	ns-plain-one-line(c) 	::= 	ns-plain-first(c) nb-ns-plain-in-line(c)
+    typedef internal::and_clause<plain_first, plain_in_line> plain_one_line;                                 
+   
+    // [134] 	s-ns-plain-next-line(n,c) 	::= 	s-flow-folded(n)
+    //                                                  ns-plain-char(c) nb-ns-plain-in-line(c)
+    typedef internal::all_of<flow_folded,
+                             plain_char,
+                             plain_in_line> plain_next_line;
+
+    // [135] 	ns-plain-multi-line(n,c) 	::= 	ns-plain-one-line(c)
+    //                                                   s-ns-plain-next-line(n,c)* 
+    typedef internal::and_clause<plain_one_line,
+                                 internal::zero_or_more<plain_next_line> > plain_multi_line;
+
+    // [131] 	ns-plain(n,c) 	::= 	c = flow-out  ⇒ ns-plain-multi-line(n,c)
+    //                                  c = flow-in   ⇒ ns-plain-multi-line(n,c)
+    //                                  c = block-key ⇒ ns-plain-one-line(c)
+    //                                  c = flow-key  ⇒ ns-plain-one-line(c)
+    class plain : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    private:
+    };
   }
 }
 

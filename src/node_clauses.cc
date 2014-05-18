@@ -247,3 +247,26 @@ bool plain_char::followed_by_plain_safe(context &ctx)
   }
   return false;
 }
+
+bool plain::parse(document_builder &builder)
+{
+  switch(ctx().blockflow())
+  {
+  case context::FLOW_OUT:
+  case context::FLOW_IN:
+  {
+    plain_multi_line pml(ctx());
+    return pml.parse(builder);
+  }
+
+  case context::BLOCK_KEY:
+  case context::FLOW_KEY:
+  {
+    plain_one_line pol(ctx());
+    return pol.parse(builder);
+  }
+
+  default:
+    return false;
+  }
+}
