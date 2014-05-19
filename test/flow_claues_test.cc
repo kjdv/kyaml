@@ -14,7 +14,8 @@ public:
   MOCK_METHOD0(end_sequence, void());
   MOCK_METHOD0(start_mapping, void());
   MOCK_METHOD0(end_mapping, void());
-
+  MOCK_METHOD1(add_anchor, void(string const &));
+  MOCK_METHOD1(add_alias, void(string const &));
   MOCK_METHOD1(add_scalar, void(string const &));
 };
     
@@ -75,3 +76,19 @@ TEST(flow_sequence, DISABLED_quoted)
   EXPECT_TRUE(fs.parse(b));
 }
 
+TEST(flow_sequence, alias)
+{
+  context_wrap ctx("[*tag]", 0, context::FLOW_IN);
+
+  flow_sequence fs(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_sequence()).
+    Times(1);
+  EXPECT_CALL(b, add_alias("tag")).
+    Times(1);
+  EXPECT_CALL(b, end_sequence()).
+    Times(1);
+
+  EXPECT_TRUE(fs.parse(b));
+}
