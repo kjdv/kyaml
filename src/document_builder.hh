@@ -16,6 +16,15 @@ namespace kyaml
     {}
 
     // todo: make pure virtual
+    virtual void start_sequence()
+    {}
+    virtual void end_sequence()
+    {}
+    virtual void start_mapping()
+    {}
+    virtual void end_mapping()
+    {}
+
     virtual void add_anchor(std::string const &anchor)
     {}
     virtual void add_alias(std::string const &alias)
@@ -51,10 +60,8 @@ namespace kyaml
     std::string d_value;
   };
 
-  class dummy_document_builder : public document_builder
-  {
-  public:
-  };
+  class null_builder : public document_builder
+  {};
 }
 
 #endif // DOCUMENT_BUILDER_HH

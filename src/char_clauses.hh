@@ -99,10 +99,22 @@ namespace kyaml
     typedef internal::simple_char_clause<','> collect_entry;
 
     // [8]	c-sequence-start	::=	“[”
-    typedef internal::simple_char_clause<'['> sequence_start;
+    class sequence_start : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [9]	c-sequence-end	::=	“]” 
-    typedef internal::simple_char_clause<']'> sequence_end;
+    class sequence_end : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [10]	c-mapping-start	::=	“{” 
     typedef internal::simple_char_clause<'{'> mapping_start;

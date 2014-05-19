@@ -284,7 +284,7 @@ namespace kyaml
         {
           // we need two passes, one for checking, on for collecting results
           // todo: find something smarter
-          dummy_document_builder db;
+          null_builder db;
           if(parse_recurse<clauses_t...>(db)) // pass 1
           {
             unwind();
@@ -336,7 +336,7 @@ namespace kyaml
 
         bool parse(document_builder &builder)
         {
-          dummy_document_builder db;
+          null_builder db;
           if(clause_t(ctx()).parse(db))
           {
             unwind();
@@ -363,7 +363,7 @@ namespace kyaml
       template <typename clause_t>
       bool try_parse(clause_t &cl, document_builder &builder)
       {
-        dummy_document_builder dm;
+        null_builder dm;
         if(cl.parse(dm))
         {
           cl.unwind();

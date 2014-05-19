@@ -84,6 +84,30 @@ bool byte_order_mark::inner::parse(document_builder &builder)
   return false;
 }
 
+bool sequence_start::parse(document_builder &builder)
+{
+  internal::simple_char_clause<'[', false> d(ctx());
+  null_builder b;
+  if(d.parse(b))
+  {
+    builder.start_sequence();
+    return true;
+  }
+  return false;
+}
+
+bool sequence_end::parse(document_builder &builder)
+{
+  internal::simple_char_clause<']', false> d(ctx());
+  null_builder b;
+  if(d.parse(b))
+  {
+    builder.end_sequence();
+    return true;
+  }
+  return false;
+}
+
 bool reserved::parse(document_builder &builder)
 {
   char_t c;
@@ -154,7 +178,7 @@ bool flow_indicator::parse(document_builder &builder)
 
 bool non_break_char::parse(document_builder &builder)
 {
-  dummy_document_builder dm;
+  null_builder dm;
   break_char bc(ctx());
   if(bc.parse(dm))
   {
@@ -175,7 +199,7 @@ bool non_break_char::parse(document_builder &builder)
 
 bool non_white_char::parse(document_builder &builder)
 {
-  dummy_document_builder dm;
+  null_builder dm;
   white w(ctx());
   if(w.parse(dm))
   {
@@ -322,7 +346,7 @@ bool tag_char::parse(document_builder &builder)
   if(c == '!')
     return false;
 
-  dummy_document_builder dm;
+  null_builder dm;
   flow_indicator fi(ctx());
   if(fi.parse(dm))
   {

@@ -6,7 +6,7 @@ using namespace kyaml::clauses;
 
 bool anchor_char::parse(document_builder &builder)
 {
-  dummy_document_builder dummy;
+  null_builder dummy;
   flow_indicator fl(ctx());
   if(fl.parse(dummy))
   {
@@ -20,7 +20,7 @@ bool anchor_char::parse(document_builder &builder)
 
 bool anchor_property::parse(document_builder &builder)
 {
-  dummy_document_builder dm;
+  null_builder dm;
   if(internal::simple_char_clause<'&'>(ctx()).parse(dm))
   {
     string_builder sb;
@@ -38,7 +38,7 @@ bool anchor_property::parse(document_builder &builder)
 
 bool verbatim_tag::parse(document_builder &builder)
 {
-  dummy_document_builder db;
+  null_builder db;
   string_builder sb;
 
   if(internal::simple_char_clause<'!'>(ctx()).parse(db) &&
@@ -56,7 +56,7 @@ bool verbatim_tag::parse(document_builder &builder)
 
 bool alias_node::parse(document_builder &builder)
 {
-  dummy_document_builder db;
+  null_builder db;
   string_builder sb;
   if(internal::simple_char_clause<'*'>(ctx()).parse(db) &&
      anchor_name(ctx()).parse(sb))
@@ -177,7 +177,7 @@ bool plain_first::parse(document_builder &builder)
   if(l.parse(builder))
     return true;
 
-  dummy_document_builder dm;
+  null_builder dm;
   augmented_right_t r(ctx());
   if(r.parse(dm))
   {
@@ -223,7 +223,7 @@ bool plain_char::preceded_by_nschar(context &ctx)
     context c2(cs);
 
     non_white_char nwc(c2);
-    dummy_document_builder db;
+    null_builder db;
     return nwc.parse(db);
   }
   return false;
@@ -242,7 +242,7 @@ bool plain_char::followed_by_plain_safe(context &ctx)
     context c2(cs);
 
     plain_safe ps(c2);
-    dummy_document_builder db;
+    null_builder db;
     return ps.parse(db);
   }
   return false;
@@ -250,23 +250,34 @@ bool plain_char::followed_by_plain_safe(context &ctx)
 
 bool plain::parse(document_builder &builder)
 {
+  string_builder sb;
+
   switch(ctx().blockflow())
   {
   case context::FLOW_OUT:
   case context::FLOW_IN:
   {
     plain_multi_line pml(ctx());
-    return pml.parse(builder);
+    if(pml.parse(sb))
+    {
+      builder.add_scalar(sb.build());
+      return true;
+    }
   }
 
   case context::BLOCK_KEY:
   case context::FLOW_KEY:
   {
     plain_one_line pol(ctx());
-    return pol.parse(builder);
+    if(pol.parse(sb))
+    {
+      builder.add_scalar(sb.build());
+      return true;
+    }
   }
 
   default:
-    return false;
+    break;
   }
+  return false;
 }

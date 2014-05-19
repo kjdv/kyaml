@@ -276,10 +276,10 @@ namespace kyaml
 
     // [137] 	c-flow-sequence(n,c) 	::= 	“[” s-separate(n,c)?
     //                                              ns-s-flow-seq-entries(n,in-flow(c))? “]”
-    typedef internal::all_of<internal::simple_char_clause<'[', false>,
+    typedef internal::all_of<sequence_start,
                              internal::zero_or_one<separate>,
                              internal::zero_or_one<internal::state_scope<in_flow, flow_seq_entries> >,
-                             internal::simple_char_clause<']', false> > flow_sequence;
+                             sequence_end> flow_sequence;
                                                              
                                 
   }
