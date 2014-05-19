@@ -22,6 +22,21 @@ public:
 // TODO:
 // good things once there is a document builder is tests for clauses 137 and 140 as high (mid?) level entry points
 
+TEST(flow_sequence, empty)
+{
+  context_wrap ctx("[ ]", 0, context::FLOW_IN);
+
+  flow_sequence fs(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_sequence()).
+    Times(1);
+  EXPECT_CALL(b, end_sequence()).
+    Times(1);
+
+  EXPECT_TRUE(fs.parse(b));
+}
+
 TEST(flow_sequence, sequence)
 {
   context_wrap ctx("[one, two]", 0, context::FLOW_IN);
@@ -40,3 +55,23 @@ TEST(flow_sequence, sequence)
 
   EXPECT_TRUE(fs.parse(b));
 }
+
+TEST(flow_sequence, DISABLED_quoted)
+{
+  context_wrap ctx("[ \"one two\", 'three four']", 0, context::FLOW_IN);
+
+  flow_sequence fs(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_sequence()).
+    Times(1);
+  EXPECT_CALL(b, end_sequence()).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("one two")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("three four")).
+    Times(1);
+
+  EXPECT_TRUE(fs.parse(b));
+}
+
