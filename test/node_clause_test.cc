@@ -167,8 +167,8 @@ CLAUSE_TEST(double_escaped,
             cases({qt(" \t\\\n ", 1)}))
 
 CLAUSE_TEST(double_break,
-            cases({qt(" \t\\\n ", 1),
-                   qt("\n ", 1)}))
+            cases({qt(" \t\\\n ", 1)}))
+                   // qt("\n ", 1)})) // TODO: is this success or failure? depends on how "start of line" is interpreted
 
 CLAUSE_TEST(plain_first,
             cases({pt("a", "a"),

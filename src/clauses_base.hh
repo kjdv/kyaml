@@ -107,8 +107,6 @@ namespace kyaml
       state d_state;
     };   
   
-    // base class is informational only: there are no virtual functions, its here only to document
-    // the common signature
     class clause
     {
     public:
@@ -126,7 +124,6 @@ namespace kyaml
       void unwind()
       {
         stream().unwind(d_mark);
-        ctx().set_state(d_state);
       }  
 
     protected:
@@ -163,6 +160,16 @@ namespace kyaml
         ctx().set_chomp(c);
       }
 
+      context::state get_state() const
+      {
+        return ctx().get_state();
+      }
+
+      void set_state(context::state s)
+      {
+        ctx().set_state(s);
+      }
+
       // not mandatory, but advices
       char const *name() const
       {
@@ -188,7 +195,14 @@ namespace kyaml
         {
           if(parse_once(builder))
           {
-            while(parse_once(builder));
+            char_stream::mark_t before = clause::ctx().stream().mark();
+            while(parse_once(builder))
+            {
+              char_stream::mark_t after = clause::ctx().stream().mark();
+              if(after <= before)
+                break;
+              before = after;
+            }
 
             return true;
           }
@@ -212,7 +226,14 @@ namespace kyaml
         
         bool parse(document_builder &builder)
         {
-          while(parse_once(builder));
+          char_stream::mark_t before = clause::ctx().stream().mark();
+          while(parse_once(builder))
+          {
+            char_stream::mark_t after = clause::ctx().stream().mark();
+            if(after <= before)
+              break;
+            before = after;
+          }
 
           return true;
         }
@@ -384,7 +405,9 @@ namespace kyaml
         bool parse(document_builder &builder)
         {
           bool result = false;
-          context::state mem = ctx().get_state();
+
+          state_guard sg(ctx());
+
           state_modifier_t sm(ctx());
           if(sm.parse(builder))
           {
@@ -394,10 +417,28 @@ namespace kyaml
           
           if(!result)
             unwind();
-          
-          ctx().set_state(mem);
+
           return result;
         }
+
+      private:
+        class state_guard
+        {
+        public:
+          state_guard(context &ctx) :
+            d_ctx(ctx),
+            d_mem(d_ctx.get_state())
+          {}
+
+          ~state_guard()
+          {
+            d_ctx.set_state(d_mem);
+          }
+
+        private:
+          context &d_ctx;
+          context::state d_mem;
+        };
       };
 
       template <context::blockflow_t blockflow_v>

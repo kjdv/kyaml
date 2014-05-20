@@ -58,7 +58,7 @@ namespace kyaml
 
     // [209] 	l-directive-document 	::= 	l-directive+
     //                                          l-explicit-document 	 
-    typedef internal::and_clause<internal::one_or_more<directive>,
+    typedef internal::and_clause<internal::one_or_more<ldirective>,
                                  explicit_document> directive_document;
 
     // [210] 	l-any-document 	::= 	  l-directive-document

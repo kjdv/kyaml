@@ -78,15 +78,15 @@ namespace
   }
 
   // flow_folded
-  clause_testcase  ff_tc(string const &input, unsigned il, context::blockflow_t bf, bool result, unsigned consumed)
-  {
-    return 
-      testcase_builder(input, result).
-      with_indent_level(il).
-      with_blockflow(bf).
-      with_consumed(consumed).
-      build();
-  }
+  // clause_testcase  ff_tc(string const &input, unsigned il, context::blockflow_t bf, bool result, unsigned consumed)
+  // {
+  //   return
+  //     testcase_builder(input, result).
+  //     with_indent_level(il).
+  //     with_blockflow(bf).
+  //     with_consumed(consumed).
+  //     build();
+  // }
 }
 
 CLAUSE_TEST(separate_in_line, 
@@ -131,5 +131,5 @@ CLAUSE_TEST(line_folded,
                   tr_tc("\r\n   \n  \n a", 4, true, 9),
                   tr_tc("\na", 2, true, 1)}))
 
-CLAUSE_TEST(flow_folded,
-            cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9)}))
+// CLAUSE_TEST(flow_folded,
+//            cases({ff_tc("\n\n  \n    aap", 3, context::FLOW_IN, true, 9)})) // TODO: is this success or failure? depends on how "start of line" is interpreted

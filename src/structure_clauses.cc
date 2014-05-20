@@ -6,7 +6,12 @@ using namespace kyaml::clauses;
 
 bool internal::start_of_line::parse(document_builder &builder)
 {
-  char_t c;
+  char32_t c;
+
+  // TODO: should this be done?
+  while(stream().peek(c) && (c == '\n' || c == '\r'))
+    advance();
+
   // the last character was a newline
   if(!stream().rpeek(c) ||
      (c == '\n' || c == '\r'))
@@ -16,6 +21,8 @@ bool internal::start_of_line::parse(document_builder &builder)
        (c != '\n' && c != '\r'))
       return true;
   }
+
+  unwind();
   return false;
 }
 
