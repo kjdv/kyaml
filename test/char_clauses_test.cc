@@ -56,7 +56,7 @@ CHAR_CLAUSE_TEST(printable,
                  values({"\x10", ""}))
 
 CHAR_CLAUSE_TEST(json, 
-                 values({"a", "t", "\xd5\x81"}),
+                 values({"a", "t", "\xd5\x81", "\xe2\x82\xac"}),
                  values({"\n", ""}))
 
 CHAR_CLAUSE_TEST(sequence_entry, 
