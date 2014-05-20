@@ -108,6 +108,30 @@ bool sequence_end::parse(document_builder &builder)
   return false;
 }
 
+bool mapping_start::parse(document_builder &builder)
+{
+  internal::simple_char_clause<'{', false> d(ctx());
+  null_builder b;
+  if(d.parse(b))
+  {
+    builder.start_mapping();
+    return true;
+  }
+  return false;
+}
+
+bool mapping_end::parse(document_builder &builder)
+{
+  internal::simple_char_clause<'}', false> d(ctx());
+  null_builder b;
+  if(d.parse(b))
+  {
+    builder.end_mapping();
+    return true;
+  }
+  return false;
+}
+
 bool reserved::parse(document_builder &builder)
 {
   char_t c;

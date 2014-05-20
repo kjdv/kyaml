@@ -242,10 +242,10 @@ namespace kyaml
 
     // [140] 	c-flow-mapping(n,c) 	::= 	“{” s-separate(n,c)?
     //                                              ns-s-flow-map-entries(n,in-flow(c))? “}”
-    typedef internal::all_of<internal::simple_char_clause<'{', false>,
+    typedef internal::all_of<mapping_start,
                              internal::zero_or_one<separate>,
                              internal::zero_or_one<internal::state_scope<in_flow, flow_map_entries> >,
-                             internal::simple_char_clause<'}', false>
+                             mapping_end
                              > flow_mapping;
 
     // [139] 	ns-flow-seq-entry(n,c) 	::= 	ns-flow-pair(n,c) | ns-flow-node(n,c)

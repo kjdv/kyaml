@@ -117,10 +117,22 @@ namespace kyaml
     };
 
     // [10]	c-mapping-start	::=	“{” 
-    typedef internal::simple_char_clause<'{'> mapping_start;
+    class mapping_start : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [11]	c-mapping-end	::=	“}” 
-    typedef internal::simple_char_clause<'}'> mapping_end;
+    class mapping_end : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [12]	c-comment	::=	“#” 
     typedef internal::simple_char_clause<'#'> comment;

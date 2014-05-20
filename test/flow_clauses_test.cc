@@ -50,11 +50,11 @@ TEST(flow_sequence, sequence)
 
   EXPECT_CALL(b, start_sequence()).
     Times(1);
-  EXPECT_CALL(b, end_sequence()).
-    Times(1);
   EXPECT_CALL(b, add_scalar("one")).
     Times(1);
   EXPECT_CALL(b, add_scalar("two")).
+    Times(1);
+  EXPECT_CALL(b, end_sequence()).
     Times(1);
 
   EXPECT_TRUE(fs.parse(b));
@@ -69,11 +69,11 @@ TEST(flow_sequence, quoted)
 
   EXPECT_CALL(b, start_sequence()).
     Times(1);
-  EXPECT_CALL(b, end_sequence()).
-    Times(1);
   EXPECT_CALL(b, add_scalar("one two")).
     Times(1);
   EXPECT_CALL(b, add_scalar("three four")).
+    Times(1);
+  EXPECT_CALL(b, end_sequence()).
     Times(1);
 
   EXPECT_TRUE(fs.parse(b));
@@ -94,4 +94,19 @@ TEST(flow_sequence, alias)
     Times(1);
 
   EXPECT_TRUE(fs.parse(b));
+}
+
+TEST(flow_mapping, empty)
+{
+  context_wrap ctx("{}", 0, context::FLOW_IN);
+
+  flow_mapping fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_mapping()).
+    Times(1);
+  EXPECT_CALL(b, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
 }
