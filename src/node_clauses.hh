@@ -193,10 +193,7 @@ namespace kyaml
     public:
       double_text(context &ctx);
 
-      bool parse(document_builder &builder)
-      {
-        return d_dispatch ? (this->*d_dispatch)(builder) : false;
-      }
+      bool parse(document_builder &builder);
 
     private:
       bool parse_multiline(document_builder &builder);
@@ -280,10 +277,7 @@ namespace kyaml
     public:
       single_text(context &ctx);
 
-      bool parse(document_builder &builder)
-      {
-        return d_dispatch ? (this->*d_dispatch)(builder) : false;
-      }
+      bool parse(document_builder &builder);
 
     private:
       bool parse_multiline(document_builder &builder);

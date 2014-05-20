@@ -8,17 +8,6 @@ using namespace kyaml::test;
 using namespace kyaml::clauses;
 using namespace testing;
 
-namespace
-{
-  class mock_builder : public document_builder
-  {
-  public:
-    MOCK_METHOD1(add_anchor, void(string const &));
-    MOCK_METHOD1(add_alias, void(string const &));
-    MOCK_METHOD1(add_scalar, void(string const &));
-  };
-}
-
 class properties_test : public Test
 {
 public:
@@ -95,9 +84,12 @@ TEST_P(dquote_test, extract)
   context_wrap cw(GetParam().input, 0, GetParam().flow);
   double_quoted dq(cw.get());
 
-  string_builder sb;
+  mock_builder sb;
+
+  EXPECT_CALL(sb, add_scalar(GetParam().expect)).
+    Times(1);
+
   EXPECT_TRUE(dq.parse(sb));
-  EXPECT_EQ(GetParam().expect, sb.build());
 }
 
 dquote_testcase dquote_testcases[] =
@@ -124,9 +116,11 @@ TEST_P(squote_test, extract)
   context_wrap cw(GetParam().input, 0, GetParam().flow);
   single_quoted dq(cw.get());
 
-  string_builder sb;
+  mock_builder sb;
+  EXPECT_CALL(sb, add_scalar(GetParam().expect)).
+    Times(1);
+
   EXPECT_TRUE(dq.parse(sb));
-  EXPECT_EQ(GetParam().expect, sb.build());
 }
 
 squote_testcase squote_testcases[] =

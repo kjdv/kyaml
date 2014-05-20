@@ -56,7 +56,7 @@ namespace kyaml
     typedef plain flow_yaml_content;
 
     // [157] 	c-flow-json-content(n,c) 	::= 	  c-flow-sequence(n,c) | c-flow-mapping(n,c)
-    //                                                  | c-single-quoted(n,c) | c-double-quoted(n,c)
+    //                                        | c-single-quoted(n,c) | c-double-quoted(n,c)
     class flow_json_content : public clause // not as typedef to break cyclic dependencies
     {
     public:
@@ -137,10 +137,12 @@ namespace kyaml
     // [147] 	c-ns-flow-map-separate-value(n,c) 	::= 	“:” /* Not followed by an ns-plain-safe(c) */
     //                                                              ( ( s-separate(n,c) ns-flow-node(n,c) )
     //                                                           | e-node /* Value */ ) 
-    typedef internal::or_clause<internal::all_of<internal::simple_char_clause<':', false>,
-                                                 separate,
-                                                 flow_node>,
-                                enode> flow_map_separate_value;
+    typedef internal::and_clause<internal::simple_char_clause<':', false>,
+                                 internal::or_clause<internal::and_clause<separate,
+                                                                          flow_node
+                                                                         >,
+                                                     enode>
+                                > flow_map_separate_value;
 
     // [146] 	c-ns-flow-map-empty-key-entry(n,c) 	::= 	e-node /* Key */
     //                                                          c-ns-flow-map-separate-value(n,c)

@@ -33,9 +33,9 @@ namespace kyaml
 
     // [77] 	s-b-comment 	::= 	( s-separate-in-line c-nb-comment-text? )?
     //                                  b-comment
-    typedef internal::and_clause<internal::zero_or_more<
+    typedef internal::and_clause<internal::zero_or_one<
                                    internal::and_clause<separate_in_line,
-                                                        internal::zero_or_more<non_break_comment_text> > >, // whoei
+                                                        internal::zero_or_one<non_break_comment_text> > >, // whoei
                                  break_comment> sbreak_comment;
 
     // [78] 	l-comment 	::= 	s-separate-in-line c-nb-comment-text? b-comment

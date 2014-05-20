@@ -123,6 +123,17 @@ single_text::single_text(context &ctx) :
   }
 }
 
+bool single_text::parse(document_builder &builder)
+{
+  string_builder sb;
+  if(d_dispatch && (this->*d_dispatch)(sb))
+  {
+    builder.add_scalar(sb.build());
+    return true;
+  }
+  return false;
+}
+
 bool single_text::parse_multiline(document_builder &builder)
 {
   single_multi_line sml(ctx());
@@ -278,6 +289,18 @@ bool plain::parse(document_builder &builder)
 
   default:
     break;
+  }
+  return false;
+}
+
+
+bool kyaml::clauses::double_text::parse(kyaml::document_builder &builder)
+{
+  string_builder sb;
+  if(d_dispatch && (this->*d_dispatch)(sb))
+  {
+    builder.add_scalar(sb.build());
+    return true;
   }
   return false;
 }
