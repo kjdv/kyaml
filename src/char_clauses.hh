@@ -369,6 +369,39 @@ namespace kyaml
         }
 
       private:
+        class unicode_builder : public document_builder
+        {
+        public:
+          unicode_builder() :
+            d_v(0)
+          {}
+
+          void add_atom(char32_t c)
+          {
+            d_v <<= 4;
+            d_v |= from_hex(c);
+          }
+
+
+          char32_t build() const
+          {
+            return d_v;
+          }
+        private:
+          char32_t from_hex(char32_t c) const
+          {
+            if(c >= '0' && c <= '9')
+              return c - '0';
+            else if(c >= 'a' && c <= 'f')
+              return c - 'a' + 10;
+            else if(c >= 'A' && c <= 'F')
+              return c - 'A' + 10;
+            return 0;
+          }
+
+          char32_t d_v;
+        };
+
         class inner : public clause
         {
         public:
@@ -376,76 +409,96 @@ namespace kyaml
           
           bool parse(document_builder &builder)
           {
-            internal::simple_char_clause<escape> head(ctx());
+            internal::simple_char_clause<escape, false> head(ctx());
             if(head.parse(builder))
             {
+              unicode_builder ub;
               hex_digit_char hd(ctx());
               for(size_t i = 0; i < size; ++i)
               {
-                if(!hd.parse(builder))
+                if(!hd.parse(ub))
                   return false;
               }
+              builder.add_atom(ub.build());
               return true;
             }
             return false;
           }
         };
       };
+
+      template <char char_v, char32_t emit_v>
+      class esc_char_clause : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder)
+        {
+          internal::simple_char_clause<char_v, false> d(ctx());
+          if(d.parse(builder))
+          {
+            builder.add_atom(emit_v);
+            return true;
+          }
+          return false;
+        }
+      };
     }
 
     // [41] 	c-escape 	::= 	“\” 
-    typedef internal::simple_char_clause<'\\'> escape;
+    typedef internal::esc_char_clause<'\\', '\\'> escape;
 
     // [42]	ns-esc-null	::=	“0” 
-    typedef internal::simple_char_clause<'0'> esc_null;
+    typedef internal::esc_char_clause<'0', '\0'> esc_null;
 
     // [43]	ns-esc-bell	::=	“a”
-    typedef internal::simple_char_clause<'a'> esc_bell;
+    typedef internal::esc_char_clause<'a', '\a'> esc_bell;
 
     // [44]	ns-esc-backspace	::=	“b” 
-    typedef internal::simple_char_clause<'b'> esc_backspace;
+    typedef internal::esc_char_clause<'b', '\b'> esc_backspace;
     
     // [45]	ns-esc-horizontal-tab	::=	“t” | #x9 
-    typedef internal::simple_char_clause<'t'> esc_htab;
+    typedef internal::esc_char_clause<'t', '\t'> esc_htab;
     
     // [46]	ns-esc-line-feed	::=	“n” 
-    typedef internal::simple_char_clause<'n'> esc_linefeed;
+    typedef internal::esc_char_clause<'n', '\n'> esc_linefeed;
 
     // [47]	ns-esc-vertical-tab	::=	“v” 
-    typedef internal::simple_char_clause<'v'> esc_vtab;
+    typedef internal::esc_char_clause<'v', '\v'> esc_vtab;
 
     // [48]	ns-esc-form-feed	::=	“f” 
-    typedef internal::simple_char_clause<'f'> esc_form_feed;
+    typedef internal::esc_char_clause<'f', '\v'> esc_form_feed;
 
     // [49]	ns-esc-carriage-return	::=	“r” 
-    typedef internal::simple_char_clause<'r'> esc_carriage_return;
+    typedef internal::esc_char_clause<'r', '\r'> esc_carriage_return;
 
     // [50]	ns-esc-escape	::=	“e” 
-    typedef internal::simple_char_clause<'e'> esc_escape;
+    typedef internal::esc_char_clause<'e', 0x1b> esc_escape;
 
     // [51]	ns-esc-space	::=	#x20 
-    typedef internal::simple_char_clause<' '> esc_space;
+    typedef internal::esc_char_clause<' ', 0x20> esc_space;
 
     // [52]	ns-esc-double-quote	::=	“"”
-    typedef internal::simple_char_clause<'"'> esc_dquote;
+    typedef internal::esc_char_clause<'"', '"'> esc_dquote;
 
     // [53]	ns-esc-slash	::=	“/” 
-    typedef internal::simple_char_clause<'/'> esc_slash;
+    typedef internal::esc_char_clause<'/', '/'> esc_slash;
 
     // [54]	ns-esc-backslash	::=	“\”
-    typedef internal::simple_char_clause<'\\'> esc_bslash;
+    typedef internal::esc_char_clause<'\\', '\\'> esc_bslash;
 
     // [55]	ns-esc-next-line	::=	“N” 
-    typedef internal::simple_char_clause<'N'> esc_next_line;
+    typedef internal::esc_char_clause<'N', 0x85> esc_next_line;
 
     // [56]	ns-esc-non-breaking-space	::=	“_” 
-    typedef internal::simple_char_clause<'_'> esc_non_break_space;
+    typedef internal::esc_char_clause<'_', 0xa0> esc_non_break_space;
 
     // [57]	ns-esc-line-separator	::=	“L”
-    typedef internal::simple_char_clause<'L'> esc_line_separator;
+    typedef internal::esc_char_clause<'L', 0x2028> esc_line_separator;
 
     // [58]	ns-esc-paragraph-separator	::=	“P” 
-    typedef internal::simple_char_clause<'P'> esc_paragraph_separator;
+    typedef internal::esc_char_clause<'P', 0x2029> esc_paragraph_separator;
 
     // [59]	ns-esc-8-bit	::=	“x”
     //                                 ( ns-hex-digit × 2 ) 
@@ -468,7 +521,7 @@ namespace kyaml
     //                                | ns-esc-next-line | ns-esc-non-breaking-space
     //                                | ns-esc-line-separator | ns-esc-paragraph-separator
     //                                | ns-esc-8-bit | ns-esc-16-bit | ns-esc-32-bit )
-    typedef internal::and_clause<internal::simple_char_clause<'\\'>,
+    typedef internal::and_clause<internal::simple_char_clause<'\\', false>,
                                  internal::any_of<esc_null,
                                                   esc_bell,
                                                   esc_backspace,

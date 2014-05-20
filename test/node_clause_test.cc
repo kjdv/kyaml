@@ -95,6 +95,9 @@ TEST_P(dquote_test, extract)
 dquote_testcase dquote_testcases[] =
 {
   {"\"klaas\"", "klaas", context::FLOW_IN},
+  {"\"klaas\\tjacob\"", "klaas\tjacob", context::FLOW_IN},
+  {"\"klaas\\njacob\"", "klaas\njacob", context::FLOW_KEY},
+  {"\"\\U00e282ac euro\"", "\xe2\x82\xac euro", context::FLOW_IN}
 };
 
 INSTANTIATE_TEST_CASE_P(dquote_tests,

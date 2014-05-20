@@ -285,7 +285,7 @@ CHAR_CLAUSE_TEST(esc_unicode_16b,
                  values({"u0G"}))
 
 CHAR_CLAUSE_TEST(esc_unicode_32b, 
-                 values({"U0123abcd"}),
+                 values({"U0123abcd", "U00e282ac"}),
                  values({"U0G"}))
 
 CHAR_CLAUSE_TEST(esc_char, 
