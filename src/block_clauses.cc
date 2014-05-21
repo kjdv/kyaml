@@ -219,26 +219,20 @@ bool block_sequence::parse(document_builder &builder)
   {
     ctx().set_indent(n + m);
 
+    replay_builder rb;
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_seq_entry> > bs_clause;
-    typedef internal::and_clause<indent_clause_eq, internal::simple_char_clause<'-', false> > canary_clause;
-    
-    bool result = false;
 
     bs_clause bs(ctx());
 
-    // optimization: it should not be necesarry to parse the entire sequence twice, just until the leading indentation and '-' should be
-    // enough.
-    canary_clause cc(ctx());
-    assert(test_parse(cc) == test_parse(bs));
-
-    if(test_parse(cc))
+    bool result = false;
+    if(bs.parse(rb))
     {
+      result = true;
       builder.start_sequence();
-      result = bs.parse(builder);
-      assert(result);
+      rb.build(builder);
       builder.end_sequence();
     }
-    
+
     // TODO: cleanup by scope guard
     ctx().set_indent(n);
     
@@ -257,19 +251,16 @@ bool block_mapping::parse(document_builder &builder)
   {
     ctx().set_indent(n + m);
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_map_entry> > bs_clause;
-    typedef internal::and_clause<indent_clause_eq, block_map_entry> canary_clause;
     
     bs_clause bs(ctx());
     bool result = false;
 
-    canary_clause cc(ctx());
-    assert(test_parse(cc) == test_parse(bs));
-
-    if(test_parse(cc))
+    replay_builder rb;
+    if(bs.parse(rb))
     {
+      result = true;
       builder.start_mapping();
-      result = bs.parse(builder);
-      assert(result);
+      rb.build(builder);
       builder.end_mapping();
     }
 

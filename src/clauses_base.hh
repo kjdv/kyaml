@@ -305,16 +305,15 @@ namespace kyaml
         
         bool parse(document_builder &builder)
         {
-          // we need two passes, one for checking, on for collecting results
-          // todo: find something smarter
-          null_builder db;
-          if(parse_recurse<clauses_t...>(db)) // pass 1
+          replay_builder rb;
+          if(parse_recurse<clauses_t...>(rb))
           {
-            unwind();
-            return parse_recurse<clauses_t...>(builder);
+            rb.build(builder);
+            return true;
           }
           else
             unwind();
+
           return false;
         }
 
@@ -395,8 +394,14 @@ namespace kyaml
       template <typename clause_t>
       bool try_parse(clause_t &cl, document_builder &builder)
       {
-        if(test_parse<clause_t>(cl))
-          return cl.parse(builder);
+        replay_builder rb;
+        if(cl.parse(rb))
+        {
+          rb.build(builder);
+          return true;
+        }
+        else
+          cl.unwind();
         return false;
       }
       
