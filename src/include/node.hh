@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <cassert>
 #include <sstream>
-#include <utils.hh>
 
 namespace kyaml
 {
@@ -15,7 +14,7 @@ namespace kyaml
   class mapping;
   class scalar;
 
-  class node : private no_copy
+  class node
   {
   public:
     typedef enum
