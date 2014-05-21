@@ -74,6 +74,22 @@ node const &node::get(const string &key) const
   return as_mapping().get(key);
 }
 
+void node::add(std::shared_ptr<node> val)
+{
+  if(type() != SEQUENCE)
+    throw wrong_type(SEQUENCE, type());
+
+  dynamic_cast<sequence &>(*this).add(val);
+}
+
+void node::add(string const &key, std::shared_ptr<node> val)
+{
+  if(type() != MAPPING)
+    throw wrong_type(MAPPING, type());
+
+  return dynamic_cast<mapping &>(*this).add(key, val);
+}
+
 void sequence::print(ostream &o) const
 {
   o << "[";
@@ -106,7 +122,7 @@ node const &mapping::get(const string &key) const
 }
 
 
-ostream &std::operator<<(ostream &o, std::shared_ptr<const node> sp)
+ostream &std::operator<<(ostream &o, std::shared_ptr<node> sp)
 {
   if(sp)
     sp->print(o);

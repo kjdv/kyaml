@@ -53,10 +53,9 @@ namespace kyaml
   private:
     typedef enum
     {
-      SEQUENCE_START,
-      SEQUENCE_END,
-      MAPPING_START,
-      MAPPING_END,
+      SEQUENCE,
+      MAPPING,
+      MAPPING_KEY,
       RESOLVED_NODE
     } token_t;
 
@@ -72,6 +71,8 @@ namespace kyaml
     };
 
     item pop();
+
+    void resolve();
 
     std::stack<item> d_stack;
 

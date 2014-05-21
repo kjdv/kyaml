@@ -59,6 +59,10 @@ namespace kyaml
     node const &get(size_t i) const;
 
     node const &get(std::string const &key) const;
+
+    void add(std::shared_ptr<node> val);
+
+    void add(std::string const &key, std::shared_ptr<node> val);
   };
 
   class scalar : public node
@@ -139,11 +143,6 @@ namespace kyaml
       d_items.push_back(child);
     }
 
-    void reverse_add(std::shared_ptr<node> child)
-    {
-      d_items.push_back(child);
-    }
-
   private:
     container_t d_items;
   };
@@ -205,7 +204,7 @@ namespace std
     return o;
   }
 
-  ostream &operator<<(ostream &o, std::shared_ptr<const kyaml::node> sp);
+  ostream &operator<<(ostream &o, std::shared_ptr<kyaml::node> sp);
 }
 
 #endif // NODE_HH
