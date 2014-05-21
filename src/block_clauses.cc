@@ -180,13 +180,13 @@ bool compact_mapping::parse(document_builder &builder)
                                                       >
                                > cm_clause;
 
-  block_map_entry canary(ctx());
-  if(test_parse(canary))
+  cm_clause cm(ctx());
+  replay_builder rb;
+  if(cm.parse(rb))
   {
-    cm_clause cm(ctx());
+    result = true;
     builder.start_mapping();
-    result = cm.parse(builder);
-    assert(result);
+    rb.build(builder);
     builder.end_mapping();
   }
 
@@ -279,13 +279,14 @@ bool compact_sequence::parse(document_builder &builder)
   typedef internal::and_clause<block_seq_entry,
                                internal::zero_or_more<internal::and_clause<indent_clause_eq,
                                                                            block_seq_entry> > > cs_clause;
-  block_seq_entry canary(ctx());
-  if(test_parse(canary))
+
+  cs_clause d(ctx());
+  replay_builder rb;
+  if(d.parse(rb))
   {
-    cs_clause d(ctx());
+    result = true;
     builder.start_sequence();
-    result = d.parse(builder);
-    assert(result);
+    rb.build(builder);
     builder.end_sequence();
   }
   return result;
