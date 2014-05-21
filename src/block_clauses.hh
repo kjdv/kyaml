@@ -181,9 +181,9 @@ namespace kyaml
     };
 
     // [200] 	s-l+block-collection(n,c) 	::= 	( s-separate(n+1,c) c-ns-properties(n+1,c) )?
-    //                                                  s-l-comments
-    //                                                  ( l+block-sequence(seq-spaces(n,c))
-    //                                                    | l+block-mapping(n) ) 
+    //                                          s-l-comments
+    //                                          ( l+block-sequence(seq-spaces(n,c))
+    //                                          | l+block-mapping(n) )
     class block_collection : public clause
     {
     public:

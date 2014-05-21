@@ -75,7 +75,7 @@ TEST_F(toplevel, flow_sequence_as_value)
 }
 
 
-TEST_F(toplevel, DISABLED_block_sequence_as_value) // todo: fix this
+TEST_F(toplevel, block_sequence_as_value) // todo: fix this
 {
   parse("key:\n"
         "  - value1\n"
