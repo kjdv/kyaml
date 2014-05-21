@@ -67,6 +67,24 @@ TEST_F(toplevel, nested)
   EXPECT_EQ("two", value(0, 1));
 }
 
+TEST_F(toplevel, flow_sequence_as_value)
+{
+  parse("{ key : [value1, value2]}");
+  EXPECT_EQ("value1", value("key", 0));
+  EXPECT_EQ("value2", value("key", 1));
+}
+
+
+TEST_F(toplevel, DISABLED_block_sequence_as_value) // todo: fix this
+{
+  parse("key:\n"
+        "  - value1\n"
+        "  - value2\n");
+
+  EXPECT_EQ("value1", value("key", 0));
+  EXPECT_EQ("value2", value("key", 1));
+}
+
 TEST_F(toplevel, nontrivial)
 {
   parse("receipt:     Oz-Ware Purchase Invoice\n"
