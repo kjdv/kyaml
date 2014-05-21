@@ -205,3 +205,41 @@ TEST(flow_mapping, quoted)
   EXPECT_TRUE(fm.parse(b));
 }
 
+TEST(flow_mapping, empty_key)
+{
+  context_wrap ctx("{ : value }", 0, context::FLOW_KEY);
+
+  flow_mapping fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_mapping()).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("value")).
+    Times(1);
+  EXPECT_CALL(b, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
+}
+
+TEST(flow_mapping, empty_value)
+{
+  context_wrap ctx("{ key : }", 0, context::FLOW_KEY);
+
+  flow_mapping fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_mapping()).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("key")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("")).
+    Times(1);
+  EXPECT_CALL(b, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
+}
+

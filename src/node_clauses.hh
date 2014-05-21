@@ -100,6 +100,7 @@ namespace kyaml
 
       bool parse(document_builder &builder)
       {
+        builder.add_scalar("");
         return true;
       }
 

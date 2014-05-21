@@ -292,9 +292,14 @@ namespace kyaml
 
     // [186] 	ns-l-compact-sequence(n) 	::= 	c-l-block-seq-entry(n)
     //                                                  ( s-indent(n) c-l-block-seq-entry(n) )* 
-    typedef internal::and_clause<block_seq_entry,
-                                 internal::zero_or_more<internal::and_clause<indent_clause_eq,
-                                                                             block_seq_entry> > > compact_sequence;
+    class compact_sequence : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
+
     // [183] 	l+block-sequence(n) 	::= 	( s-indent(n+m) c-l-block-seq-entry(n+m) )+
     //                                          /* For some fixed auto-detected m > 0 */ 
     class block_sequence : public clause

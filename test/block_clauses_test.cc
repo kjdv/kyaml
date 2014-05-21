@@ -114,4 +114,103 @@ TEST(block_sequence, indented)
   EXPECT_TRUE(bs.parse(mb));
 }
 
+TEST(block_mapping, mapping)
+{
+  string input =
+      "key1 : value1\n"
+      "key two : value two\n";
+
+  context_wrap ctx(input);
+
+  block_mapping bm(ctx.get());
+  mock_builder mb;
+
+  EXPECT_CALL(mb, start_mapping()).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("key1")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("value1")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("key two")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("value two")).
+    Times(1);
+  EXPECT_CALL(mb, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(bm.parse(mb));
+}
+
+TEST(block_mapping, indented)
+{
+  string input =
+      " name : 'klaas jacob'\n"
+      " family name : 'de vries'\n";
+
+  context_wrap ctx(input, 0);
+
+  block_mapping bm(ctx.get());
+  mock_builder mb;
+
+  EXPECT_CALL(mb, start_mapping()).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("name")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("klaas jacob")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("family name")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("de vries")).
+    Times(1);
+  EXPECT_CALL(mb, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(bm.parse(mb));
+}
+
+TEST(compact, sequence)
+{
+  string input =
+      "- one\n"
+      "- two\n";
+
+  context_wrap ctx(input, 0);
+
+  compact_sequence cs(ctx.get());
+  mock_builder mb;
+
+  EXPECT_CALL(mb, start_sequence()).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("one")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("two")).
+    Times(1);
+  EXPECT_CALL(mb, end_sequence()).
+    Times(1);
+
+  EXPECT_TRUE(cs.parse(mb));
+}
+
+
+TEST(compact, mapping)
+{
+  string input = "number: 5";
+
+  context_wrap ctx(input);
+
+  compact_mapping cm(ctx.get());
+  mock_builder mb;
+
+  EXPECT_CALL(mb, start_mapping()).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("number")).
+    Times(1);
+  EXPECT_CALL(mb, add_scalar("5")).
+    Times(1);
+  EXPECT_CALL(mb, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(cm.parse(mb));
+}
+
 

@@ -173,13 +173,25 @@ bool block_collection::parse(document_builder &builder)
 
 bool compact_mapping::parse(document_builder &builder)
 {
+  bool result = false;
+
   typedef internal::and_clause<block_map_entry,
                                internal::zero_or_more<internal::and_clause<indent_clause_eq,
                                                                            block_map_entry>
                                                       >
                                > cm_clause;
-  cm_clause cm(ctx());
-  return cm.parse(builder);
+
+  block_map_entry canary(ctx());
+  if(test_parse(canary))
+  {
+    cm_clause cm(ctx());
+    builder.start_mapping();
+    result = cm.parse(builder);
+    assert(result);
+    builder.end_mapping();
+  }
+
+  return result;
 }
 
 bool block_indented::parse(document_builder &builder)
@@ -239,20 +251,52 @@ bool block_sequence::parse(document_builder &builder)
 bool block_mapping::parse(document_builder &builder)
 {
   int n = ctx().indent_level();
-  int m = internal::delta_indent(ctx());
+  int d = internal::delta_indent(ctx());
+  int m = d - n;
 
   if(m > 0)
   {
     ctx().set_indent(n + m);
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_map_entry> > bs_clause;
+    typedef internal::and_clause<indent_clause_eq, block_map_entry> canary_clause;
     
     bs_clause bs(ctx());
-    bool result = bs.parse(builder);
-    
+    bool result = false;
+
+    canary_clause cc(ctx());
+    assert(test_parse(cc) == test_parse(bs));
+
+    if(test_parse(cc))
+    {
+      builder.start_mapping();
+      result = bs.parse(builder);
+      assert(result);
+      builder.end_mapping();
+    }
+
     // TODO: cleanup by scope guard
     ctx().set_indent(n);
     
     return result; 
   }
   return false;
+}
+
+
+bool compact_sequence::parse(document_builder &builder)
+{
+  bool result = false;
+  typedef internal::and_clause<block_seq_entry,
+                               internal::zero_or_more<internal::and_clause<indent_clause_eq,
+                                                                           block_seq_entry> > > cs_clause;
+  block_seq_entry canary(ctx());
+  if(test_parse(canary))
+  {
+    cs_clause d(ctx());
+    builder.start_sequence();
+    result = d.parse(builder);
+    assert(result);
+    builder.end_sequence();
+  }
+  return result;
 }
