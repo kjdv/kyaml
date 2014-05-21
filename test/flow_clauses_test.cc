@@ -6,9 +6,6 @@ using namespace kyaml;
 using namespace kyaml::test;
 using namespace kyaml::clauses;
 
-// TODO:
-// good things once there is a document builder is tests for clauses 137 and 140 as high (mid?) level entry points
-
 TEST(flow_sequence, empty)
 {
   context_wrap ctx("[ ]", 0, context::FLOW_IN);
@@ -110,3 +107,101 @@ TEST(flow_mapping, empty)
 
   EXPECT_TRUE(fm.parse(b));
 }
+
+TEST(flow_mapping, key_value_pair)
+{
+  context_wrap ctx("one : two", 0, context::FLOW_KEY);
+
+  flow_map_entry fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, add_scalar("one")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("two")).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
+}
+
+TEST(flow_mapping, key_value_pairs)
+{
+  context_wrap ctx("one : two , three : four", 0, context::FLOW_KEY);
+
+  flow_map_entries fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, add_scalar("one")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("two")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("three")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("four")).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
+}
+
+
+TEST(flow_mapping, single)
+{
+  context_wrap ctx("{ one : two }", 0, context::FLOW_KEY);
+
+  flow_mapping fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_mapping()).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("one")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("two")).
+    Times(1);
+  EXPECT_CALL(b, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
+}
+
+
+TEST(flow_mapping, mapping)
+{
+  context_wrap ctx("{ one : two, three : four }", 0, context::FLOW_KEY);
+
+  flow_mapping fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_mapping()).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("one")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("two")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("three")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("four")).
+    Times(1);
+  EXPECT_CALL(b, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
+}
+
+TEST(flow_mapping, quoted)
+{
+  context_wrap ctx("{ 'quoted key' : \"some : quoted , text\" }", 0, context::FLOW_KEY);
+
+  flow_mapping fm(ctx.get());
+  mock_builder b;
+
+  EXPECT_CALL(b, start_mapping()).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("quoted key")).
+    Times(1);
+  EXPECT_CALL(b, add_scalar("some : quoted , text")).
+    Times(1);
+  EXPECT_CALL(b, end_mapping()).
+    Times(1);
+
+  EXPECT_TRUE(fm.parse(b));
+}
+

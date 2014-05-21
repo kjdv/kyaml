@@ -220,7 +220,7 @@ namespace kyaml
     // [141] 	ns-s-flow-map-entries(n,c) 	::= 	ns-flow-map-entry(n,c) s-separate(n,c)?
     //                                                  ( “,” s-separate(n,c)?
     //                                                    ns-s-flow-map-entries(n,c)? 
-    //                                                  )
+    //                                                  )?
     class flow_map_entries : public clause
     {
     public:
@@ -235,9 +235,12 @@ namespace kyaml
     private:
       typedef internal::all_of<flow_map_entry,
                                internal::zero_or_one<separate>,
-                               internal::all_of<internal::simple_char_clause<'?', false>,
-                                                internal::zero_or_one<separate>,
-                                                internal::zero_or_one<flow_map_entries> > > i_flow_map_entries;
+                               internal::zero_or_one<internal::all_of<internal::simple_char_clause<',', false>,
+                                                                      internal::zero_or_one<separate>,
+                                                                      internal::zero_or_one<flow_map_entries>
+                                                                     >
+                                                    >
+                              > i_flow_map_entries;
     };
 
     // [140] 	c-flow-mapping(n,c) 	::= 	“{” s-separate(n,c)?
