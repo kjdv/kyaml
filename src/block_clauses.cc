@@ -207,12 +207,20 @@ bool block_sequence::parse(document_builder &builder)
   if(m > 0)
   {
     ctx().set_indent(n + m);
+
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_seq_entry> > bs_clause;
+    typedef internal::and_clause<indent_clause_eq, internal::simple_char_clause<'-', false> > canary_clause;
     
     bool result = false;
 
     bs_clause bs(ctx());
-    if(test_parse(bs))
+
+    // optimization: it should not be necesarry to parse the entire sequence twice, just until the leading indentation and '-' should be
+    // enough.
+    canary_clause cc(ctx());
+    assert(test_parse(cc) == test_parse(bs));
+
+    if(test_parse(cc))
     {
       builder.start_sequence();
       result = bs.parse(builder);
