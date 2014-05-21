@@ -41,6 +41,9 @@ namespace kyaml
     class string_document_builder : public document_builder
     {
     public:
+      string_document_builder() :
+        d_log("string builder")
+      {}
       void add_scalar( std::string const &s) override
       {
         d_log("adding string", s);

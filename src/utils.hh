@@ -65,12 +65,12 @@ namespace kyaml
   class logger
   {
   public:
-    logger(std::ostream &out = std::cerr)
+    logger(std::string const &tag, std::ostream &out = std::cerr)
     {}
 
     // does nothing, compiler should optimize out everything
     template<typename... args_t>
-    void operator()(std::string const &, args_t...)
+    void operator()(args_t...)
     {}
   };
 
@@ -79,14 +79,15 @@ namespace kyaml
   class logger<true>
   {
   public:
-    logger(std::ostream &out = std::cerr) :
+    logger(std::string const &tag, std::ostream &out = std::cerr) :
+      d_tag(tag),
       d_out(out)
     {}
 
     template<typename... args_t>
-    void operator()(std::string const &tag, args_t... args)
+    void operator()(args_t... args)
     {
-      d_out << "(" << tag << "):";
+      d_out << "(" << d_tag << "):";
       log_recurse(args...);
     }
     
@@ -102,6 +103,7 @@ namespace kyaml
       d_out << '\n';
     }
 
+    std::string d_tag;
     std::ostream &d_out;
   };
 }

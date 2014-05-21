@@ -37,9 +37,9 @@ INSTANTIATE_TEST_CASE_P(utf8_tests,
 TEST(logger, one_item)
 {
   stringstream str;
-  logger<true> l(str);
+  logger<true> l("tag", str);
 
-  l("tag", 1);
+  l(1);
 
   EXPECT_EQ("(tag): 1\n", str.str());
 }
@@ -47,9 +47,9 @@ TEST(logger, one_item)
 TEST(logger, two_items)
 {
   stringstream str;
-  logger<true> l(str);
+  logger<true> l("tag", str);
 
-  l("tag", "pi", 3.1459);
+  l("pi", 3.1459);
 
   EXPECT_EQ("(tag): pi 3.1459\n", str.str());
 }
@@ -57,9 +57,9 @@ TEST(logger, two_items)
 TEST(logger, zero_item)
 {
   stringstream str;
-  logger<true> l(str);
+  logger<true> l("tag", str);
 
-  l("tag");
+  l();
 
   EXPECT_EQ("(tag):\n", str.str());
 }

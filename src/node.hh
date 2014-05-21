@@ -1,5 +1,5 @@
-#ifndef DOCUMENT_HH
-#define DOCUMENT_HH
+#ifndef NODE_HH
+#define NODE_HH
 
 #include <string>
 #include <memory>
@@ -15,7 +15,7 @@ namespace kyaml
   class mapping;
   class scalar;
 
-  class document : private no_copy
+  class node : private no_copy
   {
   public:
     typedef enum
@@ -39,10 +39,12 @@ namespace kyaml
       std::string d_msg;
     };
 
-    virtual ~document()
+    virtual ~node()
     {}
 
     virtual type_t type() const = 0;
+
+    virtual void print(std::ostream &o) const = 0;
 
     // these will throw on type mismatch
     sequence const &as_sequence() const;
@@ -54,12 +56,12 @@ namespace kyaml
     // easy access: get as value, item from sequence, or value from map. may throw
     std::string const &get() const;
 
-    document const &get(size_t i) const;
+    node const &get(size_t i) const;
 
-    document const &get(std::string const &key) const;
+    node const &get(std::string const &key) const;
   };
 
-  class scalar : public document
+  class scalar : public node
   {
   public:
     scalar(std::string const &v) :
@@ -69,6 +71,11 @@ namespace kyaml
     type_t type() const final
     {
       return SCALAR;
+    }
+
+    void print(std::ostream &o) const final
+    {
+      o << get();
     }
 
     std::string const &get() const
@@ -89,22 +96,24 @@ namespace kyaml
     std::string d_value;
   };
 
-  class sequence : public document
+  class sequence : public node
   {
   public:
-    typedef std::vector<std::unique_ptr<document> > container_t;
+    typedef std::vector<std::shared_ptr<node> > container_t;
 
     type_t type() const final
     {
       return SEQUENCE;
     }
 
-    document const &operator[](size_t i) const
+    void print(std::ostream &o) const final;
+
+    node const &operator[](size_t i) const
     {
       return get(i);
     }
 
-    document const &get(size_t i) const
+    node const &get(size_t i) const
     {
       assert(i < size() && d_items[i]);
       return *d_items[i];
@@ -125,31 +134,38 @@ namespace kyaml
       return d_items.size();
     }
 
-    void add(std::unique_ptr<document> child)
+    void add(std::shared_ptr<node> child)
     {
-      d_items.push_back(std::move(child));
+      d_items.push_back(child);
+    }
+
+    void reverse_add(std::shared_ptr<node> child)
+    {
+      d_items.push_back(child);
     }
 
   private:
     container_t d_items;
   };
 
-  class mapping : public document
+  class mapping : public node
   {
   public:
-    typedef std::unordered_map<std::string, std::unique_ptr<document> > container_t;
+    typedef std::unordered_map<std::string, std::shared_ptr<node> > container_t;
 
     type_t type() const final
     {
       return MAPPING;
     }
 
-    document const &operator[](std::string const &key) const
+    void print(std::ostream &o) const final;
+
+    node const &operator[](std::string const &key) const
     {
       return get(key);
     }
 
-    document const &get(std::string const &key) const;
+    node const &get(std::string const &key) const;
 
     bool has(std::string const &key) const
     {
@@ -171,9 +187,9 @@ namespace kyaml
       return d_items.size();
     }
 
-    void add(std::string const &key, std::unique_ptr<document> value)
+    void add(std::string const &key, std::shared_ptr<node> value)
     {
-      d_items.insert(std::make_pair(key, std::move(value)));
+      d_items.insert(std::make_pair(key, value));
     }
 
   private:
@@ -181,4 +197,15 @@ namespace kyaml
   };
 }
 
-#endif // DOCUMENT_HH
+namespace std
+{
+  inline ostream &operator<<(ostream &o, kyaml::node const &n)
+  {
+    n.print(o);
+    return o;
+  }
+
+  ostream &operator<<(ostream &o, std::shared_ptr<const kyaml::node> sp);
+}
+
+#endif // NODE_HH
