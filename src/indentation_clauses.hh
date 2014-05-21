@@ -16,7 +16,7 @@ namespace kyaml
 
       bool parse(document_builder &builder);
     private:
-      unsigned level() const
+      int level() const
       {
         return ctx().indent_level();
       }
@@ -33,7 +33,7 @@ namespace kyaml
         
         bool parse(document_builder &builder);
       private:
-        unsigned level() const
+        int level() const
         {
           return ctx().indent_level();
         }
@@ -51,16 +51,16 @@ namespace kyaml
 
       bool parse(document_builder &builder);
     private:
-      unsigned lower_level() const
+      int lower_level() const
       {
         return d_m;
       }
-      unsigned higher_level() const
+      int higher_level() const
       {
         return ctx().indent_level();
       }
       
-      unsigned d_m;
+      int d_m;
     };
 
     // [65] 	s-indent(≤n) 	::= 	s-space × m /* Where m ≤ n */ 
@@ -74,15 +74,15 @@ namespace kyaml
 
       bool parse(document_builder &builder);
     private:
-      unsigned lower_level() const
+      int lower_level() const
       {
         return d_m;
       }
-      unsigned higher_level() const
+      int higher_level() const
       {
         return ctx().indent_level();
       }
-      unsigned d_m;
+      int d_m;
     };
   }
 }

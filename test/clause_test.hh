@@ -16,7 +16,7 @@ namespace kyaml
     {
     public:
       context_wrap(std::string const &s,
-                   unsigned indent_level = 0,
+                   int indent_level = -1,
                    kyaml::clauses::context::blockflow_t bf = kyaml::clauses::context::NA) :
         d_sstream(s),
         d_stream(d_sstream),
@@ -77,7 +77,7 @@ namespace kyaml
     struct clause_testcase
     {
       std::string input;
-      unsigned indent_level;
+      int indent_level;
       kyaml::clauses::context::blockflow_t blockflow;
       
       bool const result;
@@ -95,7 +95,7 @@ namespace kyaml
         d_consumed(input.size())
       {}
 
-      testcase_builder &with_indent_level(unsigned l)
+      testcase_builder &with_indent_level(int l)
       {
         d_indent_level = l;
         return *this;
@@ -124,7 +124,7 @@ namespace kyaml
       }
     private:
       std::string d_input;
-      unsigned d_indent_level;
+      int d_indent_level;
       kyaml::clauses::context::blockflow_t d_blockflow;
       
       bool d_result;

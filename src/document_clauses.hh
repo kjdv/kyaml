@@ -43,8 +43,13 @@ namespace kyaml
 
     // [207] 	l-bare-document 	::= 	s-l+block-node(-1,block-in)
                                                 /* Excluding c-forbidden content */ 
-    typedef internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, block_node> bare_document;
-    // TODO: how to interpret/implement an indentation level of -1?
+    typedef internal::state_scope<
+              internal::and_clause<internal::indent_modifier<-1>,
+                                   internal::flow_modifier<context::BLOCK_IN>
+                                  >,
+              block_node
+            > bare_document;
+
 
     // [208] 	l-explicit-document 	::= 	c-directives-end
     //                                          ( l-bare-document

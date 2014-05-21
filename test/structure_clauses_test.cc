@@ -22,7 +22,7 @@ namespace kyaml
 namespace
 {
   //// separate in line 
-  clause_testcase sil_tc(string const &input, bool result, unsigned indent_level)
+  clause_testcase sil_tc(string const &input, bool result, int indent_level)
   {
     return 
       testcase_builder(input, result).
@@ -33,7 +33,7 @@ namespace
 
   //// line prefix
  
-  clause_testcase lp_tc(string const &input, unsigned indent_level, context::blockflow_t bf, bool result)
+  clause_testcase lp_tc(string const &input, int indent_level, context::blockflow_t bf, bool result)
   {
     size_t n = input.find_first_not_of(" \t");
     unsigned consumed = 
@@ -51,7 +51,7 @@ namespace
 
   //// empty line
 
-  clause_testcase el_tc(string const &input, unsigned indent_level, context::blockflow_t bf, bool result)
+  clause_testcase el_tc(string const &input, int indent_level, context::blockflow_t bf, bool result)
   {
     size_t n = input.find_first_not_of(" \t\r\n");
     unsigned consumed =
@@ -68,7 +68,7 @@ namespace
   }
   
   //// trimmed
-  clause_testcase tr_tc(string const &input, unsigned il, bool result, unsigned consumed)
+  clause_testcase tr_tc(string const &input, int il, bool result, unsigned consumed)
   {
     return 
       testcase_builder(input, result).
@@ -78,7 +78,7 @@ namespace
   }
 
   // flow_folded
-  // clause_testcase  ff_tc(string const &input, unsigned il, context::blockflow_t bf, bool result, unsigned consumed)
+  // clause_testcase  ff_tc(string const &input, int il, context::blockflow_t bf, bool result, unsigned consumed)
   // {
   //   return
   //     testcase_builder(input, result).

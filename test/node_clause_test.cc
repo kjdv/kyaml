@@ -139,7 +139,7 @@ INSTANTIATE_TEST_CASE_P(squote_tests,
                         ValuesIn(squote_testcases));
 namespace
 {
-  clause_testcase qt(string const &input, unsigned indent = 0, context::blockflow_t bf = context::FLOW_IN)
+  clause_testcase qt(string const &input, int indent = -1, context::blockflow_t bf = context::FLOW_IN)
   {
     return
       testcase_builder(input, true).

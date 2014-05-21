@@ -16,8 +16,8 @@ namespace kyaml
     // generic helper for indendation
     namespace internal
     {
-      unsigned delta_indent(context &ctx);
-      bool autodetect_indent(context &ctx, unsigned minumum);
+      int delta_indent(context &ctx);
+      bool autodetect_indent(context &ctx, int minumum);
     }
 
     // [163] 	c-indentation-indicator(m) 	::= 	ns-dec-digit ⇒ m = ns-dec-digit - #x30

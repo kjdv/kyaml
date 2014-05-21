@@ -33,11 +33,13 @@ namespace kyaml
 
       struct state
       {
-        unsigned indent_level;
+        // note: the indent_level is intentionally signed. It is in fact legal to have a negavitve indent level.
+        // In fact, it is -1 by default so that 0 counts as higher than the current.
+        int indent_level;
         blockflow_t blockflow;
         chomp_t chomp;
         
-        state(unsigned il, blockflow_t bf, chomp_t c) :
+        state(int il, blockflow_t bf, chomp_t c) :
           indent_level(il),
           blockflow(bf),
           chomp(c)
@@ -45,7 +47,7 @@ namespace kyaml
       };
 
       context(char_stream &str, 
-              unsigned indent_level = 0,
+              int indent_level = -1,
               blockflow_t bf = NA,
               chomp_t c = CLIP) :
         d_stream(str),
@@ -62,7 +64,7 @@ namespace kyaml
         return d_stream;
       }
 
-      unsigned indent_level() const
+      int indent_level() const
       {
         return d_state.indent_level;
       }
@@ -82,7 +84,7 @@ namespace kyaml
         d_state.blockflow = bf;
       }
 
-      void set_indent(unsigned il)
+      void set_indent(int il)
       {
         d_state.indent_level = il;
       }
@@ -150,7 +152,7 @@ namespace kyaml
         ctx().set_blockflow(bf);
       }
 
-      void set_indent(unsigned il)
+      void set_indent(int il)
       {
         ctx().set_indent(il);
       }
@@ -382,17 +384,19 @@ namespace kyaml
       };
 
       template <typename clause_t>
-      bool try_parse(clause_t &cl, document_builder &builder)
+      bool test_parse(clause_t &cl)
       {
         null_builder dm;
-        if(cl.parse(dm))
-        {
-          cl.unwind();
+        bool result = cl.parse(dm);
+        cl.unwind();
+        return result;
+      }
+
+      template <typename clause_t>
+      bool try_parse(clause_t &cl, document_builder &builder)
+      {
+        if(test_parse<clause_t>(cl))
           return cl.parse(builder);
-        }
-        else
-          cl.unwind();
-        
         return false;
       }
       
@@ -461,7 +465,7 @@ namespace kyaml
 
         bool parse(document_builder &builder)
         {
-          unsigned i = ctx().indent_level();
+          int i = ctx().indent_level();
           ctx().set_indent(++i);
           return true;
         }
@@ -474,9 +478,21 @@ namespace kyaml
 
         bool parse(document_builder &builder)
         {
-          unsigned i = ctx().indent_level();
-          assert(i > 0);
+          int i = ctx().indent_level();
           ctx().set_indent(--i);
+          return true;
+        }
+      };
+
+      template <int indent_v>
+      class indent_modifier : public clause
+      {
+      public:
+        using clause::clause;
+
+        bool parse(document_builder &builder)
+        {
+          ctx().set_indent(indent_v);
           return true;
         }
       };

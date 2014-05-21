@@ -22,26 +22,26 @@ namespace
       str >> d_value;
     }
     
-    unsigned build()
+    int build()
     {
       return d_value;
     }
 
   private:
-    unsigned d_value;
+    int d_value;
   };
 
   class dummy_builder : public document_builder
   {};
 }
 
-unsigned kyaml::clauses::internal::delta_indent(context &ctx)
+int kyaml::clauses::internal::delta_indent(context &ctx)
 {
   char_stream::mark_t m = ctx.stream().mark();
   space s(ctx);
   dummy_builder b;
 
-  unsigned count = 0;
+  int count = 0;
   while(s.parse(b))
     ++count;
 
@@ -49,7 +49,7 @@ unsigned kyaml::clauses::internal::delta_indent(context &ctx)
   return count;
 }
 
-bool kyaml::clauses::internal::autodetect_indent(context &ctx, unsigned minumum)
+bool kyaml::clauses::internal::autodetect_indent(context &ctx, int minumum)
 {
   char_stream::mark_t m = ctx.stream().mark();
 
@@ -57,7 +57,7 @@ bool kyaml::clauses::internal::autodetect_indent(context &ctx, unsigned minumum)
   space s(ctx);
   dummy_builder b;
 
-  unsigned count;
+  int count;
   do
   {
     count = 0;
@@ -150,7 +150,7 @@ bool seq_spaces::parse(document_builder &builder)
 {
   if(ctx().blockflow() == context::BLOCK_OUT)
   {
-    unsigned il = ctx().indent_level();
+    int il = ctx().indent_level();
     assert(il > 0);
     ctx().set_indent(--il);
   }
@@ -200,16 +200,25 @@ bool block_indented::parse(document_builder &builder)
 
 bool block_sequence::parse(document_builder &builder)
 {
-  unsigned n = ctx().indent_level();
-  unsigned m = internal::delta_indent(ctx());
+  int n = ctx().indent_level();
+  int d = internal::delta_indent(ctx());
+  int m = d - n;
 
   if(m > 0)
   {
     ctx().set_indent(n + m);
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_seq_entry> > bs_clause;
     
+    bool result = false;
+
     bs_clause bs(ctx());
-    bool result = bs.parse(builder);
+    if(test_parse(bs))
+    {
+      builder.start_sequence();
+      result = bs.parse(builder);
+      assert(result);
+      builder.end_sequence();
+    }
     
     // TODO: cleanup by scope guard
     ctx().set_indent(n);
@@ -221,8 +230,8 @@ bool block_sequence::parse(document_builder &builder)
 
 bool block_mapping::parse(document_builder &builder)
 {
-  unsigned n = ctx().indent_level();
-  unsigned m = internal::delta_indent(ctx());
+  int n = ctx().indent_level();
+  int m = internal::delta_indent(ctx());
 
   if(m > 0)
   {
