@@ -91,3 +91,22 @@ TEST(document, yaml_stream)
   EXPECT_TRUE(ys.parse(nb));
   EXPECT_EQ(input.size(), ctx.get().stream().pos());
 }
+
+TEST(document, nontrivial)
+{
+  string input =
+    "receipt:     Oz-Ware Purchase Invoice\n"
+    "date:        2012-08-06\n"
+    "customer:\n"
+    "  given:   Dorothy\n"
+    "  family:  Gale\n";
+
+  typedef bare_document entry_clause;
+
+  context_wrap ctx(input);
+  entry_clause bd(ctx.get());
+  null_builder nb;
+
+  EXPECT_TRUE(bd.parse(nb));
+  EXPECT_EQ(input.size(), ctx.get().stream().pos());
+}

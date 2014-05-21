@@ -5,60 +5,78 @@
 using namespace std;
 using namespace kyaml;
 
-namespace
+class toplevel : public testing::Test
 {
-  shared_ptr<document> parse(string const &str)
+public:
+
+  void parse(std::string const &input)
   {
-    stringstream stream(str);
-    return kyaml::parse(stream);
+    stringstream stream(input);
+    d_document = kyaml::parse(stream);
+
+    ASSERT_TRUE((bool)d_document);
   }
 
-  string const &value(node const &n)
+  template <typename... path_t>
+  string const &value(path_t... path) const
+  {
+    assert(d_document);
+    return value_r(*d_document, path...);
+  }
+
+private:
+  string const &value_r(node const &n) const
   {
     return n.get();
   }
 
   template <typename... tail_t>
-  string const &value(node const &n, size_t idx, tail_t... tail)
+  string const &value_r(node const &n, size_t idx, tail_t... tail) const
   {
-    return value(n.get(idx), tail...);
+    return value_r(n.get(idx), tail...);
   }
 
   template <typename... tail_t>
-  string const &value(node const &n, std::string const &key, tail_t... tail)
+  string const &value_r(node const &n, std::string const &key, tail_t... tail) const
   {
-    return value(n.get(key), tail...);
+    return value_r(n.get(key), tail...);
   }
+
+  shared_ptr<document> d_document;
+};
+
+TEST_F(toplevel, simple_sequence)
+{
+  parse("[ one, two ]");
+
+  EXPECT_EQ("one", value(0));
+  EXPECT_EQ("two", value(1));
 }
 
-TEST(toplevel, simple_sequence)
+TEST_F(toplevel, simple_mapping)
 {
-  string input = "[ one, two ]";
-  shared_ptr<document> doc = parse(input);
-
-  EXPECT_TRUE((bool)doc);
-
-  EXPECT_EQ("one", value(*doc, 0));
-  EXPECT_EQ("two", value(*doc, 1));
+  parse("{ key : value }");
+  EXPECT_EQ("value", value("key"));
 }
 
-TEST(toplevel, simple_mapping)
+TEST_F(toplevel, nested)
 {
-  string input = "{ key : value }";
-  shared_ptr<document> doc = parse(input);
+  parse("[ [one, two] ]");
 
-  EXPECT_TRUE((bool)doc);
-
-  EXPECT_EQ("value", value(*doc, "key"));
+  EXPECT_EQ("one", value(0, 0));
+  EXPECT_EQ("two", value(0, 1));
 }
 
-TEST(toplevel, DISABLED_nested)
+TEST_F(toplevel, nontrivial)
 {
-  string input = "[ [one, two] ]";
-  shared_ptr<document> doc = parse(input);
+  parse("receipt:     Oz-Ware Purchase Invoice\n"
+        "date:        2012-08-06\n"
+        "customer:\n"
+        "  given:   Dorothy\n"
+        "  family:  Gale\n");
 
-  EXPECT_TRUE((bool)doc);
-
-  EXPECT_EQ("one", value(*doc, 0, 0));
-  EXPECT_EQ("two", value(*doc, 0, 1));
+  EXPECT_EQ("Oz-Ware Purchase Invoice", value("receipt"));
+  EXPECT_EQ("2012-08-06", value("date"));
+  EXPECT_EQ("Dorothy", value("customer", "given"));
+  EXPECT_EQ("Gale", value("customer", "family"));
 }

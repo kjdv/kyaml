@@ -11,6 +11,7 @@ void node_builder::start_sequence()
 
 void node_builder::end_sequence()
 {
+  d_log("ending sequence");
   resolve();
   d_log("completed sequence ", d_stack.top().value);
 }
@@ -23,6 +24,7 @@ void node_builder::start_mapping()
 
 void node_builder::end_mapping()
 {
+  d_log("ending mapping");
   resolve();
   d_log("completed mapping ", d_stack.top().value);
 }
@@ -130,5 +132,9 @@ node_builder::item node_builder::pop()
 
 void node_builder::resolve()
 {
-  d_stack.top().token = RESOLVED_NODE;
+  assert(!d_stack.empty());
+  shared_ptr<node> rn = d_stack.top().value;
+  d_stack.pop();
+
+  add_resolved_node(rn);
 }

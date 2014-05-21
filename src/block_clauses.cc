@@ -151,7 +151,6 @@ bool seq_spaces::parse(document_builder &builder)
   if(ctx().blockflow() == context::BLOCK_OUT)
   {
     int il = ctx().indent_level();
-    assert(il > 0);
     ctx().set_indent(--il);
   }
   return ctx().blockflow() == context::BLOCK_IN;
