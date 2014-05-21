@@ -65,6 +65,8 @@ namespace kyaml
     void add(std::string const &key, std::shared_ptr<node> val);
   };
 
+  typedef node document;
+
   class scalar : public node
   {
   public:

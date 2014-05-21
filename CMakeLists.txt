@@ -10,7 +10,7 @@ include(compilerstuff.cmake)
 file(GLOB_RECURSE SOURCES src/*.cc src/*.hh)
 
 # put the src subdirectory on the include path
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/src/include)
 
 # put the common code in one library
 add_library(${PROJECT_NAME} ${SOURCES})

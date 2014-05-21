@@ -106,6 +106,7 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
 
 void node_builder::add_atom(char32_t c)
 {
+  // TODO: sometimes called, but shouldn't be. ignore for now
   // d_log("atom (?) ", c);
   // assert(false); // should not leak to this level
 }
