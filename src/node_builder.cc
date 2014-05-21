@@ -29,14 +29,25 @@ void node_builder::end_mapping()
 
 void node_builder::add_anchor(const string &anchor)
 {
-  d_log("anchor ", anchor);
-  assert(false); // TODO
+  d_log("anchor", anchor);
+  d_stack.emplace(ANCHOR, make_shared<scalar>(anchor));
 }
 
 void node_builder::add_alias(const string &alias)
 {
-  d_log("alias ", alias);
-  assert(false); // TODO
+  d_log("alias", alias);
+
+  unordered_map<string, weak_ptr<node> >::const_iterator it = d_anchors.find(alias);
+  if(it != d_anchors.end())
+  {
+    shared_ptr<node> sp = it->second.lock();
+    if(sp)
+    {
+      add_resolved_node(sp);
+      return;
+    }
+  }
+  throw unkown_alias(alias);
 }
 
 void node_builder::add_scalar(const string &val)
@@ -45,6 +56,11 @@ void node_builder::add_scalar(const string &val)
 
   shared_ptr<scalar> s = make_shared<scalar>(val);
 
+  add_resolved_node(s);
+}
+
+void node_builder::add_resolved_node(shared_ptr<node> s)
+{
   if(d_stack.empty())
   {
     d_log("bare");
@@ -71,6 +87,14 @@ void node_builder::add_scalar(const string &val)
       item key = pop();
       assert(!d_stack.empty() && d_stack.top().token == MAPPING);
       d_stack.top().value->add(key.value->get(), s);
+      break;
+    }
+    case ANCHOR:
+    {
+      item key = pop();
+      d_log("storing anchor", key.value->get(), s);
+      d_anchors.insert(make_pair(key.value->get(), s));
+      add_resolved_node(s);
       break;
     }
 

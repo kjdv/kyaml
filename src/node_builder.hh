@@ -56,6 +56,7 @@ namespace kyaml
       SEQUENCE,
       MAPPING,
       MAPPING_KEY,
+      ANCHOR,
       RESOLVED_NODE
     } token_t;
 
@@ -73,6 +74,9 @@ namespace kyaml
     item pop();
 
     void resolve();
+    void add_resolved_node(std::shared_ptr<node> s);
+
+    std::unordered_map<std::string, std::weak_ptr<node> > d_anchors;
 
     std::stack<item> d_stack;
 

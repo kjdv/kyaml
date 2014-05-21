@@ -37,11 +37,11 @@ namespace
 
 int main()
 {
-  string sample = "{ key : value }";
+  string sample = "{ key : &id value, k2 : *id }";
 
   context_wrap ctx(sample, -1, clauses::context::FLOW_IN);
 
-  clauses::bare_document doc(ctx.get());
+  clauses::yaml_stream doc(ctx.get());
   node_builder builder;
 
   if(doc.parse(builder))
