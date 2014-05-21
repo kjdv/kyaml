@@ -78,7 +78,7 @@ namespace kyaml
     void add_scalar(std::string const &val) override;
     void add_atom(char32_t c) override;
 
-    void build(document_builder &builder) const;
+    void replay(document_builder &builder) const;
 
   private:
     typedef enum

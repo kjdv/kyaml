@@ -43,7 +43,7 @@ void replay_builder::add_atom(char32_t c)
   d_items.emplace_back(ATOM, c);
 }
 
-void replay_builder::build(document_builder &builder) const
+void replay_builder::replay(document_builder &builder) const
 {
   for(auto const &it : d_items)
   {

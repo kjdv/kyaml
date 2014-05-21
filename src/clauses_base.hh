@@ -308,7 +308,7 @@ namespace kyaml
           replay_builder rb;
           if(parse_recurse<clauses_t...>(rb))
           {
-            rb.build(builder);
+            rb.replay(builder);
             return true;
           }
           else
@@ -397,7 +397,7 @@ namespace kyaml
         replay_builder rb;
         if(cl.parse(rb))
         {
-          rb.build(builder);
+          rb.replay(builder);
           return true;
         }
         else

@@ -186,7 +186,7 @@ bool compact_mapping::parse(document_builder &builder)
   {
     result = true;
     builder.start_mapping();
-    rb.build(builder);
+    rb.replay(builder);
     builder.end_mapping();
   }
 
@@ -229,7 +229,7 @@ bool block_sequence::parse(document_builder &builder)
     {
       result = true;
       builder.start_sequence();
-      rb.build(builder);
+      rb.replay(builder);
       builder.end_sequence();
     }
 
@@ -260,7 +260,7 @@ bool block_mapping::parse(document_builder &builder)
     {
       result = true;
       builder.start_mapping();
-      rb.build(builder);
+      rb.replay(builder);
       builder.end_mapping();
     }
 
@@ -286,7 +286,7 @@ bool compact_sequence::parse(document_builder &builder)
   {
     result = true;
     builder.start_sequence();
-    rb.build(builder);
+    rb.replay(builder);
     builder.end_sequence();
   }
   return result;
