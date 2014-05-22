@@ -64,6 +64,11 @@ namespace kyaml
         d_base.eof();
     }
 
+    // return the indent level, that is the number of chars since the last newline (\r or \n). or start of file
+    // returns 0 if this could not be established
+    // hint can be used as a known lower bound.
+    size_t indent_level(size_t hint = 0) const;
+
   private:
     bool underflow();
 

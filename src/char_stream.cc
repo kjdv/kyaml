@@ -73,6 +73,23 @@ string char_stream::consume(mark_t m)
   return result;
 }
 
+size_t char_stream::indent_level(size_t hint) const
+{
+  if(hint >= d_pos)
+    return 0;
+
+  size_t pos = d_pos - hint - 1;
+  while(pos < d_buffer.size()) // rely on overflow for termination
+  {
+    char_t c = d_buffer[pos];
+    if(c == '\n' || c == '\r')
+      break;
+    --pos;
+  }
+
+  return d_pos - pos - 1;
+}
+
 void char_stream::ignore()
 {
   d_buffer.erase(d_buffer.begin(), d_buffer.begin() + d_pos);

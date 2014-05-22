@@ -33,6 +33,8 @@ namespace
 
   class dummy_builder : public document_builder
   {};
+
+  logger<true> g_block_log("block");
 }
 
 int kyaml::clauses::internal::delta_indent(context &ctx)
@@ -196,18 +198,68 @@ bool compact_mapping::parse(document_builder &builder)
 
 bool block_indented::parse(document_builder &builder)
 {
-  // TODO: indent magic
-  typedef internal::any_of<internal::and_clause<indent_clause_eq,
+  return
+    parse_funky_indent(builder) ||
+    parse_normal(builder);
+}
+
+bool block_indented::parse_funky_indent(document_builder &builder)
+{
+  logger<true> log("funky indent");
+
+  log("head at", ctx().stream().pos());
+
+  const int n = ctx().indent_level();
+  const int m = ctx().stream().indent_level(n) - n;
+  bool result = false;
+
+  log("n =", n, "m =", m);
+
+  ctx().set_indent(m);
+  indent_clause_eq ind(ctx());
+  if(ind.parse(builder))
+  {
+    log("indent_clause_eq passed, at", ctx().stream().pos());
+
+    ctx().set_indent(n + m + 1);
+    internal::or_clause<compact_sequence, compact_mapping> sm(ctx());
+    if(sm.parse(builder))
+    {
+      log("compact sequence or mapping passed, at", ctx().stream().pos());
+      result = true;
+    }
+  }
+
+
+  /*// TODO: indent magic
+  typedef internal::any_of<internal::and_clause<internal::state_scope<internal::indent_modifier<2>, indent_clause_eq>,
                                                 internal::or_clause<
-                                                  internal::state_scope<internal::indent_inc_modifier, compact_sequence>,
-                                                  internal::state_scope<internal::indent_inc_modifier, compact_mapping> 
+                                                  internal::state_scope<internal::indent_modifier<n + 2 + 1>, compact_sequence>,
+                                                  internal::state_scope<internal::indent_modifier<n + 2 + 1>, compact_mapping>
                                                   >
                                                 >,
                            block_node,
                            internal::and_clause<enode, sline_comment>
                            > bi_clause;
   bi_clause bi(ctx());
-  return bi.parse(builder);
+
+  */
+
+  // TODO: dtor-based cleanup
+  if(!result)
+    unwind();
+
+  ctx().set_indent(n);
+
+  return result;
+}
+
+bool block_indented::parse_normal(document_builder &builder)
+{
+  internal::or_clause<block_node,
+                      internal::and_clause<enode, sline_comment>
+                     > normal(ctx());
+  return normal.parse(builder);
 }
 
 bool block_sequence::parse(document_builder &builder)
@@ -219,6 +271,8 @@ bool block_sequence::parse(document_builder &builder)
   if(m > 0)
   {
     ctx().set_indent(n + m);
+
+    g_block_log("seq indent at", n+m);
 
     replay_builder rb;
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_seq_entry> > bs_clause;
@@ -251,6 +305,9 @@ bool block_mapping::parse(document_builder &builder)
   if(m > 0)
   {
     ctx().set_indent(n + m);
+
+    g_block_log("block indent at", n+m);
+
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_map_entry> > bs_clause;
     
     bs_clause bs(ctx());
@@ -291,4 +348,33 @@ bool compact_sequence::parse(document_builder &builder)
     builder.end_sequence();
   }
   return result;
+}
+
+
+bool block_seq_entry::parse(document_builder &builder)
+{
+  null_builder nb;
+  internal::simple_char_clause<'-', false> minus(ctx());
+
+  g_block_log("se -", stream().pos());
+  if(minus.parse(nb))
+  {
+    internal::not_clause<non_white_char> nw(ctx());
+    g_block_log("se nw", stream().pos());
+    if(nw.parse(nb))
+    {
+     // advance(1);
+      internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, block_indented> indented(ctx());
+
+      g_block_log("se ind", stream().pos());
+      if(indented.parse(builder))
+      {
+        g_block_log("se done", stream().pos());
+        return true;
+      }
+    }
+  }
+
+  unwind();
+  return false;
 }

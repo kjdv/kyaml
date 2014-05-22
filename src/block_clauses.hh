@@ -248,18 +248,22 @@ namespace kyaml
                                  block_map_implicit_value> block_map_implicit_entry;
 
     // [185] 	s-l+block-indented(n,c) 	::= 	  ( s-indent(m)
-    //                                                      ( ns-l-compact-sequence(n+1+m)
-    //                                                        | ns-l-compact-mapping(n+1+m) 
-    //                                                      ) 
-    //                                                    )
-    //                                                  | s-l+block-node(n,c)
-    //                                                  | ( e-node s-l-comments ) 
+    //                                            (   ns-l-compact-sequence(n+1+m)
+    //                                              | ns-l-compact-mapping(n+1+m)
+    //                                            )
+    //                                          )
+    //                                          | s-l+block-node(n,c)
+    //                                          | ( e-node s-l-comments )
     class block_indented : public clause
     {
     public:
       using clause::clause;
 
       bool parse(document_builder &builder); 
+
+    private:
+      bool parse_funky_indent(document_builder &builder);
+      bool parse_normal(document_builder &builder);
     };
 
     // [191] 	l-block-map-explicit-value(n) 	::= 	s-indent(n)
@@ -285,10 +289,13 @@ namespace kyaml
 
     // [184] 	c-l-block-seq-entry(n) 	::= 	“-” /* Not followed by an ns-char */
     //                                          s-l+block-indented(n,block-in)
-    typedef internal::all_of<internal::simple_char_clause<'-', false>,
-                             internal::not_clause<non_white_char>,
-                             internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, block_indented> 
-                             > block_seq_entry;
+    class block_seq_entry : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [186] 	ns-l-compact-sequence(n) 	::= 	c-l-block-seq-entry(n)
     //                                                  ( s-indent(n) c-l-block-seq-entry(n) )* 
