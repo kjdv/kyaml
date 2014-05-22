@@ -289,13 +289,10 @@ namespace kyaml
 
     // [184] 	c-l-block-seq-entry(n) 	::= 	“-” /* Not followed by an ns-char */
     //                                          s-l+block-indented(n,block-in)
-    class block_seq_entry : public clause
-    {
-    public:
-      using clause::clause;
-
-      bool parse(document_builder &builder);
-    };
+    typedef internal::all_of<internal::simple_char_clause<'-', false>,
+                             internal::not_clause<non_white_char>,
+                             internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, block_indented>
+                            > block_seq_entry;
 
     // [186] 	ns-l-compact-sequence(n) 	::= 	c-l-block-seq-entry(n)
     //                                                  ( s-indent(n) c-l-block-seq-entry(n) )* 

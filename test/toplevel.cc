@@ -85,7 +85,7 @@ TEST_F(toplevel, block_sequence_as_value)
   EXPECT_EQ("value2", value("key", 1));
 }
 
-TEST_F(toplevel, mapping_inside_sequence_inside_mapping) // todo: fix this
+TEST_F(toplevel, mapping_inside_sequence_inside_mapping)
 {
   parse("topkey:\n"
         "  - bottomkey1: value1.1\n"
