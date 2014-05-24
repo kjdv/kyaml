@@ -325,3 +325,29 @@ bool compact_sequence::parse(document_builder &builder)
   }
   return result;
 }
+
+
+bool line_literal_text::parse(document_builder &builder)
+{
+  typedef internal::all_of<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> >,
+                           indent_clause_eq,
+                           internal::one_or_more<non_break_char> > delagate_t;
+
+  internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> > el(ctx());
+  if(el.parse(builder))
+  {
+    indent_clause_eq id(ctx());
+    if(id.parse(builder))
+    {
+      internal::one_or_more<non_break_char> nb(ctx());
+      string_builder sb;
+      if(nb.parse(sb))
+      {
+        builder.add_scalar(sb.build());
+        return true;
+      }
+    }
+  }
+  unwind();
+  return false;
+}

@@ -33,8 +33,8 @@ namespace kyaml
     };
 
     // [164] 	c-chomping-indicator(t) 	::= 	“-”         ⇒ t = strip
-    //                                                  “+”         ⇒ t = keep
-    //                                                  /* Empty */ ⇒ t = clip 
+    //                                        “+”         ⇒ t = keep
+    //                                         /* Empty */ ⇒ t = clip
     class chomping_indicator : public clause
     {
     public:
@@ -95,9 +95,13 @@ namespace kyaml
 
     // [171] 	l-nb-literal-text(n) 	::= 	l-empty(n,block-in)*
     //                                          s-indent(n) nb-char+ 	 
-    typedef internal::all_of<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> >,
-                             indent_clause_eq,
-                             internal::one_or_more<non_break_char> > line_literal_text;
+    class line_literal_text : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [172] 	b-nb-literal-next(n) 	::= 	b-as-line-feed
     //                                          l-nb-literal-text(n) 	 
@@ -113,7 +117,7 @@ namespace kyaml
                                  chomped_empty> literal_content;
 
     // [170] 	c-l+literal(n) 	::= 	“|” c-b-block-header(m,t)
-    //                                      l-literal-content(n+m,t)
+    //                                  l-literal-content(n+m,t)
     typedef internal::all_of<internal::simple_char_clause<'|', false>,
                              block_header,
                              literal_content> line_literal; // TODO: test indentation magic

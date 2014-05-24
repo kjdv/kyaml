@@ -233,3 +233,20 @@ TEST(compact, mapping)
   EXPECT_TRUE(cm.parse(mb));
 }
 
+TEST(line_literal, one_line)
+{
+  string input = "| \n"
+                 "  single line\n";
+
+  context_wrap ctx(input, 2);
+  ctx.get().stream().advance(3);
+
+  mock_builder mb;
+
+  line_literal_text ll(ctx.get());
+
+  EXPECT_CALL(mb, add_scalar("single line")).
+    Times(1);
+
+  EXPECT_TRUE(ll.parse(mb));
+}
