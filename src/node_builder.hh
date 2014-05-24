@@ -80,7 +80,7 @@ namespace kyaml
 
     std::stack<item> d_stack;
 
-    logger<true> d_log;
+    logger<false> d_log;
   };
 }
 

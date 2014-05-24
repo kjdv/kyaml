@@ -23,7 +23,7 @@ public:
   void check(std::string const &expect, path_t... path)
   {
     ASSERT_TRUE((bool)d_document) << "no valid document: " << d_document;
-    ASSERT_TRUE(d_document->has(path...)) << "path not present: " << tostring(path...);
+    ASSERT_TRUE(d_document->has(path...)) << "path " << tostring(path...) << " not present in " << d_document;
 
     node const &actual = d_document->value(path...);
     ASSERT_EQ(node::SCALAR, actual.type()) << "path present, but is not a leaf: " << tostring(path...);
@@ -41,7 +41,7 @@ private:
   std::string tostring(head_t const &head, tail_t... tail) const
   {
     stringstream str;
-    str << head << ", " << tostring(tail...);
+    str << '.' << head << tostring(tail...);
     return str.str();
   }
 
@@ -119,4 +119,24 @@ TEST_F(toplevel, anchors)
   check("1mm", 4, "step", "spotSize");
 }
 
+TEST_F(toplevel, DISABLED_newline_preserved)
+{
+  parse(g_oz_yaml);
 
+  const string expect = "123 Tornado Alley\n"
+                        "Suite 16";
+
+  check(expect, "bill-to", "street");
+}
+
+TEST_F(toplevel, DISABLED_newline_folded)
+{
+  parse(g_oz_yaml);
+
+  const string expect = "Follow the Yellow Brick "
+                        "Road to the Emerald City. "
+                        "Pay no attention to the "
+                        "man behind the curtain.";
+
+  check(expect, "specialDelivery");
+}
