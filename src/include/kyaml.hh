@@ -7,7 +7,7 @@
 
 namespace kyaml
 {
-  std::shared_ptr<document> parse(std::istream &input);
+  std::shared_ptr<const document> parse(std::istream &input);
 }
 
 #endif // KYAML_HH

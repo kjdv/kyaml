@@ -6,7 +6,7 @@ using namespace kyaml;
 
 int main()
 {
-  shared_ptr<document> doc = kyaml::parse(std::cin);
+  shared_ptr<const document> doc = kyaml::parse(std::cin);
 
   if(doc)
     cout << doc << '\n';

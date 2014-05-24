@@ -122,7 +122,7 @@ node const &mapping::get(const string &key) const
 }
 
 
-ostream &std::operator<<(ostream &o, std::shared_ptr<node> sp)
+ostream &std::operator<<(ostream &o, std::shared_ptr<const node> sp)
 {
   if(sp)
     sp->print(o);

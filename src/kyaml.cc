@@ -6,7 +6,7 @@ using namespace std;
 using namespace kyaml;
 using namespace kyaml::clauses;
 
-shared_ptr<document> kyaml::parse(istream &input)
+shared_ptr<const document> kyaml::parse(istream &input)
 {
   char_stream stream(input);
   context ctx(stream, -1, context::NA);
@@ -18,5 +18,5 @@ shared_ptr<document> kyaml::parse(istream &input)
   if(ys.parse(nb))
     return nb.build();
 
-  return shared_ptr<document>();
+  return shared_ptr<const document>();
 }

@@ -52,6 +52,7 @@ namespace kyaml
 
     mapping const &as_mapping() const;
 
+
     // easy access: get as value, item from sequence, or value from map. may throw
     std::string const &get() const;
 
@@ -62,6 +63,28 @@ namespace kyaml
     void add(std::shared_ptr<node> val);
 
     void add(std::string const &key, std::shared_ptr<node> val);
+
+    // access child documents. Use integer-types to access items in sequence, strings as keys in mappings
+    // will throw on type mismatch.
+
+    node const &value() const
+    {
+      return *this;
+    }
+    template <typename... path_t>
+    node const &value(size_t idx, path_t... path) const;
+    template <typename... path_t>
+    node const &value(std::string const &key, path_t... path) const;
+
+    // check membership of the item
+    bool has() const // just the sentinel
+    {
+      return true;
+    }
+    template <typename... path_t>
+    bool has(size_t idx, path_t... path) const;
+    template <typename... path_t>
+    bool has(std::string const &key, path_t... path) const;
   };
 
   typedef node document;
@@ -167,7 +190,7 @@ namespace kyaml
 
     node const &get(std::string const &key) const;
 
-    bool has(std::string const &key) const
+    bool has_key(std::string const &key) const
     {
       return d_items.find(key) != d_items.end();
     }
@@ -195,6 +218,44 @@ namespace kyaml
   private:
     container_t d_items;
   };
+
+  template <typename... path_t>
+  const node &node::value(size_t idx, path_t... path) const
+  {
+    return as_sequence().get(idx).value(path...);
+  }
+
+  template <typename... path_t>
+  const node &node::value(const std::string &key, path_t... path) const
+  {
+    return as_mapping().get(key).value(path...);
+  }
+
+  template <typename... path_t>
+  bool node::has(size_t idx, path_t... path) const
+  {
+    if(type() == SEQUENCE)
+    {
+      sequence const &seq = as_sequence();
+      return
+        idx < seq.size() &&
+        seq.get(idx).has(path...);
+    }
+    return false;
+  }
+
+  template <typename... path_t>
+  bool node::has(std::string const &key, path_t... path) const
+  {
+    if(type() == MAPPING)
+    {
+      mapping const &map = as_mapping();
+      return // todo: optimize, this requires 2 searches in the map
+        map.has_key(key) &&
+        map.get(key).has(path...);
+    }
+    return false;
+  }
 }
 
 namespace std
@@ -205,7 +266,12 @@ namespace std
     return o;
   }
 
-  ostream &operator<<(ostream &o, std::shared_ptr<kyaml::node> sp);
+  ostream &operator<<(ostream &o, std::shared_ptr<const kyaml::node> sp);
+
+  inline ostream &operator<<(ostream &o, std::shared_ptr<kyaml::node> sp)
+  {
+    return o << (std::shared_ptr<const kyaml::node>(sp));
+  }
 }
 
 #endif // NODE_HH
