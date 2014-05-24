@@ -1,9 +1,11 @@
 #include "kyaml.hh"
+#include "sample_docs.hh"
 #include <cassert>
 #include <gtest/gtest.h>
 
 using namespace std;
 using namespace kyaml;
+using namespace kyaml::test;
 
 class toplevel : public testing::Test
 {
@@ -99,15 +101,19 @@ TEST_F(toplevel, mapping_inside_sequence_inside_mapping)
 
 TEST_F(toplevel, nontrivial)
 {
-  parse("receipt:     Oz-Ware Purchase Invoice\n"
-        "date:        2012-08-06\n"
-        "customer:\n"
-        "  given:   Dorothy\n"
-        "  family:  Gale\n");
+  parse(g_oz_yaml);
 
   EXPECT_EQ("Oz-Ware Purchase Invoice", value("receipt"));
   EXPECT_EQ("2012-08-06", value("date"));
   EXPECT_EQ("Dorothy", value("customer", "given"));
   EXPECT_EQ("Gale", value("customer", "family"));
+}
+
+TEST_F(toplevel, anchors)
+{
+  parse(g_anchors_yaml);
+
+  EXPECT_EQ("1mm", value(0, "step", "spotSize"));
+  EXPECT_EQ(value(0, "step", "spotSize"), value(4, "step", "spotSize"));
 }
 
