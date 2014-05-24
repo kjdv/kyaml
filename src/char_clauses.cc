@@ -230,7 +230,6 @@ bool non_white_char::parse(document_builder &builder)
     unwind();
     return false;
   }
-
   non_break_char nb(ctx());
   return nb.parse(builder);
 }

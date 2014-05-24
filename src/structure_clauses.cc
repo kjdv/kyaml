@@ -60,7 +60,7 @@ bool line_prefix::parse_flow(document_builder &builder)
 }
 
 
-bool kyaml::clauses::as_space::parse(kyaml::document_builder &builder)
+bool as_space::parse(document_builder &builder)
 {
   line_break lb(ctx());
   null_builder nb;
@@ -70,4 +70,14 @@ bool kyaml::clauses::as_space::parse(kyaml::document_builder &builder)
     return true;
   }
   return false;
+}
+
+
+bool trimmed::parse(document_builder &builder)
+{
+
+  internal::and_clause<non_content,
+                       internal::one_or_more<empty_line> > delegate(ctx());
+  null_builder nb;
+  return delegate.parse(nb);
 }

@@ -59,8 +59,13 @@ namespace kyaml
                                  as_line_feed> empty_line;
 
     // [71] 	b-l-trimmed(n,c) 	::= 	b-non-content l-empty(n,c)+ 
-    typedef internal::and_clause<non_content,
-                                 internal::one_or_more<empty_line> > trimmed;
+    class trimmed : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [72] 	b-as-space 	::= 	b-break
     class as_space : public clause

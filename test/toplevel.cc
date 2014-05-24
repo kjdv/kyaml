@@ -119,7 +119,7 @@ TEST_F(toplevel, anchors)
   check("1mm", 4, "step", "spotSize");
 }
 
-TEST_F(toplevel, DISABLED_newline_preserved)
+TEST_F(toplevel, newline_preserved)
 {
   parse(g_oz_yaml);
 
@@ -129,14 +129,14 @@ TEST_F(toplevel, DISABLED_newline_preserved)
   check(expect, "bill-to", "street");
 }
 
-TEST_F(toplevel, DISABLED_newline_folded)
+TEST_F(toplevel, newline_folded)
 {
   parse(g_oz_yaml);
 
   const string expect = "Follow the Yellow Brick "
                         "Road to the Emerald City. "
                         "Pay no attention to the "
-                        "man behind the curtain.";
+                        "man behind the curtain.\n";
 
   check(expect, "specialDelivery");
 }

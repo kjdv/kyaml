@@ -372,3 +372,20 @@ bool literal_content::parse(document_builder &builder)
   unwind();
   return false;
 }
+
+bool folded_content::parse(document_builder &builder)
+{
+  typedef internal::and_clause<internal::zero_or_one<internal::and_clause<diff_lines, chomped_last> >,
+                               chomped_empty> delegate_t;
+
+  string_builder sb;
+
+  delegate_t d(ctx());
+  if(d.parse(sb))
+  {
+    builder.add_scalar(sb.build());
+    return true;
+  }
+
+  return false;
+}

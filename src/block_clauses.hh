@@ -52,7 +52,10 @@ namespace kyaml
                                                                           chomping_indicator>,
                                                      internal::and_clause<chomping_indicator,
                                                                           indentation_indicator> >,
-                                sbreak_comment> block_header;
+                                 internal::or_clause<sbreak_comment,
+                                                     break_comment // extension
+                                                    >
+                                > block_header;
 
     // [165] 	b-chomped-last(t) 	::= 	t = strip ⇒ b-non-content | /* End of file */
     //                                          t = clip  ⇒ b-as-line-feed | /* End of file */
@@ -163,9 +166,14 @@ namespace kyaml
                                  > diff_lines;
 
     // [182] 	l-folded-content(n,t) 	::= 	( l-nb-diff-lines(n) b-chomped-last(t) )?
-    //                                            l-chomped-empty(n,t) 	 
-    typedef internal::and_clause<internal::zero_or_one<internal::and_clause<diff_lines, chomped_last> >,
-                                 chomped_empty> folded_content;
+    //                                            l-chomped-empty(n,t)
+    class folded_content : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [174] 	c-l+folded(n) 	::= 	“>” c-b-block-header(m,t)
     //                                   l-folded-content(n+m,t)

@@ -294,3 +294,20 @@ TEST(line_literal, nospace)
 
   EXPECT_TRUE(ll.parse(mb));
 }
+
+TEST(folded_content, multiline)
+{
+  string input = "> \n"
+                 "folded content\n"
+                 "on two lines\n";
+
+  context_wrap ctx(input);
+
+  mock_builder mb;
+  content_folded cf(ctx.get());
+
+  EXPECT_CALL(mb, add_scalar("folded content on two lines\n")).
+    Times(1);
+
+  EXPECT_TRUE(cf.parse(mb));
+}
