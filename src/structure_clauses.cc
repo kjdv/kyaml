@@ -58,3 +58,16 @@ bool line_prefix::parse_flow(document_builder &builder)
   flow_line_prefix fl(ctx());
   return fl.parse(builder);
 }
+
+
+bool kyaml::clauses::as_space::parse(kyaml::document_builder &builder)
+{
+  line_break lb(ctx());
+  null_builder nb;
+  if(lb.parse(nb))
+  {
+    builder.add_atom(' ');
+    return true;
+  }
+  return false;
+}

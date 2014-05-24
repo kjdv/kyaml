@@ -16,7 +16,7 @@ namespace kyaml
       {
       public:
         using clause::clause;
-        
+
         bool parse(document_builder &builder);
       };
     }
@@ -63,7 +63,13 @@ namespace kyaml
                                  internal::one_or_more<empty_line> > trimmed;
 
     // [72] 	b-as-space 	::= 	b-break
-    typedef line_break as_space;
+    class as_space : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [73] 	b-l-folded(n,c) 	::= 	b-l-trimmed(n,c) | b-as-space
     typedef internal::or_clause<trimmed,

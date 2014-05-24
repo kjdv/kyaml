@@ -236,16 +236,60 @@ TEST(compact, mapping)
 TEST(line_literal, one_line)
 {
   string input = "| \n"
-                 "  single line\n";
+                 "  single line";
 
-  context_wrap ctx(input, 2);
-  ctx.get().stream().advance(3);
+  context_wrap ctx(input);
 
   mock_builder mb;
-
-  line_literal_text ll(ctx.get());
+  line_literal ll(ctx.get());
 
   EXPECT_CALL(mb, add_scalar("single line")).
+    Times(1);
+
+  EXPECT_TRUE(ll.parse(mb));
+}
+
+TEST(line_literal, multiline)
+{
+  string input = "| \n"
+                 "line one\n"
+                 "line two\n";
+
+  context_wrap ctx(input);
+
+  mock_builder mb;
+  line_literal ll(ctx.get());
+
+  EXPECT_CALL(mb, add_scalar("line one\nline two\n")).
+    Times(1);
+
+  EXPECT_TRUE(ll.parse(mb));
+}
+
+TEST(line_literal, block_header)
+{
+  string input = "+\nnext";
+
+  context_wrap ctx(input);
+
+  null_builder nb;
+  block_header bh(ctx.get());
+  EXPECT_TRUE(bh.parse(nb));
+  EXPECT_EQ(2, ctx.get().stream().pos());
+}
+
+TEST(line_literal, nospace)
+{
+  string input = "| \n"
+                 "line one\n"
+                 "line two\n";
+
+  context_wrap ctx(input);
+
+  mock_builder mb;
+  line_literal ll(ctx.get());
+
+  EXPECT_CALL(mb, add_scalar("line one\nline two\n")).
     Times(1);
 
   EXPECT_TRUE(ll.parse(mb));

@@ -52,7 +52,7 @@ namespace kyaml
                                                                           chomping_indicator>,
                                                      internal::and_clause<chomping_indicator,
                                                                           indentation_indicator> >,
-                                 sbreak_comment> block_header;
+                                sbreak_comment> block_header;
 
     // [165] 	b-chomped-last(t) 	::= 	t = strip ⇒ b-non-content | /* End of file */
     //                                          t = clip  ⇒ b-as-line-feed | /* End of file */
@@ -80,7 +80,7 @@ namespace kyaml
     // [167] 	l-strip-empty(n) 	::= 	( s-indent(≤n) b-non-content )*
     //                                            l-trail-comments(n)? 
     typedef internal::and_clause<internal::zero_or_more<internal::and_clause<indent_clause_le, non_content> >,
-                                 trail_comments> strip_empty;
+                                 internal::zero_or_one<trail_comments> > strip_empty;
 
     // [166] 	l-chomped-empty(n,t) 	::= 	t = strip ⇒ l-strip-empty(n)
     //                                          t = clip  ⇒ l-strip-empty(n)
@@ -94,14 +94,10 @@ namespace kyaml
     };
 
     // [171] 	l-nb-literal-text(n) 	::= 	l-empty(n,block-in)*
-    //                                          s-indent(n) nb-char+ 	 
-    class line_literal_text : public clause
-    {
-    public:
-      using clause::clause;
-
-      bool parse(document_builder &builder);
-    };
+    //                                    s-indent(n) nb-char+
+    typedef internal::all_of<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> >,
+                             indent_clause_eq,
+                             internal::one_or_more<non_break_char> > line_literal_text;
 
     // [172] 	b-nb-literal-next(n) 	::= 	b-as-line-feed
     //                                          l-nb-literal-text(n) 	 
@@ -111,10 +107,13 @@ namespace kyaml
     // [173] 	l-literal-content(n,t) 	::= 	( l-nb-literal-text(n) b-nb-literal-next(n)*
     //                                            b-chomped-last(t) )?
     //                                          l-chomped-empty(n,t)
-    typedef internal::and_clause<internal::zero_or_one<internal::all_of<line_literal_text,
-                                                                        internal::zero_or_more<break_literal_text>,
-                                                                        chomped_last> >,
-                                 chomped_empty> literal_content;
+    class literal_content : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [170] 	c-l+literal(n) 	::= 	“|” c-b-block-header(m,t)
     //                                  l-literal-content(n+m,t)

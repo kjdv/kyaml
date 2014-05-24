@@ -124,7 +124,7 @@ TEST_F(toplevel, DISABLED_newline_preserved)
   parse(g_oz_yaml);
 
   const string expect = "123 Tornado Alley\n"
-                        "Suite 16";
+                        "Suite 16\n";
 
   check(expect, "bill-to", "street");
 }

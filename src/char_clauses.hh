@@ -238,10 +238,22 @@ namespace kyaml
                              line_feed> line_break;
 
     // [29] 	b-as-line-feed 	::= 	b-break
-    typedef line_break as_line_feed;
+    class as_line_feed : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [30] 	b-non-content 	::= 	b-break
-    typedef line_break non_content;
+    class non_content : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [31] 	s-space 	::= 	#x20 SP 
     typedef internal::simple_char_clause<' '> space;

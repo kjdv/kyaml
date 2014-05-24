@@ -76,6 +76,10 @@ bool kyaml::clauses::internal::autodetect_indent(context &ctx, int minumum)
 
 bool indentation_indicator::parse(document_builder &builder)
 {
+  logger<false> log("indentation indicator");
+
+  log("start", ctx().stream().pos());
+
   indent_builder ib;
 
   internal::simple_char_clause<'0', false> z(ctx());
@@ -84,14 +88,19 @@ bool indentation_indicator::parse(document_builder &builder)
   if(z.parse(ib))
   {
     unwind();
+    log("0 detected", ctx().stream().pos());
     return false;
   }
   else if(d.parse(ib))
   {
     ctx().set_indent(ib.build());
+    log("number detected", ctx().stream().pos());
     return true;
   }
-  return autodetect();
+
+  bool result = autodetect();
+  log("autodetected", result, ctx().stream().pos());
+  return result;
 }
 
 bool indentation_indicator::autodetect()
@@ -101,16 +110,28 @@ bool indentation_indicator::autodetect()
 
 bool chomping_indicator::parse(document_builder &builder)
 {
+  logger<false> log("chomping indicator");
+  log("start", ctx().stream().pos());
+
   internal::simple_char_clause<'-', false> strip(ctx());
   if(strip.parse(builder))
+  {
+    log("strip", ctx().stream().pos());
     ctx().set_chomp(context::STRIP);
+  }
   else
   {
     internal::simple_char_clause<'+', false> keep(ctx());
     if(keep.parse(builder))
+    {
+      log("keep", ctx().stream().pos());
       ctx().set_chomp(context::KEEP);
+    }
     else
+    {
+      log("clip", ctx().stream().pos());
       ctx().set_chomp(context::CLIP);
+    }
   }
   return true;
 }
@@ -327,25 +348,25 @@ bool compact_sequence::parse(document_builder &builder)
 }
 
 
-bool line_literal_text::parse(document_builder &builder)
+bool literal_content::parse(document_builder &builder)
 {
-  typedef internal::all_of<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> >,
-                           indent_clause_eq,
-                           internal::one_or_more<non_break_char> > delagate_t;
+  string_builder sb;
 
-  internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> > el(ctx());
-  if(el.parse(builder))
+  typedef internal::zero_or_one<internal::all_of<line_literal_text,
+                                                 internal::zero_or_more<break_literal_text>,
+                                                 chomped_last
+                                                >
+                               > first_t;
+  typedef chomped_empty second_t;
+
+  first_t f(ctx());
+  if(f.parse(sb))
   {
-    indent_clause_eq id(ctx());
-    if(id.parse(builder))
+    second_t s(ctx());
+    if(s.parse(sb))
     {
-      internal::one_or_more<non_break_char> nb(ctx());
-      string_builder sb;
-      if(nb.parse(sb))
-      {
-        builder.add_scalar(sb.build());
-        return true;
-      }
+      builder.add_scalar(sb.build());
+      return true;
     }
   }
   unwind();

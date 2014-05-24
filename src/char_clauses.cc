@@ -381,3 +381,24 @@ bool tag_char::parse(document_builder &builder)
   uri_char u(ctx());
   return u.parse(builder);
 }
+
+
+bool kyaml::clauses::as_line_feed::parse(kyaml::document_builder &builder)
+{
+  line_break lb(ctx());
+  null_builder nb;
+  if(lb.parse(nb))
+  {
+    builder.add_atom('\n');
+    return true;
+  }
+  return false;
+}
+
+
+bool non_content::parse(document_builder &builder)
+{
+  line_break lb(ctx());
+  null_builder nb;
+  return lb.parse(nb);
+}
