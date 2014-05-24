@@ -13,7 +13,7 @@ shared_ptr<document> kyaml::parse(istream &input)
 
   node_builder nb;
 
-  yaml_stream ys(ctx);
+  yaml_single_document ys(ctx);
 
   if(ys.parse(nb))
     return nb.build();

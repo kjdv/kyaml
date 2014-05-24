@@ -92,7 +92,12 @@ namespace kyaml
                                  >
                                >
                              > yaml_stream;
-                                   
+
+    // extension: stream containing documents as single items:
+    typedef internal::all_of<internal::zero_or_more<document_prefix>,
+                             internal::zero_or_one<any_document>,
+                             internal::zero_or_more<document_suffix>
+                            > yaml_single_document;
   }
 }
 
