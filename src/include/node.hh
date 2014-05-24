@@ -127,7 +127,7 @@ namespace kyaml
   class sequence : public node
   {
   public:
-    typedef std::vector<std::shared_ptr<node> > container_t;
+    typedef std::vector<std::shared_ptr<const node> > container_t;
 
     type_t type() const final
     {
@@ -162,7 +162,7 @@ namespace kyaml
       return d_items.size();
     }
 
-    void add(std::shared_ptr<node> child)
+    void add(std::shared_ptr<const node> child)
     {
       d_items.push_back(child);
     }
@@ -174,7 +174,7 @@ namespace kyaml
   class mapping : public node
   {
   public:
-    typedef std::unordered_map<std::string, std::shared_ptr<node> > container_t;
+    typedef std::unordered_map<std::string, std::shared_ptr<const node> > container_t;
 
     type_t type() const final
     {
@@ -210,7 +210,7 @@ namespace kyaml
       return d_items.size();
     }
 
-    void add(std::string const &key, std::shared_ptr<node> value)
+    void add(std::string const &key, std::shared_ptr<const node> value)
     {
       d_items.insert(std::make_pair(key, value));
     }
