@@ -22,7 +22,7 @@ public:
   template <typename... path_t>
   void check(std::string const &expect, path_t... path)
   {
-    ASSERT_TRUE((bool)d_document) << "no valid documen";
+    ASSERT_TRUE((bool)d_document) << "no valid document";
     ASSERT_TRUE(d_document->has(path...)) << "path " << tostring(path...) << " not present in " << *d_document;
     ASSERT_TRUE(d_document->has_leaf(path...)) << "path " << tostring(path...) << " present, but is not a leaf in " << *d_document;
 
@@ -30,13 +30,13 @@ public:
   }
 
 private:
-  std::string tostring() const
+  string tostring() const
   {
     return "";
   }
 
   template <typename head_t, typename... tail_t>
-  std::string tostring(head_t const &head, tail_t... tail) const
+  string tostring(head_t const &head, tail_t... tail) const
   {
     stringstream str;
     str << '.' << head << tostring(tail...);
