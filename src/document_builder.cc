@@ -43,6 +43,11 @@ void replay_builder::add_atom(char32_t c)
   d_items.emplace_back(ATOM, c);
 }
 
+void replay_builder::add_property(const string &prop)
+{
+  d_items.emplace_back(PROPERTY, prop);
+}
+
 void replay_builder::replay(document_builder &builder) const
 {
   for(auto const &it : d_items)
@@ -72,6 +77,9 @@ void replay_builder::replay(document_builder &builder) const
       break;
     case ATOM:
       builder.add_atom(it.atom);
+      break;
+    case PROPERTY:
+      builder.add_property(it.value);
       break;
     default:
       assert(false);

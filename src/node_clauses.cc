@@ -304,3 +304,20 @@ bool kyaml::clauses::double_text::parse(kyaml::document_builder &builder)
   }
   return false;
 }
+
+
+bool tag_property::parse(document_builder &builder)
+{
+  typedef internal::any_of<verbatim_tag,
+                           shorthand_tag,
+                           non_specific_tag> delegate_t;
+
+  string_builder sb;
+  delegate_t d(ctx());
+  if(d.parse(sb))
+  {
+    builder.add_property(sb.build());
+    return true;
+  }
+  return false;
+}

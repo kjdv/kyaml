@@ -12,6 +12,30 @@ namespace
   class indent_builder : public document_builder
   { 
   public:
+    void start_sequence() override
+    {}
+
+    void end_sequence() override
+    {}
+
+    void start_mapping() override
+    {}
+
+    void end_mapping() override
+    {}
+
+    void add_anchor(std::string const &) override
+    {}
+
+    void add_alias(std::string const &) override
+    {}
+
+    void add_scalar(std::string const &) override
+    {}
+
+    void add_property(std::string const &) override
+    {}
+
     void add_atom(char32_t c) override
     {
       append_utf8(d_val, c);

@@ -46,6 +46,8 @@ namespace kyaml
 
     virtual void add_scalar(std::string const &val) override;
 
+    virtual void add_property(std::string const &prop) override;
+
     virtual void add_atom(char32_t c) override;
 
     std::unique_ptr<node> build();

@@ -400,11 +400,35 @@ namespace kyaml
             d_v(0)
           {}
 
-          void add_atom(char32_t c)
+          void add_atom(char32_t c) override
           {
             d_v <<= 4;
             d_v |= from_hex(c);
           }
+
+          void start_sequence() override
+          {}
+
+          void end_sequence() override
+          {}
+
+          void start_mapping() override
+          {}
+
+          void end_mapping() override
+          {}
+
+          void add_anchor(std::string const &) override
+          {}
+
+          void add_alias(std::string const &) override
+          {}
+
+          void add_scalar(std::string const &) override
+          {}
+
+          void add_property(std::string const &) override
+          {}
 
 
           char32_t build() const

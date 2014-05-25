@@ -29,11 +29,12 @@ public:
       Times(1);
   }
 
-  void expect_scalar(std::string const &value)
+  void expect_property(std::string const &value)
   {
-    EXPECT_CALL(builder(), add_scalar(value)).
+    EXPECT_CALL(builder(), add_property(value)).
       Times(1);
   }
+
 private:
   mock_builder d_builder;
 };
@@ -52,7 +53,25 @@ TEST_F(properties_test, verbatim_tag)
   string const value = "kl@2549#[]=0";
   string input = string("!<") + value + ">";
   
-  expect_scalar(value);
+  expect_property(value);
+  EXPECT_TRUE(parse(input));
+}
+
+TEST_F(properties_test, shorthand)
+{
+  string const value = "!!float";
+  string input = value;
+
+  expect_property(value);
+  EXPECT_TRUE(parse(input));
+}
+
+TEST_F(properties_test, non_specific)
+{
+  string const value = "!foo";
+  string input = value;
+
+  expect_property(value);
   EXPECT_TRUE(parse(input));
 }
 

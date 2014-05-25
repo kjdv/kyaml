@@ -16,30 +16,40 @@ namespace kyaml
     virtual ~document_builder()
     {}
 
-    // todo: make pure virtual
-    virtual void start_sequence()
-    {}
-    virtual void end_sequence()
-    {}
-    virtual void start_mapping()
-    {}
-    virtual void end_mapping()
-    {}
+    virtual void start_sequence() = 0;
+    virtual void end_sequence() = 0;
+    virtual void start_mapping() = 0;
+    virtual void end_mapping() = 0;
 
-    virtual void add_anchor(std::string const &anchor)
-    {}
-    virtual void add_alias(std::string const &alias)
-    {}
-    virtual void add_scalar(std::string const &val)
-    {} 
-    virtual void add_atom(char32_t c)
-    {}
+    virtual void add_anchor(std::string const &anchor) = 0;
+    virtual void add_alias(std::string const &alias) = 0;
+    virtual void add_scalar(std::string const &val) = 0;
+    virtual void add_atom(char32_t c) = 0;
+    virtual void add_property(std::string const &prop) = 0;
   };
 
   class string_builder : public document_builder
   {
   public:
-    void add_anchor(std::string const &anchor) override
+    void start_sequence() override
+    {}
+
+    void end_sequence() override
+    {}
+
+    void start_mapping() override
+    {}
+
+    void end_mapping() override
+    {}
+
+    void add_anchor(std::string const &) override
+    {}
+
+    void add_alias(std::string const &) override
+    {}
+
+    void add_property(std::string const &) override
     {}
 
     void add_scalar(std::string const &val) override
@@ -62,7 +72,35 @@ namespace kyaml
   };
 
   class null_builder : public document_builder
-  {};
+  {
+  public:
+    void start_sequence() override
+    {}
+
+    void end_sequence() override
+    {}
+
+    void start_mapping() override
+    {}
+
+    void end_mapping() override
+    {}
+
+    void add_anchor(std::string const &) override
+    {}
+
+    void add_alias(std::string const &) override
+    {}
+
+    void add_scalar(std::string const &) override
+    {}
+
+    void add_property(std::string const &) override
+    {}
+
+    void add_atom(char32_t c) override
+    {}
+  };
 
   class replay_builder : public document_builder
   {
@@ -77,6 +115,7 @@ namespace kyaml
     void add_alias(std::string const &alias) override;
     void add_scalar(std::string const &val) override;
     void add_atom(char32_t c) override;
+    void add_property(std::string const &prop) override;
 
     void replay(document_builder &builder) const;
 
@@ -90,7 +129,8 @@ namespace kyaml
       ANCHOR,
       ALIAS,
       SCALAR,
-      ATOM
+      ATOM,
+      PROPERTY,
     } token_t;
 
     struct item

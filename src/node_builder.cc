@@ -87,6 +87,11 @@ void node_builder::add_scalar(const string &val)
   }
 }
 
+void node_builder::add_property(string const &prop)
+{
+
+}
+
 void node_builder::add_resolved_node(shared_ptr<node> s)
 {
   if(d_stack.empty())

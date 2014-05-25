@@ -60,9 +60,13 @@ namespace kyaml
     // [97] 	c-ns-tag-property 	::= 	  c-verbatim-tag
     //                                          | c-ns-shorthand-tag
     //                                          | c-non-specific-tag
-    typedef internal::any_of<verbatim_tag,
-                             shorthand_tag,
-                             non_specific_tag> tag_property;
+    class tag_property : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [96] 	c-ns-properties(n,c) 	::= 	  ( c-ns-tag-property
     //                                                ( s-separate(n,c) c-ns-anchor-property )? )
