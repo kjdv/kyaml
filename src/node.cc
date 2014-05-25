@@ -111,11 +111,31 @@ void scalar::accept(node_visitor &visitor) const
 void sequence::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);
+
+  for(size_t idx = 0; idx < size(); ++idx)
+  {
+    assert(d_items[idx]);
+
+    visitor.visit_key(idx);
+    d_items[idx]->accept(visitor);
+  }
+
+  visitor.sentinel(*this);
 }
 
 void mapping::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);
+
+  for(auto const &kvpair : d_items)
+  {
+    assert(kvpair.second);
+
+    visitor.visit_key(kvpair.first);
+    kvpair.second->accept(visitor);
+  }
+
+  visitor.sentinel(*this);
 }
 
 template<>
@@ -168,50 +188,63 @@ namespace
   {
   public:
     node_printer(ostream &out) :
+      d_needscomma(false),
       d_out(out)
     {}
 
     void visit(scalar const &val) override
     {
+      comma();
       d_out << val.get();
+      needscomma(true);
     }
 
     void visit(sequence const &seq) override
     {
-      bool first = true;
-
+      comma();
       d_out << "[";
-      for(auto const &item : seq)
-      {
-        if(first)
-          first = false;
-        else
-          d_out << ", ";
-
-        item->accept(*this);
-      }
-      d_out << "]";
+      needscomma(false);
     }
 
     void visit(mapping const &map) override
     {
-      bool first = true;
-
+      comma();
       d_out << "{";
-      for(auto const &item : map)
-      {
-        if(first)
-          first = false;
-        else
-          d_out << ", ";
+      needscomma(false);
+    }
 
-        d_out << item.first << ": ";
-        item.second->accept(*this);
-      }
+    void sentinel(sequence const &seq) override
+    {
+      d_out << "]";
+      needscomma(true);
+    }
+
+    void sentinel(mapping const &map) override
+    {
       d_out << "}";
+      needscomma(true);
+    }
+
+    void visit_key(std::string const &key) override
+    {
+      comma();
+      d_out << key << ": ";
+      needscomma(false);
     }
 
   private:
+    void comma()
+    {
+      if(d_needscomma)
+        d_out << ", ";
+    }
+
+    void needscomma(bool v)
+    {
+      d_needscomma = v;
+    }
+
+    bool d_needscomma;
     ostream &d_out;
   };
 }
