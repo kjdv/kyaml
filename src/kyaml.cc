@@ -18,5 +18,5 @@ unique_ptr<const document> kyaml::parse(istream &input)
   if(ys.parse(nb))
     return nb.build();
 
-  return uniqiue_ptr<const document>();
+  return unique_ptr<const document>();
 }

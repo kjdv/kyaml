@@ -268,13 +268,6 @@ namespace std
     n.print(o);
     return o;
   }
-
-  ostream &operator<<(ostream &o, std::shared_ptr<const kyaml::node> sp);
-
-  inline ostream &operator<<(ostream &o, std::shared_ptr<kyaml::node> sp)
-  {
-    return o << (std::shared_ptr<const kyaml::node>(sp));
-  }
 }
 
 #endif // NODE_HH

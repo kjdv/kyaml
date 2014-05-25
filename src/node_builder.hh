@@ -63,11 +63,11 @@ namespace kyaml
     struct item
     {
       token_t token;
-      std::unique_ptr<node> value;
+      std::shared_ptr<node> value;
 
-      item(token_t t, std::unique_ptr<node> v = std::unique_ptr<node>()) :
+      item(token_t t, std::shared_ptr<node> v = std::shared_ptr<node>()) :
         token(t),
-        value(std::move(v))
+        value(v)
       {}
     };
 
@@ -76,9 +76,13 @@ namespace kyaml
     void resolve();
     void add_resolved_node(std::shared_ptr<node> s);
 
-    std::unordered_map<std::string, node *> d_anchors;
+    void push(token_t t, std::unique_ptr<node> v = std::unique_ptr<node>());
+    void push_shared(token_t t, std::shared_ptr<node> v);
+
+    std::unordered_map<std::string, std::weak_ptr<node> > d_anchors;
 
     std::stack<item> d_stack;
+    std::unique_ptr<node> d_root;
 
     logger<false> d_log;
   };

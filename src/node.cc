@@ -123,13 +123,3 @@ node const &mapping::get(const string &key) const
   assert(it->second);
   return *it->second;
 }
-
-
-ostream &std::operator<<(ostream &o, std::shared_ptr<const node> sp)
-{
-  if(sp)
-    sp->print(o);
-  else
-    o << "(nullptr)";
-  return o;
-}

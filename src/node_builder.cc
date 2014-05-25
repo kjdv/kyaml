@@ -3,10 +3,29 @@
 using namespace std;
 using namespace kyaml;
 
+namespace
+{
+  template <typename t>
+  void dont_delete(t *p)
+  {}
+}
+
+namespace std
+{
+  ostream &operator<<(ostream &o, shared_ptr<node> n)
+  {
+    if(n)
+      n->print(o);
+    else
+      o << "(nullptr)";
+    return o;
+  }
+}
+
 void node_builder::start_sequence()
 {
   d_log("starting sequence");
-  d_stack.emplace(SEQUENCE, make_shared<sequence>());
+  push(SEQUENCE, std::unique_ptr<sequence>(new sequence));
 }
 
 void node_builder::end_sequence()
@@ -19,7 +38,7 @@ void node_builder::end_sequence()
 void node_builder::start_mapping()
 {
   d_log("start mapping");
-  d_stack.emplace(MAPPING, make_shared<mapping>());
+  push(MAPPING, std::unique_ptr<mapping>(new mapping));
 }
 
 void node_builder::end_mapping()
@@ -32,7 +51,7 @@ void node_builder::end_mapping()
 void node_builder::add_anchor(const string &anchor)
 {
   d_log("anchor", anchor);
-  d_stack.emplace(ANCHOR, make_shared<scalar>(anchor));
+  push(ANCHOR, std::unique_ptr<scalar>(new scalar(anchor)));
 }
 
 void node_builder::add_alias(const string &alias)
@@ -56,9 +75,13 @@ void node_builder::add_scalar(const string &val)
 {
   d_log("scalar", val);
 
-  shared_ptr<scalar> s = make_shared<scalar>(val);
-
-  add_resolved_node(s);
+  if(d_stack.empty())
+    push(RESOLVED_NODE, unique_ptr<scalar>(new scalar(val)));
+  else
+  {
+    shared_ptr<scalar> s = make_shared<scalar>(val);
+    add_resolved_node(s);
+  }
 }
 
 void node_builder::add_resolved_node(shared_ptr<node> s)
@@ -66,7 +89,7 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
   if(d_stack.empty())
   {
     d_log("bare");
-    d_stack.emplace(RESOLVED_NODE, s);
+    push_shared(RESOLVED_NODE, s);
   }
   else
   {
@@ -80,7 +103,7 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
 
     case MAPPING:
       d_log("using as key");
-      d_stack.emplace(MAPPING_KEY, s);
+      push_shared(MAPPING_KEY, s);
       break;
 
     case MAPPING_KEY:
@@ -106,6 +129,25 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
   }
 }
 
+void node_builder::push(node_builder::token_t t, std::unique_ptr<node> v)
+{
+  if(d_stack.empty())
+  {
+    // the top element in the stack is owned by d_root, not d_stack, so put shared_ptr with a no-op delete on top
+    d_root = std::move(v);
+    std::shared_ptr<node> sp(d_root.get(), dont_delete<node>);
+    d_stack.emplace(t, sp);
+  }
+  else
+    d_stack.emplace(t, std::move(v));
+}
+
+void node_builder::push_shared(token_t t, std::shared_ptr<node> v)
+{
+  assert(!d_stack.empty());
+  d_stack.emplace(t, v);
+}
+
 void node_builder::add_atom(char32_t c)
 {
   // TODO: sometimes called, but shouldn't be. ignore for now
@@ -115,11 +157,14 @@ void node_builder::add_atom(char32_t c)
 
 unique_ptr<node> node_builder::build()
 {
+  assert(d_root);
   assert(d_stack.size() == 1);
   assert(d_stack.top().token == RESOLVED_NODE);
 
   d_log("building", d_stack.top().value);
-  return d_stack.top().value;
+
+  d_stack = stack<item>();
+  return std::move(d_root);
 }
 
 node_builder::item node_builder::pop()
@@ -133,8 +178,14 @@ node_builder::item node_builder::pop()
 void node_builder::resolve()
 {
   assert(!d_stack.empty());
-  shared_ptr<node> rn = d_stack.top().value;
-  d_stack.pop();
 
-  add_resolved_node(rn);
+  if(d_stack.size() == 1)
+    d_stack.top().token = RESOLVED_NODE;
+  else
+  {
+    shared_ptr<node> rn = d_stack.top().value;
+    d_stack.pop();
+
+    add_resolved_node(rn);
+  }
 }

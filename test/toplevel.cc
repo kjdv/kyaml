@@ -22,9 +22,9 @@ public:
   template <typename... path_t>
   void check(std::string const &expect, path_t... path)
   {
-    ASSERT_TRUE((bool)d_document) << "no valid document: " << d_document;
-    ASSERT_TRUE(d_document->has(path...)) << "path " << tostring(path...) << " not present in " << d_document;
-    ASSERT_TRUE(d_document->has_leaf(path...)) << "path " << tostring(path...) << " present, but is not a leaf in " << d_document;
+    ASSERT_TRUE((bool)d_document) << "no valid documen";
+    ASSERT_TRUE(d_document->has(path...)) << "path " << tostring(path...) << " not present in " << *d_document;
+    ASSERT_TRUE(d_document->has_leaf(path...)) << "path " << tostring(path...) << " present, but is not a leaf in " << *d_document;
 
     EXPECT_EQ(expect, d_document->leaf_value(path...));
   }
@@ -44,7 +44,7 @@ private:
   }
 
 
-  shared_ptr<const document> d_document;
+  unique_ptr<const document> d_document;
 };
 
 TEST_F(toplevel, simple_sequence)
