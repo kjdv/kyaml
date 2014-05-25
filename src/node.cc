@@ -61,17 +61,20 @@ mapping const &node::as_mapping() const
 
 string const &node::get() const
 {
-  return as_scalar().get();
+  assert(type() != SCALAR);
+  throw wrong_type(SCALAR, type());
 }
 
 node const &node::get(size_t i) const
 {
-  return as_sequence().get(i);
+  assert(type() != SEQUENCE);
+  throw wrong_type(SEQUENCE, type());
 }
 
 node const &node::get(const string &key) const
 {
-  return as_mapping().get(key);
+  assert(type() != MAPPING);
+  throw wrong_type(MAPPING, type());
 }
 
 void node::add(std::shared_ptr<node> val)

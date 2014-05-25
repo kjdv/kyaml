@@ -113,7 +113,7 @@ void node_builder::add_atom(char32_t c)
   // assert(false); // should not leak to this level
 }
 
-shared_ptr<node> node_builder::build()
+unique_ptr<node> node_builder::build()
 {
   assert(d_stack.size() == 1);
   assert(d_stack.top().token == RESOLVED_NODE);

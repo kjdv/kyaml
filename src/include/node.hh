@@ -43,22 +43,12 @@ namespace kyaml
 
     virtual type_t type() const = 0;
 
-    virtual void print(std::ostream &o) const = 0;
-
-    // these will throw on type mismatch
-    sequence const &as_sequence() const;
-
-    scalar const &as_scalar() const;
-
-    mapping const &as_mapping() const;
-
-
     // easy access: get as value, item from sequence, or value from map. may throw
-    std::string const &get() const;
+    virtual std::string const &get() const; // throws if type() != SCALAR
 
-    node const &get(size_t i) const;
+    virtual node const &get(size_t i) const; // throws if type() != SEQUENCE
 
-    node const &get(std::string const &key) const;
+    virtual node const &get(std::string const &key) const; // throws if type() != MAPPING
 
     void add(std::shared_ptr<node> val);
 
@@ -71,49 +61,93 @@ namespace kyaml
     {
       return *this;
     }
-    template <typename... path_t>
-    node const &value(size_t idx, path_t... path) const;
-    template <typename... path_t>
-    node const &value(std::string const &key, path_t... path) const;
+
+    template <typename head_t, typename... tail_t>
+    node const &value(head_t const &head, tail_t... tail) const
+    {
+      return get(head).value(tail...);
+    }
 
     // check membership of the item
     bool has() const // just the sentinel
     {
       return true;
     }
+
     template <typename... path_t>
-    bool has(size_t idx, path_t... path) const;
+    bool has(size_t idx, path_t... path) const
+    {
+      return
+          type() == SEQUENCE &&
+          get(idx).has(path...);
+    }
+
     template <typename... path_t>
-    bool has(std::string const &key, path_t... path) const;
+    bool has(std::string const &key, path_t... path) const
+    {
+      return
+          type() == MAPPING &&
+          get(key).has(path...);
+    }
 
     // specialized value()/has() for leaf nodes
     template <typename... path_t>
-    std::string const &leaf_value(path_t... path) const;
+    std::string const &leaf_value(path_t... path) const
+    {
+      return value(path...).get();
+    }
+
+    // sentinel
+    bool has_leaf() const
+    {
+      return type() == SCALAR;
+    }
 
     template <typename... path_t>
-    bool has_leaf(path_t... path) const;
+    bool has_leaf(size_t idx, path_t... path) const
+    {
+      return
+          type() == SEQUENCE &&
+          get(idx).has_leaf(path...);
+    }
+
+    template <typename... path_t>
+    bool has_leaf(std::string const &key, path_t... path) const
+    {
+      return
+          type() == MAPPING &&
+          get(key).has_leaf(path...);
+    }
+
+    // relies on dynamic_cast, should be needed to much, throws on type mismatch
+    scalar const &as_scalar() const;
+    sequence const &as_sequence() const;
+    mapping const &as_mapping() const;
+
+    // only for testing/debugging
+    virtual void print(std::ostream &o) const = 0;
   };
 
   typedef node document;
 
-  class scalar : public node
+  class scalar final : public node
   {
   public:
     scalar(std::string const &v) :
       d_value(v)
     {}
 
-    type_t type() const final
+    type_t type() const override
     {
       return SCALAR;
     }
 
-    void print(std::ostream &o) const final
+    void print(std::ostream &o) const override
     {
       o << get();
     }
 
-    std::string const &get() const
+    std::string const &get() const override
     {
       return d_value;
     }
@@ -131,24 +165,24 @@ namespace kyaml
     std::string d_value;
   };
 
-  class sequence : public node
+  class sequence final : public node
   {
   public:
     typedef std::vector<std::shared_ptr<const node> > container_t;
 
-    type_t type() const final
+    type_t type() const override
     {
       return SEQUENCE;
     }
 
-    void print(std::ostream &o) const final;
+    void print(std::ostream &o) const override;
 
     node const &operator[](size_t i) const
     {
       return get(i);
     }
 
-    node const &get(size_t i) const
+    node const &get(size_t i) const override
     {
       assert(i < size() && d_items[i]);
       return *d_items[i];
@@ -178,24 +212,24 @@ namespace kyaml
     container_t d_items;
   };
 
-  class mapping : public node
+  class mapping final : public node
   {
   public:
     typedef std::unordered_map<std::string, std::shared_ptr<const node> > container_t;
 
-    type_t type() const final
+    type_t type() const override
     {
       return MAPPING;
     }
 
-    void print(std::ostream &o) const final;
+    void print(std::ostream &o) const override;
 
     node const &operator[](std::string const &key) const
     {
       return get(key);
     }
 
-    node const &get(std::string const &key) const;
+    node const &get(std::string const &key) const override;
 
     bool has_key(std::string const &key) const
     {
@@ -225,58 +259,6 @@ namespace kyaml
   private:
     container_t d_items;
   };
-
-  template <typename... path_t>
-  const node &node::value(size_t idx, path_t... path) const
-  {
-    return as_sequence().get(idx).value(path...);
-  }
-
-  template <typename... path_t>
-  const node &node::value(const std::string &key, path_t... path) const
-  {
-    return as_mapping().get(key).value(path...);
-  }
-
-  template <typename... path_t>
-  bool node::has(size_t idx, path_t... path) const
-  {
-    if(type() == SEQUENCE)
-    {
-      sequence const &seq = as_sequence();
-      return
-        idx < seq.size() &&
-        seq.get(idx).has(path...);
-    }
-    return false;
-  }
-
-  template <typename... path_t>
-  bool node::has(std::string const &key, path_t... path) const
-  {
-    if(type() == MAPPING)
-    {
-      mapping const &map = as_mapping();
-      return // todo: optimize, this requires 2 searches in the map
-        map.has_key(key) &&
-        map.get(key).has(path...);
-    }
-    return false;
-  }
-
-  template <typename... path_t>
-  std::string const &node::leaf_value(path_t... path) const
-  {
-    return value(path...).as_scalar().get();
-  }
-
-  template <typename... path_t>
-  bool node::has_leaf(path_t... path) const
-  {
-    return
-      has(path...) && // todo: optimize. this requires 2 searches
-      value(path...).type() == SCALAR;
-  }
 }
 
 namespace std
