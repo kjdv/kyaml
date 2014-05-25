@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <cassert>
 #include <sstream>
+#include <set>
 
 namespace kyaml
 {
@@ -39,6 +40,8 @@ namespace kyaml
     private:
       std::string d_msg;
     };
+
+    typedef std::set<std::string> properties_t;
 
     virtual ~node()
     {}
@@ -121,6 +124,22 @@ namespace kyaml
           get(key).has_leaf(path...);
     }
 
+    // node properties
+    properties_t const &properties() const
+    {
+      return d_properties;
+    }
+
+    bool has_property(std::string const &prop) const
+    {
+      return d_properties.find(prop) != d_properties.end();
+    }
+
+    void add_property(std::string const &prop)
+    {
+      d_properties.insert(prop);
+    }
+
     // relies on dynamic_cast, should be needed to much, throws on type mismatch
     scalar const &as_scalar() const;
     sequence const &as_sequence() const;
@@ -128,13 +147,16 @@ namespace kyaml
 
     // visitor pattern
     virtual void accept(node_visitor &visitor) const = 0;
+
+  private:
+    properties_t d_properties;
   };
 
   typedef node document;
 
   class scalar final : public node
   {
-  public:
+  public: 
     scalar(std::string const &v) :
       d_value(v)
     {}

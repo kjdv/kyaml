@@ -59,6 +59,7 @@ namespace kyaml
       MAPPING,
       MAPPING_KEY,
       ANCHOR,
+      PROPERTY,
       RESOLVED_NODE
     } token_t;
 

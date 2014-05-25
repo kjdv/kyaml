@@ -8,6 +8,18 @@ namespace
   template <typename t>
   void dont_delete(t *p)
   {}
+
+  class properties_node : public node
+  {
+  public:
+    type_t type() const
+    {
+      return SCALAR;
+    }
+
+    void accept(node_visitor &visitor) const
+    {}
+  };
 }
 
 namespace std
@@ -89,7 +101,12 @@ void node_builder::add_scalar(const string &val)
 
 void node_builder::add_property(string const &prop)
 {
+  d_log("propery", prop);
 
+  if(d_stack.empty() ||  d_stack.top().token != PROPERTY)
+    d_stack.emplace(PROPERTY, std::unique_ptr<properties_node>(new properties_node));
+
+  d_stack.top().value->add_property(prop);
 }
 
 void node_builder::add_resolved_node(shared_ptr<node> s)
@@ -127,6 +144,14 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
       item key = pop();
       d_log("storing anchor", key.value->get(), s);
       d_anchors.insert(make_pair(key.value->get(), s));
+      add_resolved_node(s);
+      break;
+    }
+    case PROPERTY:
+    {
+      item props = pop();
+      for(std::string const &p : props.value->properties())
+        s->add_property(p);
       add_resolved_node(s);
       break;
     }
@@ -186,6 +211,8 @@ node_builder::item node_builder::pop()
 void node_builder::resolve()
 {
   assert(!d_stack.empty());
+
+  d_log("resolving", d_stack.top().value);
 
   if(d_stack.size() == 1)
     d_stack.top().token = RESOLVED_NODE;
