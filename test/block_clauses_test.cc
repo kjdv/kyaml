@@ -1,5 +1,6 @@
 #include "block_clauses.hh"
 #include "clause_test.hh"
+#include "mock_builder.hh"
 
 using namespace std;
 using namespace kyaml;
@@ -21,7 +22,7 @@ TEST_P(indentation_detect_test, detect)
   context_wrap ctx(GetParam().input);
 
   indentation_indicator i(ctx.get());
-  string_document_builder b;
+  null_builder b;
 
   i.parse(b);
 
@@ -51,16 +52,9 @@ TEST(block_sequence, sequence)
   context_wrap ctx(input);
 
   block_sequence bs(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_sequence()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("one")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("two")).
-    Times(1);
-  EXPECT_CALL(mb, end_sequence()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_sequence({"one", "two"});
 
   EXPECT_TRUE(bs.parse(mb));
 }
@@ -73,14 +67,9 @@ TEST(block_sequence, sequence_single_item)
   context_wrap ctx(input);
 
   block_sequence bs(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_sequence()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("one")).
-    Times(1);
-  EXPECT_CALL(mb, end_sequence()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_sequence({"one"});
 
   EXPECT_TRUE(bs.parse(mb));
 }
@@ -94,16 +83,9 @@ TEST(block_sequence, mulitword)
   context_wrap ctx(input);
 
   block_sequence bs(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_sequence()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("klaas jacob")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("de vries")).
-    Times(1);
-  EXPECT_CALL(mb, end_sequence()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_sequence({"klaas jacob", "de vries"});
 
   EXPECT_TRUE(bs.parse(mb));
 }
@@ -118,18 +100,9 @@ TEST(block_sequence, indented)
   context_wrap ctx(input, 2);
 
   block_sequence bs(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_sequence()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("Casablanca")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("North by Northwest")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("The Man Who Wasn't There")).
-    Times(1);
-  EXPECT_CALL(mb, end_sequence()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_sequence({"Casablanca", "North by Northwest", "The Man Who Wasn't There"});
 
   EXPECT_TRUE(bs.parse(mb));
 }
@@ -143,20 +116,9 @@ TEST(block_mapping, mapping)
   context_wrap ctx(input);
 
   block_mapping bm(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_mapping()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("key1")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("value1")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("key two")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("value two")).
-    Times(1);
-  EXPECT_CALL(mb, end_mapping()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_mapping({{"key1", "value1"}, {"key two", "value two"}});
 
   EXPECT_TRUE(bm.parse(mb));
 }
@@ -170,20 +132,9 @@ TEST(block_mapping, indented)
   context_wrap ctx(input, 0);
 
   block_mapping bm(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_mapping()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("name")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("klaas jacob")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("family name")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("de vries")).
-    Times(1);
-  EXPECT_CALL(mb, end_mapping()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_mapping({{"name", "klaas jacob"}, {"family name", "de vries"}});
 
   EXPECT_TRUE(bm.parse(mb));
 }
@@ -197,16 +148,9 @@ TEST(compact, sequence)
   context_wrap ctx(input, 0);
 
   compact_sequence cs(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_sequence()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("one")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("two")).
-    Times(1);
-  EXPECT_CALL(mb, end_sequence()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_sequence({"one", "two"});
 
   EXPECT_TRUE(cs.parse(mb));
 }
@@ -219,16 +163,9 @@ TEST(compact, mapping)
   context_wrap ctx(input);
 
   compact_mapping cm(ctx.get());
-  mock_builder mb;
 
-  EXPECT_CALL(mb, start_mapping()).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("number")).
-    Times(1);
-  EXPECT_CALL(mb, add_scalar("5")).
-    Times(1);
-  EXPECT_CALL(mb, end_mapping()).
-    Times(1);
+  mock_builder mb;
+  mb.expect_mapping({{"number", "5"}});
 
   EXPECT_TRUE(cm.parse(mb));
 }
@@ -240,8 +177,9 @@ TEST(line_literal, one_line)
 
   context_wrap ctx(input);
 
-  mock_builder mb;
   line_literal ll(ctx.get());
+
+  mock_builder mb;
 
   EXPECT_CALL(mb, add_scalar("single line")).
     Times(1);

@@ -1,6 +1,6 @@
 #include "node_clauses.hh"
 #include "clause_test.hh"
-#include <gmock/gmock.h>
+#include "mock_builder.hh"
 
 using namespace std;
 using namespace kyaml;
