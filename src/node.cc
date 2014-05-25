@@ -94,29 +94,6 @@ void node::add(string const &key, std::shared_ptr<node> val)
   return dynamic_cast<mapping &>(*this).add(key, val);
 }
 
-void sequence::print(ostream &o) const
-{
-  o << "[";
-  for(auto it : *this)
-  {
-    it->print(o);
-    o << ", ";
-  }
-  o << "]";
-}
-
-void mapping::print(ostream &o) const
-{
-  o << "{";
-  for(auto it : *this)
-  {
-    o << it.first << " : ";
-    it.second->print(o);
-    o << ", ";
-  }
-  o << "}";
-}
-
 node const &mapping::get(const string &key) const
 {
   container_t::const_iterator it = d_items.find(key);
@@ -124,7 +101,6 @@ node const &mapping::get(const string &key) const
   assert(it->second);
   return *it->second;
 }
-
 
 void scalar::accept(node_visitor &visitor) const
 {
@@ -158,23 +134,31 @@ namespace
     void visit(sequence const &seq) override
     {
       bool first = true;
+
+      d_out << "[";
       for(auto const &item : seq)
       {
-        d_out << (first ? "[" : ", ");
-        first = false;
+        if(first)
+          first = false;
+        else
+          d_out << ", ";
 
         item->accept(*this);
       }
-      d_out << ']';
+      d_out << "]";
     }
 
     void visit(mapping const &map) override
     {
       bool first = true;
+
+      d_out << "{";
       for(auto const &item : map)
       {
-        d_out << (first ? "{" : ", ");
-        first = false;
+        if(first)
+          first = false;
+        else
+          d_out << ", ";
 
         d_out << item.first << ": ";
         item.second->accept(*this);
@@ -189,5 +173,8 @@ namespace
 
 ostream &std::operator<<(ostream &out, kyaml::node const &node)
 {
+  node_printer np(out);
+  node.accept(np);
 
+  return out;
 }
