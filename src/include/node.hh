@@ -164,14 +164,6 @@ namespace kyaml
   class scalar final : public node
   {
   public: 
-    // built-in supported types
-    static const std::string s_null; // = "!!null";
-    static const std::string s_bool; // = "!!bool";
-    static const std::string s_integer; // = "!!int";
-    static const std::string s_float; // = "!!float";
-    static const std::string s_string; // = "!!str";
-    static const std::string s_binary; // = "!!binary"; // base64-encoded binary
-
     scalar(std::string const &v) :
       d_value(v)
     {}

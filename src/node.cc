@@ -103,13 +103,6 @@ node const &mapping::get(const string &key) const
   return *it->second;
 }
 
-const std::string scalar::s_null = "!!null";
-const std::string scalar::s_bool = "!!bool";
-const std::string scalar::s_integer = "!!int";
-const std::string scalar::s_float = "!!float";
-const std::string scalar::s_string = "!!str";
-const std::string scalar::s_binary = "!!binary"; // base64-encoded binary
-
 void scalar::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);

@@ -99,7 +99,7 @@ namespace kyaml
     // [171] 	l-nb-literal-text(n) 	::= 	l-empty(n,block-in)*
     //                                    s-indent(n) nb-char+
     typedef internal::all_of<internal::zero_or_more<internal::state_scope<internal::flow_modifier<context::BLOCK_IN>, empty_line> >,
-                             indent_clause_eq,
+                             internal::indent_clause_ge,
                              internal::one_or_more<non_break_char> > line_literal_text;
 
     // [172] 	b-nb-literal-next(n) 	::= 	b-as-line-feed
@@ -136,7 +136,7 @@ namespace kyaml
                                                                              folded_text> > > folded_lines;
 
     // [177] 	s-nb-spaced-text(n) 	::= 	s-indent(n) s-white nb-char* 
-    typedef internal::all_of<indent_clause_eq,
+    typedef internal::all_of<internal::indent_clause_ge,
                              white,
                              internal::zero_or_more<non_break_char> > spaced_text;
 

@@ -180,13 +180,26 @@ TEST_F(toplevel, chomp_as_space)
   check(expect, "stripped as space");
 }
 
-TEST_F(toplevel, DISABLED_indent_in_string_literal)
+TEST_F(toplevel, indent_in_string_literal)
 {
   const string input = "|\n"
                        "line\n"
                        "  indented\n"
                        "less indented\n";
   const string expect = "line\n  indented\nless indented\n";
+
+  parse(input);
+
+  check(expect);
+}
+
+TEST_F(toplevel, DISABLED_indent_in_string_literal_as_space)
+{
+  const string input = ">\n"
+                       "line\n"
+                       "  indented\n"
+                       "less indented\n";
+  const string expect = "line indented less indented\n";
 
   parse(input);
 

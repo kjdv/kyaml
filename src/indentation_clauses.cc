@@ -75,19 +75,17 @@ bool indent_clause_eq::parse(document_builder &builder)
 
 bool internal::indent_clause_ge::parse(document_builder &builder)
 {
-  if(level())
+  indent_builder b;
+  int n = number_of_white(ctx(), b);
+  if(n >= level())
   {
-    indent_builder b;
-    int n = number_of_white(ctx(), b);
-    if(n >= level())
-    {
-      unwind();
+    unwind();
+    if(level())
       advance(level());
-      return true;
-    }
-    else
-      unwind();
+    return true;
   }
+  else
+    unwind();
   return false;
 }
 

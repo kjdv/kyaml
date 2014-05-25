@@ -233,6 +233,23 @@ TEST(line_literal, nospace)
   EXPECT_TRUE(ll.parse(mb));
 }
 
+TEST(line_literal, with_indents)
+{
+  string input = "|\n"
+                 "line\n"
+                 "  indented\n"
+                 "less indented\n";
+  context_wrap ctx(input);
+
+  mock_builder mb;
+  line_literal ll(ctx.get());
+
+  EXPECT_CALL(mb, add_scalar("line\n  indented\nless indented\n")).
+    Times(1);
+
+  EXPECT_TRUE(ll.parse(mb));
+}
+
 TEST(folded_content, multiline)
 {
   string input = "> \n"
