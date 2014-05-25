@@ -139,6 +139,47 @@ TEST_F(toplevel, newline_folded)
   check(expect, "specialDelivery");
 }
 
+TEST_F(toplevel, chomp_strip)
+{
+  const string expect = "The final line\n"
+                        "break should be\n"
+                        "stripped."; // no trailing \n
+
+  parse(g_chomp_yaml);
+
+  check(expect, "stripped");
+}
+
+TEST_F(toplevel, chomp_clip)
+{
+  const string expect = "The final line\n"
+                        "break should be\n"
+                        "clipped.\n"; // trailing \n included, no follow-ups
+
+  parse(g_chomp_yaml);
+
+  check(expect, "clipped");
+}
+
+TEST_F(toplevel, chomp_keep)
+{
+  const string expect = "The final line\n"
+                        "break should be\n"
+                        "kept.\n\n"; // trailing \n and empty newline
+
+  parse(g_chomp_yaml);
+
+  check(expect, "keep");
+}
+
+TEST_F(toplevel, chomp_as_space)
+{
+  const string expect = "This should only have spaces.";
+  parse(g_chomp_yaml);
+
+  check(expect, "stripped as space");
+}
+
 class datatypes : public toplevel
 {
 public:

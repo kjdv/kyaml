@@ -72,3 +72,27 @@ const std::string kyaml::test::g_datatypes_yaml =
   "  zdHJpbmcgdGhhdCB3aWxsIG\n"
   "  JlIGJhc2U2NCBlbmNvZGVkL\n"
   "  g==\n";
+
+const std::string kyaml::test::g_chomp_yaml =
+  "---\n"
+  "stripped: |-\n"
+  "  The final line\n"
+  "  break should be\n"
+  "  stripped.\n"
+  "\n"
+  "clipped: |\n"
+  "  The final line\n"
+  "  break should be\n"
+  "  clipped.\n"
+  "\n"
+  "keep: |+\n"
+  "  The final line\n"
+  "  break should be\n"
+  "  kept.\n"
+  "\n"
+  "stripped as space: >-\n"
+  "  This should\n"
+  "  only have\n"
+  "  spaces.\n"
+  "\n"
+  "...\n";
