@@ -57,3 +57,17 @@ const std::string kyaml::test::g_anchors_yaml =
   "- step: *id002                   # refers to the second step\n"
   "- step: *id001\n"
   "- step: *id002\n";
+
+const std::string kyaml::test::g_datatypes_yaml =
+  "integer: 1\n"
+  "string: \"123\"\n"
+  "float: 3.14\n"
+  "explicit_float: !!float 123\n"
+  "explicit_string: !!str 123\n"
+  "bool_yes: Yes\n"
+  "bool_no: No\n"
+  "binary: !!binary |\n"
+  "  R0lGODlhDAAMAIQAAP//9/X\n"
+  "  17unp5WZmZgAAAOfn515eXv\n"
+  "  Pz7Y6OjuDg4J+fn5OTk6enp\n"
+  "  56enmleECcgggoBADs=mZmE\n";

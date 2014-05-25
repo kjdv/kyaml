@@ -138,3 +138,49 @@ TEST_F(toplevel, newline_folded)
 
   check(expect, "specialDelivery");
 }
+
+class datatypes : public toplevel
+{
+public:
+  void SetUp() override
+  {
+    toplevel::SetUp();
+    parse(g_datatypes_yaml);
+  }
+};
+
+TEST_F(datatypes, integertype)
+{
+  check("1", "integer");
+}
+
+TEST_F(datatypes, stringtype)
+{
+  check("123", "string");
+}
+
+TEST_F(datatypes, floattype)
+{
+  check("3.14", "float");
+}
+
+TEST_F(datatypes, explicit_floattype)
+{
+  check("123", "explicit_float");
+}
+
+TEST_F(datatypes, explicit_stringtype)
+{
+  check("123", "explicit_string");
+}
+
+TEST_F(datatypes, booltype_yes)
+{
+  check("Yes", "bool_yes");
+}
+
+TEST_F(datatypes, booltype_no)
+{
+  check("No", "bool_no");
+}
+

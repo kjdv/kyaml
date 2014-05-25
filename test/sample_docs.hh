@@ -10,6 +10,8 @@ namespace kyaml
     extern const std::string g_oz_yaml;
 
     extern const std::string g_anchors_yaml;
+
+    extern const std::string g_datatypes_yaml;
   }
 }
 
