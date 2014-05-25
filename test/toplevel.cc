@@ -184,3 +184,13 @@ TEST_F(datatypes, booltype_no)
   check("No", "bool_no");
 }
 
+TEST_F(datatypes, DISABLED_binarytype)
+{
+  // todo: newline conversion
+  const string expect = "R0lGODlhDAAMAIQAAP//9/X"
+                        "17unp5WZmZgAAAOfn515eXv"
+                        "Pz7Y6OjuDg4J+fn5OTk6enp"
+                        "56enmleECcgggoBADs=mZmE";
+
+  check(expect, "binary");
+}
