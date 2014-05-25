@@ -266,3 +266,23 @@ TEST(folded_content, multiline)
 
   EXPECT_TRUE(cf.parse(mb));
 }
+
+TEST(folded_content, with_indents)
+{
+  string input = ">\n"
+                 "line\n"
+                 "  indented\n"
+                 "less indented\n";
+
+  context_wrap ctx(input);
+
+  mock_builder mb;
+  content_folded cf(ctx.get());
+
+  EXPECT_CALL(mb, add_scalar("line   indented less indented\n")).
+    Times(1);
+
+  EXPECT_TRUE(cf.parse(mb));
+}
+
+

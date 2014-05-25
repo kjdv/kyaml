@@ -161,7 +161,7 @@ namespace kyaml
     // [181] 	l-nb-diff-lines(n) 	::= 	l-nb-same-lines(n)
     //                                          ( b-as-line-feed l-nb-same-lines(n) )* 
     typedef internal::and_clause<same_lines,
-                                 internal::zero_or_more<internal::and_clause<as_line_feed,
+                                 internal::zero_or_more<internal::and_clause<as_space, // todo: is this a bug in the spec?
                                                                              same_lines> >
                                  > diff_lines;
 
