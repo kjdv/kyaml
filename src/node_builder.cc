@@ -15,7 +15,10 @@ namespace std
   ostream &operator<<(ostream &o, shared_ptr<node> n)
   {
     if(n)
-      n->print(o);
+    {
+      node const &nr = *n;
+      o << nr;
+    }
     else
       o << "(nullptr)";
     return o;

@@ -140,3 +140,54 @@ void mapping::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);
 }
+
+namespace
+{
+  class node_printer : public node_visitor
+  {
+  public:
+    node_printer(ostream &out) :
+      d_out(out)
+    {}
+
+    void visit(scalar const &val) override
+    {
+      d_out << val.get();
+    }
+
+    void visit(sequence const &seq) override
+    {
+      bool first = true;
+      for(auto const &item : seq)
+      {
+        d_out << (first ? "[" : ", ");
+        first = false;
+
+        item->accept(*this);
+      }
+      d_out << ']';
+    }
+
+    void visit(mapping const &map) override
+    {
+      bool first = true;
+      for(auto const &item : map)
+      {
+        d_out << (first ? "{" : ", ");
+        first = false;
+
+        d_out << item.first << ": ";
+        item.second->accept(*this);
+      }
+      d_out << "}";
+    }
+
+  private:
+    ostream &d_out;
+  };
+}
+
+ostream &std::operator<<(ostream &out, kyaml::node const &node)
+{
+
+}

@@ -128,9 +128,6 @@ namespace kyaml
 
     // visitor pattern
     virtual void accept(node_visitor &visitor) const = 0;
-
-    // only for testing/debugging
-    virtual void print(std::ostream &o) const = 0;
   };
 
   typedef node document;
@@ -145,11 +142,6 @@ namespace kyaml
     type_t type() const override
     {
       return SCALAR;
-    }
-
-    void print(std::ostream &o) const override
-    {
-      o << get();
     }
 
     std::string const &get() const override
@@ -181,8 +173,6 @@ namespace kyaml
     {
       return SEQUENCE;
     }
-
-    void print(std::ostream &o) const override;
 
     node const &operator[](size_t i) const
     {
@@ -231,8 +221,6 @@ namespace kyaml
       return MAPPING;
     }
 
-    void print(std::ostream &o) const override;
-
     node const &operator[](std::string const &key) const
     {
       return get(key);
@@ -274,11 +262,10 @@ namespace kyaml
 
 namespace std
 {
-  inline ostream &operator<<(ostream &o, kyaml::node const &n)
-  {
-    n.print(o);
-    return o;
-  }
+  // useful for testing/debugging/diagnostic purposes
+  // note: only use as such, the output format is not guaranteed to follow a certain pattern,
+  // specifically, it is not guaranteed to be valid yaml/json formatting
+  ostream &operator<<(ostream &o, kyaml::node const &n);
 }
 
 #endif // NODE_HH
