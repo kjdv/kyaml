@@ -1,5 +1,6 @@
 #include "node.hh"
 #include "node_visitor.hh"
+#include "utils.hh"
 #include <sstream>
 
 using namespace std;
@@ -102,6 +103,13 @@ node const &mapping::get(const string &key) const
   return *it->second;
 }
 
+const std::string scalar::s_null = "!!null";
+const std::string scalar::s_bool = "!!bool";
+const std::string scalar::s_integer = "!!int";
+const std::string scalar::s_float = "!!float";
+const std::string scalar::s_string = "!!str";
+const std::string scalar::s_binary = "!!binary"; // base64-encoded binary
+
 void scalar::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);
@@ -115,6 +123,50 @@ void sequence::accept(node_visitor &visitor) const
 void mapping::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);
+}
+
+template<>
+bool kyaml::type_convert(node::properties_t const &props, std::string const &input)
+{
+  string compare;
+  for(char c : input)
+  {
+    if(isalnum(c)) // ignore non-alpha (ws), and convert to lower case
+      compare += tolower(c);
+  }
+
+  for(std::string const &key : {"true", "yes", "t", "y"}) // positive
+  {
+    if(compare.compare(0, key.size(), key) == 0)
+      return true;
+  }
+
+  for(std::string const &key : {"false", "no", "f", "n"}) // negative
+  {
+    if(compare.compare(0, key.size(), key) == 0)
+      return false;
+  }
+
+  // undefined, revert to default
+  return type_convert<int>(props, input);
+}
+
+template<>
+vector<uint8_t> kyaml::type_convert(node::properties_t const &props, string const &input)
+{
+  // sanitize whitespace
+  string sanitized;
+  for(char c : input)
+  {
+    if(isalnum(c) || c == '+' || c == '/' || c == '=')
+      sanitized += c;
+  }
+
+  vector<uint8_t> target;
+  if(decode_base64(sanitized, target))
+    return target;
+  else
+    return vector<uint8_t>();
 }
 
 namespace
@@ -178,3 +230,4 @@ ostream &std::operator<<(ostream &out, kyaml::node const &node)
 
   return out;
 }
+

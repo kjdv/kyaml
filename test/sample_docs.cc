@@ -67,7 +67,7 @@ const std::string kyaml::test::g_datatypes_yaml =
   "bool_yes: Yes\n"
   "bool_no: No\n"
   "binary: !!binary |\n"
-  "  R0lGODlhDAAMAIQAAP//9/X\n"
-  "  17unp5WZmZgAAAOfn515eXv\n"
-  "  Pz7Y6OjuDg4J+fn5OTk6enp\n"
-  "  56enmleECcgggoBADs=mZmE\n";
+  "  VGhpcyBpcyBhIHNhbXBsZSB\n"
+  "  zdHJpbmcgdGhhdCB3aWxsIG\n"
+  "  JlIGJhc2U2NCBlbmNvZGVkL\n"
+  "  g==\n";

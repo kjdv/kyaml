@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
+#include <cstdint>
 
 namespace kyaml
 {
@@ -59,6 +61,9 @@ namespace kyaml
   {
     str.append(s);
   }
+
+  // base 64 decoding
+  bool decode_base64(std::string const &source, std::vector<uint8_t> &target);
 
   // for debugging purposes: a (compile-time-switchable) logger for what is parsed
   template <bool enabled = false>

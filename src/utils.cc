@@ -5,6 +5,53 @@
 using namespace std;
 using namespace kyaml;
 
+namespace
+{
+  uint8_t inverse(char c)
+  {
+    if (c >= 'A' && c <= 'Z')
+    {
+      return c - 'A';
+    }
+    else if (c >= 'a' && c <= 'z')
+    {
+      return (c - 'a') + 26;
+    }
+    else if (c >= '0' && c <= '9')
+    {
+      return (c - '0') + 52;
+    }
+    else if (c == '+')
+    {
+      return 62;
+    }
+    else if (c == '/')
+    {
+      return 63;
+    }
+    return 0;
+  }
+
+  size_t from_base64(char const s[4], uint8_t t[3])
+  {
+    uint8_t c0 = inverse(s[0]);
+    uint8_t c1 = inverse(s[1]);
+    uint8_t c2 = inverse(s[2]);
+    uint8_t c3 = inverse(s[3]);
+
+    t[0] = (c0 << 2) | (c1 >> 4);
+    t[1] = ((c1 & 0x0f) << 4) | (c2 >> 2);
+    t[2] = ((c2 & 0x03) << 6) | (c3 & 0x3f);
+
+    if (s[2] == '=')
+      return 1;
+    else if (s[3] == '=')
+      return 2;
+    else
+      return 3;
+  }
+}
+
 bool kyaml::extract_utf8(istream &stream, char32_t &result)
 {
   uint8_t c;
@@ -114,4 +161,22 @@ bool kyaml::is_valid_utf8(char32_t c)
   string str;
   append_utf8(str, c);
   return is_valid_utf8(str);
+}
+
+bool kyaml::decode_base64(string const &source, vector<uint8_t> &target)
+{
+  if((source.size() & 3) != 0)
+    return false;
+
+  target.reserve(source.size() * 3 / 4);
+
+  for(string::size_type i = 0; i < source.size(); i += 4)
+  {
+    char const *s = source.data() + i;
+    uint8_t t[3];
+    size_t l = from_base64(s, t);
+    target.insert(target.end(), t, t + l);
+  }
+
+  return true;
 }

@@ -154,9 +154,24 @@ namespace kyaml
 
   typedef node document;
 
+  // type conversion for scalars.
+  // by default, std::operator<< is used
+  // specialized overloads are provided for bool and std::vector<uint8_t> (base64 binary)
+  // you can also define your own.
+  template <typename target_t>
+  target_t type_convert(node::properties_t const &props, std::string const &input);
+
   class scalar final : public node
   {
   public: 
+    // built-in supported types
+    static const std::string s_null; // = "!!null";
+    static const std::string s_bool; // = "!!bool";
+    static const std::string s_integer; // = "!!int";
+    static const std::string s_float; // = "!!float";
+    static const std::string s_string; // = "!!str";
+    static const std::string s_binary; // = "!!binary"; // base64-encoded binary
+
     scalar(std::string const &v) :
       d_value(v)
     {}
@@ -178,6 +193,13 @@ namespace kyaml
       std::stringstream str(d_value);
       str >> t;
       return t;
+    }
+
+    // access the value as a specific type
+    template <typename target_t>
+    target_t as() const
+    {
+      return type_convert<target_t>(properties(), d_value);
     }
 
     void accept(node_visitor &visitor) const override;
@@ -280,6 +302,21 @@ namespace kyaml
   private:
     container_t d_items;
   };
+
+  template <typename target_t>
+  target_t type_convert(node::properties_t const &props, std::string const &input)
+  {
+    target_t result = target_t();
+    std::stringstream str(input);
+    str >> result;
+    return result;
+  }
+
+  template<> // overload for bool
+  bool type_convert(node::properties_t const &props, std::string const &input);
+
+  template<> // overload for (base64) binary data
+  std::vector<uint8_t> type_convert(node::properties_t const &props, std::string const &input);
 }
 
 namespace std
