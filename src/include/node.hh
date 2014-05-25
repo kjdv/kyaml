@@ -10,6 +10,8 @@
 
 namespace kyaml
 {
+  class node_visitor;
+
   class sequence;
   class mapping;
   class scalar;
@@ -124,6 +126,9 @@ namespace kyaml
     sequence const &as_sequence() const;
     mapping const &as_mapping() const;
 
+    // visitor pattern
+    virtual void accept(node_visitor &visitor) const = 0;
+
     // only for testing/debugging
     virtual void print(std::ostream &o) const = 0;
   };
@@ -160,6 +165,8 @@ namespace kyaml
       str >> t;
       return t;
     }
+
+    void accept(node_visitor &visitor) const override;
 
   private:
     std::string d_value;
@@ -208,6 +215,8 @@ namespace kyaml
       d_items.push_back(child);
     }
 
+    void accept(node_visitor &visitor) const override;
+
   private:
     container_t d_items;
   };
@@ -255,6 +264,8 @@ namespace kyaml
     {
       d_items.insert(std::make_pair(key, value));
     }
+
+    void accept(node_visitor &visitor) const override;
 
   private:
     container_t d_items;

@@ -1,4 +1,5 @@
 #include "node.hh"
+#include "node_visitor.hh"
 #include <sstream>
 
 using namespace std;
@@ -122,4 +123,20 @@ node const &mapping::get(const string &key) const
   assert(it != d_items.end());
   assert(it->second);
   return *it->second;
+}
+
+
+void scalar::accept(node_visitor &visitor) const
+{
+  visitor.visit(*this);
+}
+
+void sequence::accept(node_visitor &visitor) const
+{
+  visitor.visit(*this);
+}
+
+void mapping::accept(node_visitor &visitor) const
+{
+  visitor.visit(*this);
 }
