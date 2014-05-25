@@ -128,22 +128,22 @@ void mapping::accept(node_visitor &visitor) const
 template<>
 bool kyaml::type_convert(node::properties_t const &props, std::string const &input)
 {
-  string compare;
+  string sanitized;
   for(char c : input)
   {
     if(isalnum(c)) // ignore non-alpha (ws), and convert to lower case
-      compare += tolower(c);
+      sanitized += tolower(c);
   }
 
   for(std::string const &key : {"true", "yes", "t", "y"}) // positive
   {
-    if(compare.compare(0, key.size(), key) == 0)
+    if(sanitized.compare(0, key.size(), key) == 0)
       return true;
   }
 
   for(std::string const &key : {"false", "no", "f", "n"}) // negative
   {
-    if(compare.compare(0, key.size(), key) == 0)
+    if(sanitized.compare(0, key.size(), key) == 0)
       return false;
   }
 

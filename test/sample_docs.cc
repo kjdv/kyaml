@@ -64,6 +64,7 @@ const std::string kyaml::test::g_datatypes_yaml =
   "float: 3.14\n"
   "explicit_float: !!float 123\n"
   "explicit_string: !!str 123\n"
+  "simple_string: a string\n"
   "bool_yes: Yes\n"
   "bool_no: No\n"
   "binary: !!binary |\n"

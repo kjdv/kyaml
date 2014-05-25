@@ -131,3 +131,13 @@ TEST_F(node_typeconvert_test, base64)
 
   EXPECT_EQ(expect, actual);
 }
+
+TEST_F(node_typeconvert_test, integer_as_bool)
+{
+  check(true, "integer");
+}
+
+TEST_F(node_typeconvert_test, string_as_bool)
+{
+  check(false, "simple_string");
+}
