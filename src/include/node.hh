@@ -85,6 +85,13 @@ namespace kyaml
     bool has(size_t idx, path_t... path) const;
     template <typename... path_t>
     bool has(std::string const &key, path_t... path) const;
+
+    // specialized value()/has() for leaf nodes
+    template <typename... path_t>
+    std::string const &leaf_value(path_t... path) const;
+
+    template <typename... path_t>
+    bool has_leaf(path_t... path) const;
   };
 
   typedef node document;
@@ -255,6 +262,20 @@ namespace kyaml
         map.get(key).has(path...);
     }
     return false;
+  }
+
+  template <typename... path_t>
+  std::string const &node::leaf_value(path_t... path) const
+  {
+    return value(path...).as_scalar().get();
+  }
+
+  template <typename... path_t>
+  bool node::has_leaf(path_t... path) const
+  {
+    return
+      has(path...) && // todo: optimize. this requires 2 searches
+      value(path...).type() == SCALAR;
   }
 }
 

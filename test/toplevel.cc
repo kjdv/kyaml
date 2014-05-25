@@ -24,11 +24,9 @@ public:
   {
     ASSERT_TRUE((bool)d_document) << "no valid document: " << d_document;
     ASSERT_TRUE(d_document->has(path...)) << "path " << tostring(path...) << " not present in " << d_document;
+    ASSERT_TRUE(d_document->has_leaf(path...)) << "path " << tostring(path...) << " present, but is not a leaf in " << d_document;
 
-    node const &actual = d_document->value(path...);
-    ASSERT_EQ(node::SCALAR, actual.type()) << "path present, but is not a leaf: " << tostring(path...);
-
-    EXPECT_EQ(expect, actual.as_scalar().get());
+    EXPECT_EQ(expect, d_document->leaf_value(path...));
   }
 
 private:
