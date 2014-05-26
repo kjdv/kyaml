@@ -9,7 +9,7 @@ static_assert(sizeof(char_t) == 4, "");
 bool printable::parse(document_builder &builder)
 {
   char_t c;
-  if(!stream().peek(c))
+  if(!ctx().stream().peek(c))
     return false;
   if(c == '\x9' ||
      c == '\xa' ||
@@ -18,13 +18,13 @@ bool printable::parse(document_builder &builder)
      c == static_cast<char_t>('\x85'))
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
   else if(c >= 0xff && is_valid_utf8(c))
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
 
@@ -34,20 +34,20 @@ bool printable::parse(document_builder &builder)
 bool json::parse(document_builder &builder)
 {
   char_t c;
-  if(!stream().peek(c))
+  if(!ctx().stream().peek(c))
     return false;
 
   if(c == '\x9' ||
      (c >= '\x20' && c <= '\x7f'))
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
   else if(c >= 0xff && is_valid_utf8(c))
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
 
@@ -63,23 +63,13 @@ bool byte_order_mark::parse(document_builder &builder)
 bool byte_order_mark::inner::parse(document_builder &builder)
 {
   char_t c;
-  if(!stream().peek(c))
+  if(!ctx().stream().peek(c))
     return false;
   if(c == 0x0000feff)
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
-
-    /*if(stream().peek(c) && c == static_cast<char_t>('\xff'))
-    {
-      builder.add_atom(c);
-      advance();
-      builder.add_atom(c);
-      return true;
-    }
-    else
-      unwind();*/
   }
   return false;
 }
@@ -135,11 +125,11 @@ bool mapping_end::parse(document_builder &builder)
 bool reserved::parse(document_builder &builder)
 {
   char_t c;
-  if(stream().peek(c) &&
+  if(ctx().stream().peek(c) &&
      ( c == '@' || c == '`' ))
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
   return false;
@@ -148,7 +138,7 @@ bool reserved::parse(document_builder &builder)
 bool indicator::parse(document_builder &builder)
 {
   char_t c = 0;
-  stream().peek(c);
+  ctx().stream().peek(c);
 
   switch(c)
   {
@@ -171,7 +161,7 @@ bool indicator::parse(document_builder &builder)
   case '@':
   case '`':
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
 
   default:
@@ -182,7 +172,7 @@ bool indicator::parse(document_builder &builder)
 bool flow_indicator::parse(document_builder &builder)
 {
   char_t c = 0;
-  stream().peek(c);
+  ctx().stream().peek(c);
   
   switch(c)
   {
@@ -192,7 +182,7 @@ bool flow_indicator::parse(document_builder &builder)
   case '{':
   case '}':
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
 
   default:
@@ -202,46 +192,52 @@ bool flow_indicator::parse(document_builder &builder)
 
 bool non_break_char::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   null_builder dm;
   break_char bc(ctx());
   if(bc.parse(dm))
-  {
-    unwind();
     return false;
-  }
 
   byte_order_mark bo(ctx());
   if(bo.parse(dm))
-  {
-    unwind();
     return false;
-  }
 
   printable pr(ctx());
-  return pr.parse(builder);
+  if(pr.parse(builder))
+  {
+    sg.release();
+    return true;
+  }
+  return false;
 }
 
 bool non_white_char::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   null_builder dm;
   white w(ctx());
   if(w.parse(dm))
-  {
-    unwind();
     return false;
-  }
+
   non_break_char nb(ctx());
-  return nb.parse(builder);
+  if(nb.parse(builder))
+  {
+    sg.release();
+    return true;
+  }
+  return false;
 }
 
 bool dec_digit_char::parse(document_builder &builder)
 {
   char_t c;
-  if(stream().peek(c) && 
+  if(ctx().stream().peek(c) &&
      (c >= '0' && c <= '9'))
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
   return false;
@@ -255,12 +251,12 @@ bool hex_digit_char::parse(document_builder &builder)
   else
   {
     char_t c;
-    if(stream().peek(c) && 
+    if(ctx().stream().peek(c) &&
        ((c >= 'a' && c <= 'f') ||
         (c >= 'A' && c <= 'F')))
     {
       builder.add_atom(c);
-      advance();
+      ctx().stream().advance();
       return true;
     }
   }
@@ -270,12 +266,12 @@ bool hex_digit_char::parse(document_builder &builder)
 bool ascii_letter::parse(document_builder &builder)
 {
   char_t c;
-  if(stream().peek(c) &&
+  if(ctx().stream().peek(c) &&
      ((c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z')))
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
   return false;
@@ -292,11 +288,11 @@ bool word_char::parse(document_builder &builder)
     return true;
   
   char_t c;
-  if(stream().peek(c) &&
+  if(ctx().stream().peek(c) &&
      c == '-')
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
   }
   return false;
@@ -315,13 +311,13 @@ bool uri_char::inner::parse(document_builder &builder)
     return true;
 
   char_t c;
-  if(!stream().peek(c))
+  if(!ctx().stream().peek(c))
     return false;
 
   if(c == '%')
   {
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
 
     hex_digit_char h1(ctx());
     hex_digit_char h2(ctx());
@@ -352,7 +348,7 @@ bool uri_char::inner::parse(document_builder &builder)
   case '[':
   case ']':
     builder.add_atom(c);
-    advance();
+    ctx().stream().advance();
     return true;
 
   default:
@@ -362,8 +358,10 @@ bool uri_char::inner::parse(document_builder &builder)
 
 bool tag_char::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   char_t c;
-  if(!stream().peek(c))
+  if(!ctx().stream().peek(c))
     return false;
 
   if(c == '!')
@@ -372,13 +370,15 @@ bool tag_char::parse(document_builder &builder)
   null_builder dm;
   flow_indicator fi(ctx());
   if(fi.parse(dm))
-  {
-    unwind();
     return false;
-  }
 
   uri_char u(ctx());
-  return u.parse(builder);
+  if(u.parse(builder))
+  {
+    sg.release();
+    return true;
+  }
+  return false;
 }
 
 

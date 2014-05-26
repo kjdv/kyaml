@@ -6,20 +6,26 @@ using namespace kyaml::clauses;
 
 bool anchor_char::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   null_builder dummy;
   flow_indicator fl(ctx());
   if(fl.parse(dummy))
-  {
-    unwind();
     return false;
-  }
 
   non_white_char nw(ctx());
-  return nw.parse(builder);
+  if(nw.parse(builder))
+  {
+    sg.release();
+    return true;
+  }
+  return false;
 }
 
 bool anchor_property::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   null_builder dm;
   if(internal::simple_char_clause<'&'>(ctx()).parse(dm))
   {
@@ -28,16 +34,17 @@ bool anchor_property::parse(document_builder &builder)
     if(an.parse(sb))
     {
       builder.add_anchor(sb.build());
+      sg.release();
       return true;
     }
-    else
-      unwind();
   }
   return false;
 }
 
 bool verbatim_tag::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   null_builder db;
   string_builder sb;
 
@@ -47,25 +54,25 @@ bool verbatim_tag::parse(document_builder &builder)
      internal::simple_char_clause<'>'>(ctx()).parse(db))
   {
     builder.add_scalar(sb.build());
+    sg.release();
     return true;
   }
-  else
-    unwind();
   return false;
 }
 
 bool alias_node::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   null_builder db;
   string_builder sb;
   if(internal::simple_char_clause<'*'>(ctx()).parse(db) &&
      anchor_name(ctx()).parse(sb))
   {
     builder.add_alias(sb.build());
+    sg.release();
     return true;
   }
-  else
-    unwind();
   return false;
 }
 
@@ -184,19 +191,32 @@ bool plain_safe::parse_safe_out(document_builder &builder)
 
 bool plain_first::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   left_t l(ctx());
   if(l.parse(builder))
-    return true;
-
-  null_builder dm;
-  augmented_right_t r(ctx());
-  if(r.parse(dm))
   {
-    unwind();
-    right_t real(ctx());
-    real.parse(builder);
+    sg.release();
     return true;
   }
+
+  null_builder dm;
+  bool ar = false;
+  {
+    stream_guard sg2(ctx());
+    augmented_right_t r(ctx());
+    null_builder nb;
+    ar = r.parse(nb);
+  }
+
+  if(ar)
+  {
+    right_t real(ctx());
+    real.parse(builder);
+    sg.release();
+    return true;
+  }
+
   return false;
 }
 

@@ -58,7 +58,8 @@ namespace
 
 int kyaml::clauses::internal::delta_indent(context &ctx)
 {
-  char_stream::mark_t m = ctx.stream().mark();
+  stream_guard sg(ctx);
+
   space s(ctx);
   null_builder b;
 
@@ -66,14 +67,12 @@ int kyaml::clauses::internal::delta_indent(context &ctx)
   while(s.parse(b))
     ++count;
 
-  ctx.stream().unwind(m); // TODO: cleanup by scope guard
   return count;
 }
 
 bool kyaml::clauses::internal::autodetect_indent(context &ctx, int minumum)
 {
-  char_stream::mark_t m = ctx.stream().mark();
-
+  context_guard cg(ctx);
   line_break lb(ctx);
   space s(ctx);
   null_builder b;
@@ -87,10 +86,9 @@ bool kyaml::clauses::internal::autodetect_indent(context &ctx, int minumum)
 
   } while(lb.parse(b));
 
-  ctx.stream().unwind(m); // TODO: cleanup by scope guard
-
   if(count > minumum)
   {
+    cg.release_state();
     ctx.set_indent(count);          
     return true;
   }
@@ -102,6 +100,8 @@ bool indentation_indicator::parse(document_builder &builder)
 {
   logger<false> log("indentation indicator");
 
+  stream_guard sg(ctx());
+
   log("start", ctx().stream().pos());
 
   indent_builder ib;
@@ -111,7 +111,6 @@ bool indentation_indicator::parse(document_builder &builder)
   
   if(z.parse(ib))
   {
-    unwind();
     log("0 detected", ctx().stream().pos());
     return false;
   }
@@ -119,6 +118,7 @@ bool indentation_indicator::parse(document_builder &builder)
   {
     ctx().set_indent(ib.build());
     log("number detected", ctx().stream().pos());
+    sg.release();
     return true;
   }
 
@@ -136,6 +136,8 @@ bool chomping_indicator::parse(document_builder &builder)
 {
   logger<false> log("chomping indicator");
   log("start", ctx().stream().pos());
+
+  // as chomping will always be modified before used no state guard is needed (famous last words)
 
   internal::simple_char_clause<'-', false> strip(ctx());
   if(strip.parse(builder))
@@ -247,11 +249,12 @@ bool block_indented::parse_funky_indent(document_builder &builder)
 {
   logger<false> log("funky indent");
 
+  context_guard cg(ctx());
+
   log("head at", ctx().stream().pos());
 
   const int n = ctx().indent_level();
   const int m = ctx().stream().indent_level(n) - n;
-  bool result = false;
 
   log("n =", n, "m =", m);
 
@@ -266,17 +269,11 @@ bool block_indented::parse_funky_indent(document_builder &builder)
     if(sm.parse(builder))
     {
       log("compact sequence or mapping passed, at", ctx().stream().pos());
-      result = true;
+      cg.release_stream();
+      return true;
     }
   }
-
-  // TODO: dtor-based cleanup
-  if(!result)
-    unwind();
-
-  ctx().set_indent(n);
-
-  return result;
+  return false;
 }
 
 bool block_indented::parse_normal(document_builder &builder)
@@ -289,6 +286,8 @@ bool block_indented::parse_normal(document_builder &builder)
 
 bool block_sequence::parse(document_builder &builder)
 {
+  state_guard sg(ctx());
+
   int n = ctx().indent_level();
   int d = internal::delta_indent(ctx());
   int m = d - n;
@@ -301,26 +300,22 @@ bool block_sequence::parse(document_builder &builder)
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_seq_entry> > bs_clause;
 
     bs_clause bs(ctx());
-
-    bool result = false;
     if(bs.parse(rb))
     {
-      result = true;
       builder.start_sequence();
       rb.replay(builder);
       builder.end_sequence();
-    }
 
-    // TODO: cleanup by scope guard
-    ctx().set_indent(n);
-    
-    return result; 
+      return true;
+    }
   }
   return false;
 }
 
 bool block_mapping::parse(document_builder &builder)
 {
+  state_guard sg(ctx());
+
   int n = ctx().indent_level();
   int d = internal::delta_indent(ctx());
   int m = d - n;
@@ -332,21 +327,15 @@ bool block_mapping::parse(document_builder &builder)
     typedef internal::one_or_more<internal::and_clause<indent_clause_eq, block_map_entry> > bs_clause;
     
     bs_clause bs(ctx());
-    bool result = false;
-
     replay_builder rb;
     if(bs.parse(rb))
     {
-      result = true;
       builder.start_mapping();
       rb.replay(builder);
       builder.end_mapping();
-    }
 
-    // TODO: cleanup by scope guard
-    ctx().set_indent(n);
-    
-    return result; 
+      return true;
+    } 
   }
   return false;
 }
@@ -374,6 +363,8 @@ bool compact_sequence::parse(document_builder &builder)
 
 bool literal_content::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   string_builder sb;
 
   typedef internal::zero_or_one<internal::all_of<line_literal_text,
@@ -390,10 +381,10 @@ bool literal_content::parse(document_builder &builder)
     if(s.parse(sb))
     {
       builder.add_scalar(sb.build());
+      sg.release();
       return true;
     }
   }
-  unwind();
   return false;
 }
 

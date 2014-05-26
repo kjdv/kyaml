@@ -14,7 +14,7 @@ namespace kyaml
     template<>
     void setup(separate_in_line &sil)
     {
-      sil.advance();
+      sil.ctx().stream().advance();
     }
   }
 }

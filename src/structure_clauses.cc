@@ -6,23 +6,27 @@ using namespace kyaml::clauses;
 
 bool internal::start_of_line::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   char32_t c;
 
   // TODO: should this be done?
-  while(stream().peek(c) && (c == '\n' || c == '\r'))
-    advance();
+  while(ctx().stream().peek(c) && (c == '\n' || c == '\r'))
+    ctx().stream().advance();
 
   // the last character was a newline
-  if(!stream().rpeek(c) ||
+  if(!ctx().stream().rpeek(c) ||
      (c == '\n' || c == '\r'))
   {
     // the current one is not
-    if(stream().peek(c) &&
+    if(ctx().stream().peek(c) &&
        (c != '\n' && c != '\r'))
+    {
+      sg.release();
       return true;
+    }
   }
 
-  unwind();
   return false;
 }
 

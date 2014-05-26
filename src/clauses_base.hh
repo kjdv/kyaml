@@ -2,136 +2,20 @@
 #define CLAUSES_BASE_HH
 
 #include <sstream>
-#include "char_stream.hh"
-#include "utils.hh"
+#include "context.hh"
 #include "document_builder.hh"
 
 namespace kyaml
 {
   namespace clauses
   {
-    class context : private no_copy
-    {
-    public:
-      typedef enum
-      {
-        NA,
-        BLOCK_OUT,
-        BLOCK_IN,
-        BLOCK_KEY,
-        FLOW_OUT,
-        FLOW_IN,
-        FLOW_KEY,
-      } blockflow_t;
-
-      typedef enum
-      {
-        CLIP,
-        STRIP,
-        KEEP,
-      } chomp_t;
-
-      struct state
-      {
-        // note: the indent_level is intentionally signed. It is in fact legal to have a negavitve indent level.
-        // In fact, it is -1 by default so that 0 counts as higher than the current.
-        int indent_level;
-        blockflow_t blockflow;
-        chomp_t chomp;
-        
-        state(int il, blockflow_t bf, chomp_t c) :
-          indent_level(il),
-          blockflow(bf),
-          chomp(c)
-        {}
-      };
-
-      context(char_stream &str, 
-              int indent_level = -1,
-              blockflow_t bf = NA,
-              chomp_t c = CLIP) :
-        d_stream(str),
-        d_state(indent_level, bf, c)
-      {}
-
-      char_stream const &stream() const
-      {
-        return d_stream;
-      }
-
-      char_stream &stream()
-      {
-        return d_stream;
-      }
-
-      int indent_level() const
-      {
-        return d_state.indent_level;
-      }
-
-      blockflow_t blockflow() const
-      {
-        return d_state.blockflow;
-      }
-
-      chomp_t chomp() const
-      {
-        return d_state.chomp;
-      }
-
-      void set_blockflow(blockflow_t bf)
-      {
-        d_state.blockflow = bf;
-      }
-
-      void set_indent(int il)
-      {
-        d_state.indent_level = il;
-      }
-
-      void set_chomp(chomp_t c)
-      {
-        d_state.chomp = c;
-      }
-
-      state get_state() const
-      {
-        return d_state;
-      }
-
-      void set_state(state const &s)
-      {
-        d_state = s;
-      }
-
-    private:
-      char_stream &d_stream;
-      state d_state;
-    };   
-  
     class clause
     {
     public:
-      clause(context &c) : 
-        d_context(c),
-        d_mark(d_context.stream().mark()),
-        d_state(c.get_state())
+      clause(context &c) :
+        d_context(c)
       {}
 
-      void advance(size_t n = 1)
-      {
-        stream().advance(n);
-      } 
-  
-      void unwind()
-      {
-        stream().unwind(d_mark);
-      }  
-
-    protected:
-      // returns true if the head of the stream is of this type, should leave the stream unmodified
-      bool parse(document_builder &builder); // not implemented, don't call directly 
-      
       context const &ctx() const
       {
         return d_context;
@@ -141,47 +25,19 @@ namespace kyaml
       {
         return d_context;
       }
-            
-      char_stream &stream()
-      {
-        return ctx().stream();
-      }
 
-      void set_blockflow(context::blockflow_t bf)
-      {
-        ctx().set_blockflow(bf);
-      }
+    protected:
+      // returns true if the head of the stream is of this type, should leave the stream unmodified
+      bool parse(document_builder &builder); // not implemented, don't call directly
 
-      void set_indent(int il)
-      {
-        ctx().set_indent(il);
-      }
-
-      void set_chomp(context::chomp_t c)
-      {
-        ctx().set_chomp(c);
-      }
-
-      context::state get_state() const
-      {
-        return ctx().get_state();
-      }
-
-      void set_state(context::state s)
-      {
-        ctx().set_state(s);
-      }
-
-      // not mandatory, but advices
+      // not mandatory, but adviced
       char const *name() const
       {
         return "(clause nos)";
       }
-      
+
     private:
       context &d_context;
-      char_stream::mark_t const d_mark;
-      context::state d_state;
     };
 
     namespace internal
@@ -305,15 +161,15 @@ namespace kyaml
         
         bool parse(document_builder &builder)
         {
+          stream_guard sg(ctx());
+
           replay_builder rb;
           if(parse_recurse<clauses_t...>(rb))
           {
             rb.replay(builder);
+            sg.release();
             return true;
           }
-          else
-            unwind();
-
           return false;
         }
 
@@ -358,12 +214,12 @@ namespace kyaml
 
         bool parse(document_builder &builder)
         {
+          stream_guard sg(ctx());
           null_builder db;
           if(clause_t(ctx()).parse(db))
-          {
-            unwind();
             return false;
-          }
+
+          sg.release();
           return true;
         }
       };
@@ -383,25 +239,18 @@ namespace kyaml
       };
 
       template <typename clause_t>
-      bool test_parse(clause_t &cl)
-      {
-        null_builder dm;
-        bool result = cl.parse(dm);
-        cl.unwind();
-        return result;
-      }
-
-      template <typename clause_t>
       bool try_parse(clause_t &cl, document_builder &builder)
       {
+        context_guard cg(cl.ctx());
+
         replay_builder rb;
         if(cl.parse(rb))
         {
           rb.replay(builder);
+          cg.release();
           return true;
         }
-        else
-          cl.unwind();
+
         return false;
       }
       
@@ -413,41 +262,20 @@ namespace kyaml
         
         bool parse(document_builder &builder)
         {
-          bool result = false;
-
-          state_guard sg(ctx());
+          context_guard cg(ctx());
 
           state_modifier_t sm(ctx());
           if(sm.parse(builder))
           {
             base_clause_t bc(ctx());
-            result = bc.parse(builder);
+            if(bc.parse(builder))
+            {
+               cg.release_stream();
+               return true;
+            }
           }
-          
-          if(!result)
-            unwind();
-
-          return result;
+          return false;
         }
-
-      private:
-        class state_guard
-        {
-        public:
-          state_guard(context &ctx) :
-            d_ctx(ctx),
-            d_mem(d_ctx.get_state())
-          {}
-
-          ~state_guard()
-          {
-            d_ctx.set_state(d_mem);
-          }
-
-        private:
-          context &d_ctx;
-          context::state d_mem;
-        };
       };
 
       template <context::blockflow_t blockflow_v>
@@ -472,19 +300,6 @@ namespace kyaml
         {
           int i = ctx().indent_level();
           ctx().set_indent(++i);
-          return true;
-        }
-      };
-
-      class indent_dec_modifier : public clause
-      {
-      public:
-        using clause::clause;
-
-        bool parse(document_builder &builder)
-        {
-          int i = ctx().indent_level();
-          ctx().set_indent(--i);
           return true;
         }
       };

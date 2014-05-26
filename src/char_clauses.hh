@@ -21,11 +21,11 @@ namespace kyaml
         bool parse(document_builder &builder)
         {
           char_t c;
-          if(stream().peek(c) && c == char_value)
+          if(ctx().stream().peek(c) && c == char_value)
           {
             if(read_value)
               builder.add_atom(c);
-            advance();
+            ctx().stream().advance();
             return true;
           }
           return false;

@@ -64,33 +64,42 @@ namespace
 
 bool indent_clause_eq::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   indent_builder b;
   int n = number_of_white(ctx(), b);
   if(n == level())
+  {
+    sg.release();
     return true;
-  else
-    unwind();
+  }
+
   return false;
 }
 
 bool internal::indent_clause_ge::parse(document_builder &builder)
 {
-  indent_builder b;
-  int n = number_of_white(ctx(), b);
+  int n = -1;
+
+  {
+    stream_guard sg(ctx());
+
+    indent_builder b;
+    n = number_of_white(ctx(), b);
+  }
+
   if(n >= level())
   {
-    unwind();
-    if(level())
-      advance(level());
+    ctx().stream().advance(level());
     return true;
   }
-  else
-    unwind();
   return false;
 }
 
 bool indent_clause_lt::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   if(higher_level())
   {
     indent_builder b;
@@ -98,16 +107,17 @@ bool indent_clause_lt::parse(document_builder &builder)
     if(n < higher_level())
     {
       d_m = n;
+      sg.release();
       return true;
     }
-    else
-      unwind();
   }
   return false;
 }
 
 bool indent_clause_le::parse(document_builder &builder)
 {
+  stream_guard sg(ctx());
+
   if(higher_level())
   {
     indent_builder b;
@@ -115,10 +125,9 @@ bool indent_clause_le::parse(document_builder &builder)
     if(n <= higher_level())
     {
       d_m = n;
+      sg.release();
       return true;
     }
-    else
-      unwind();
   }
   return false;
 }
