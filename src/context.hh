@@ -55,6 +55,11 @@ namespace kyaml
         d_linenumber(l)
       {}
 
+      void reset(int indent_level = -1, blockflow_t bf = NA, chomp_t c = CLIP)
+      {
+        d_state = state(indent_level, bf, c);
+      }
+
       char_stream const &stream() const
       {
         return d_stream;
@@ -127,7 +132,7 @@ namespace kyaml
     };
 
     // scope-based state guard
-    class state_guard : public no_copy
+    class state_guard : private no_copy
     {
     public:
       state_guard(context &ctx);
@@ -145,7 +150,7 @@ namespace kyaml
     };
 
     // stream guard
-    class stream_guard : public no_copy
+    class stream_guard : private no_copy
     {
     public:
       stream_guard(context &ctx);
@@ -164,7 +169,7 @@ namespace kyaml
     };
 
     // guard stream and state
-    class context_guard : public no_copy
+    class context_guard : private no_copy
     {
     public:
       context_guard(context &ctx) :

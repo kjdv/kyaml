@@ -1,6 +1,7 @@
 #include "char_stream.hh"
 #include "utils.hh"
 #include <cassert>
+#include <limits>
 
 using namespace std;
 using namespace kyaml;
@@ -95,6 +96,12 @@ void char_stream::ignore()
   d_buffer.erase(d_buffer.begin(), d_buffer.begin() + d_pos);
   d_pos = 0;
   d_mark_valid = false;
+}
+
+void char_stream::ignore(char c)
+{
+  ignore();
+  d_base.ignore(numeric_limits<streamsize>::max(), c);
 }
 
 bool char_stream::underflow()

@@ -39,6 +39,8 @@ namespace kyaml
 
     // purge all buffers until pos(), will invalidate marks
     void ignore();
+    // ignore until character is reached
+    void ignore(char c);
 
     // eat all charactes to the current read pos. Returns all from m to the current read pos. Note
     // that this invalidates all marks previously returned by mark().
