@@ -37,13 +37,11 @@ namespace kyaml
         int indent_level;
         blockflow_t blockflow;
         chomp_t chomp;
-        unsigned linenumber;
 
-        state(int il, blockflow_t bf, chomp_t c, unsigned l) :
+        state(int il, blockflow_t bf, chomp_t c) :
           indent_level(il),
           blockflow(bf),
-          chomp(c),
-          linenumber(l)
+          chomp(c)
         {}
       };
 
@@ -53,7 +51,8 @@ namespace kyaml
               chomp_t c = CLIP,
               unsigned l = 1) :
         d_stream(str),
-        d_state(indent_level, bf, c, l)
+        d_state(indent_level, bf, c),
+        d_linenumber(l)
       {}
 
       char_stream const &stream() const
@@ -98,12 +97,17 @@ namespace kyaml
 
       unsigned linenumber() const
       {
-        return d_state.linenumber;
+        return d_linenumber;
+      }
+
+      void set_linenumber(unsigned ln)
+      {
+        d_linenumber = ln;
       }
 
       void newline()
       {
-        ++d_state.linenumber;
+        ++d_linenumber;
       }
 
       state get_state() const
@@ -119,6 +123,7 @@ namespace kyaml
     private:
       char_stream &d_stream;
       state d_state;
+      unsigned d_linenumber; // should maybe be part of the stream, not of context
     };
 
     // scope-based state guard
@@ -154,6 +159,7 @@ namespace kyaml
     private:
       context &d_ctx;
       const char_stream::mark_t d_mark;
+      const unsigned d_line;
       bool d_canceled;
     };
 
