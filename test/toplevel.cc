@@ -14,7 +14,9 @@ public:
   void parse(std::string const &input)
   {
     stringstream stream(input);
-    d_document = kyaml::parse(stream);
+
+    kyaml::parser p(stream);
+    d_document = p.parse();
 
     ASSERT_TRUE((bool)d_document);
   }

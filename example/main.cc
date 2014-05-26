@@ -73,7 +73,8 @@ namespace
 
 int main()
 {
-  shared_ptr<const document> doc = kyaml::parse(std::cin);
+  kyaml::parser p(std::cin);
+  unique_ptr<const document> doc = p.parse();
 
   if(doc)
   {

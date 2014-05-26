@@ -7,7 +7,18 @@
 
 namespace kyaml
 {
-  std::unique_ptr<const document> parse(std::istream &input);
+  class parser_impl;
+  class parser
+  {
+  public:
+    parser(std::istream &input);
+    ~parser();
+
+    std::unique_ptr<const document> parse(); // may throw
+
+  private:
+    std::unique_ptr<parser_impl> d_pimpl; // trick to encapsulate dependencies
+  };
 }
 
 #endif // KYAML_HH
