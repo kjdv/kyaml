@@ -381,6 +381,22 @@ bool tag_char::parse(document_builder &builder)
   return false;
 }
 
+bool line_break::parse(document_builder &builder)
+{
+
+  typedef internal::any_of<internal::and_clause<carriage_return,
+                                                line_feed>,
+                           carriage_return,
+                           line_feed> delegate_t;
+  delegate_t d(ctx());
+  if(d.parse(builder))
+  {
+    ctx().newline();
+    return true;
+  }
+
+  return false;
+}
 
 bool kyaml::clauses::as_line_feed::parse(kyaml::document_builder &builder)
 {
@@ -401,3 +417,5 @@ bool non_content::parse(document_builder &builder)
   null_builder nb;
   return lb.parse(nb);
 }
+
+

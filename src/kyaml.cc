@@ -69,18 +69,8 @@ namespace kyaml
 
     ~skip_guard()
     {
-      try
-      {
-        skip_till_next(d_ctx);
-      }
-      catch(std::exception const &e)
-      {
-        g_log("exception during cleanup:", e.what());
-      }
-      catch(...)
-      {
-        g_log("unspecified exception during cleanup");
-      }
+      d_ctx.stream().ignore();
+      skip_till_next(d_ctx);
     }
 
   private:
@@ -97,16 +87,28 @@ namespace kyaml
 
     unique_ptr<const document> parse()
     {
+      g_log("start parsing at line", d_ctx.linenumber());
+
       skip_guard sg(d_ctx);
 
       node_builder nb;
 
       yaml_single_document ys(d_ctx);
 
-      if(ys.parse(nb))
-        return nb.build();
+      try // try block temporary, remove when node_builder is fixed, for now this gives better diagnostics
+      {
+        bool r = ys.parse(nb);
+        g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "true" : "false"));
 
-      return unique_ptr<const document>();
+        if(r)
+          return nb.build();
+      }
+      catch(node_builder::structure_error const &e)
+      {
+        throw parser::parse_error(d_ctx.linenumber(), e.what());
+      }
+
+      throw parser::parse_error(d_ctx.linenumber(), "Could not construct a valid document.");
     }
 
   private:
@@ -126,4 +128,16 @@ namespace kyaml
     assert(d_pimpl);
     return d_pimpl->parse();
   }
+
+  parser::parse_error::parse_error(unsigned linenumber, const string &msg) :
+    d_linenumber(linenumber)
+  {
+    stringstream str;
+    str << "parse error at line " << d_linenumber;
+    if(!msg.empty())
+      str << ": " << msg;
+
+    d_msg = str.str();
+  }
+
 }

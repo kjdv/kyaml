@@ -10,6 +10,22 @@ namespace kyaml
   class node_builder : public document_builder
   {
   public:
+    class structure_error : public std::exception
+    {
+    public:
+      structure_error(std::string const &msg) :
+        d_msg(msg)
+      {}
+
+      char const *what() const throw() override
+      {
+        return d_msg.c_str();
+      }
+
+    private:
+      std::string d_msg;
+    };
+
     class unkown_alias : public std::exception
     {
     public:

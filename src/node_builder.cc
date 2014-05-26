@@ -190,9 +190,14 @@ void node_builder::add_atom(char32_t c)
 
 unique_ptr<node> node_builder::build()
 {
-  assert(d_root);
-  assert(d_stack.size() == 1);
-  assert(d_stack.top().token == RESOLVED_NODE);
+  if(!d_root || d_stack.empty())
+    throw structure_error("empty document"); // strictly speaking not an error, todo
+
+  if(d_stack.size() > 1)
+    throw structure_error("unresolved stack");
+
+  if(d_stack.top().token != RESOLVED_NODE)
+    throw structure_error("top of the stack is not resolved");
 
   d_log("building", d_stack.top().value);
 

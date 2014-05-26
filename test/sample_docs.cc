@@ -96,3 +96,25 @@ const std::string kyaml::test::g_chomp_yaml =
   "  spaces.\n"
   "\n"
   "...\n";
+
+const std::string kyaml::test::g_multi_yaml =
+  "# multiple documents in one stream\n"
+  "\n"
+  "bare document\n"
+  "\n"
+  "...\n"
+  "%YAML\n"
+  "---\n"
+  "# with directive\n"
+  "sequence:\n"
+  "  - item 1\n"
+  "  - item 2\n"
+  "\n"
+  "---\n"
+  "# no closing thingy\n"
+  "\n"
+  "mapping:\n"
+  "  key1: value 1\n"
+  "  key2: value 2\n"
+  "\n"
+  "# eof\n";

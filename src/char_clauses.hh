@@ -232,10 +232,13 @@ namespace kyaml
     // [28] 	b-break 	::= 	  ( b-carriage-return b-line-feed ) DOS, Windows 
     //                                  | b-carriage-return                 MacOS upto 9.x
     //                                  | b-line-feed                       UNIX, MacOS X
-    typedef internal::any_of<internal::and_clause<carriage_return,
-                                                  line_feed>,
-                             carriage_return,
-                             line_feed> line_break;
+    class line_break : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [29] 	b-as-line-feed 	::= 	b-break
     class as_line_feed : public clause
