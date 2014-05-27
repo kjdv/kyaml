@@ -111,7 +111,7 @@ TEST_F(toplevel, nontrivial)
   check("Gale", "customer", "family");
 }
 
-TEST_F(toplevel, anchors)
+TEST_F(toplevel, DISABLED_anchors)
 {
   parse(g_anchors_yaml);
 
@@ -119,7 +119,7 @@ TEST_F(toplevel, anchors)
   check("1mm", 4, "step", "spotSize");
 }
 
-TEST_F(toplevel, newline_preserved)
+TEST_F(toplevel, DISABLED_newline_preserved)
 {
   parse(g_oz_yaml);
 
@@ -129,7 +129,7 @@ TEST_F(toplevel, newline_preserved)
   check(expect, "bill-to", "street");
 }
 
-TEST_F(toplevel, newline_folded)
+TEST_F(toplevel, DISABLED_newline_folded)
 {
   parse(g_oz_yaml);
 
@@ -224,7 +224,7 @@ TEST_F(toplevel, with_directive)
   check("item 2", "sequence", 1);
 }
 
-TEST_F(toplevel, DISABLED_reserved_directive)
+TEST_F(toplevel, reserved_directive)
 {
   const string input = "%BLAH\n"
                        "---\n"

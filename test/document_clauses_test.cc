@@ -42,7 +42,7 @@ TEST(document, directive)
   EXPECT_EQ(input.size(), ctx.get().stream().pos());
 }
 
-TEST(document, DISABLED_reserved_directive)
+TEST(document, reserved_directive)
 {
   string input = "%YAML\n---\nBare document\n";
   context_wrap ctx(input);

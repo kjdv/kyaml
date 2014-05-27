@@ -16,7 +16,7 @@ namespace
   }
 }
 
-TEST(multidoc, single)
+TEST(multidoc, DISABLED_single)
 {
   stringstream stream(g_multi_yaml);
 
@@ -30,7 +30,7 @@ TEST(multidoc, single)
   EXPECT_EQ("%YAML 1.2\n", head.substr(0, 10)) << head;
 }
 
-TEST(multidoc, multi)
+TEST(multidoc, DISABLED_multi)
 {
   stringstream stream(g_multi_yaml);
 
@@ -51,6 +51,9 @@ TEST(multidoc, multi)
 
     EXPECT_EQ("item 1", root->leaf_value("sequence", 0));
     EXPECT_EQ("item 2", root->leaf_value("sequence", 1));
+
+    string head = remaining(stream);
+    EXPECT_EQ("---\n", head.substr(0, 4)) << head;
 
     /*
     // stream 3

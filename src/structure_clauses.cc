@@ -11,8 +11,8 @@ bool internal::start_of_line::parse(document_builder &builder)
   char32_t c;
 
   // TODO: should this be done?
-  while(ctx().stream().peek(c) && (c == '\n' || c == '\r'))
-    ctx().stream().advance();
+  // while(ctx().stream().peek(c) && (c == '\n' || c == '\r'))
+  //   ctx().stream().advance();
 
   // the last character was a newline
   if(!ctx().stream().rpeek(c) ||
