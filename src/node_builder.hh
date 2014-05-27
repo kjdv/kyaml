@@ -103,7 +103,7 @@ namespace kyaml
     std::stack<item> d_stack;
     std::unique_ptr<node> d_root;
 
-    logger<false> d_log;
+    logger<true> d_log;
   };
 }
 

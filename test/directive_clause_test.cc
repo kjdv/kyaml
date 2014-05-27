@@ -19,7 +19,9 @@ namespace
 }
 
 CLAUSE_TEST(reserved_directive,
-            cases({tc("FOO bar baz", true)}))
+            cases({tc("FOO bar baz", true),
+                   tc("YAML", true)}))
+// TODO make this work  tc("YAML\nnextline", true, 4)}))
 
 CLAUSE_TEST(yaml_directive,
             cases({tc("YAML 1.2", true)}))
@@ -29,4 +31,5 @@ CLAUSE_TEST(tag_directive,
 
 CLAUSE_TEST(ldirective,
             cases({tc("%YAML 1.2\nnextline", true, 10),
-                  tc("%TAG !yaml! tag:yaml.org,2002:\nnextline", true, 31)}))
+                   tc("%TAG !yaml! tag:yaml.org,2002:\nnextline", true, 31),
+                   tc("%YAML\n", true)}))

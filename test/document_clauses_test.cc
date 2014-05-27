@@ -42,6 +42,18 @@ TEST(document, directive)
   EXPECT_EQ(input.size(), ctx.get().stream().pos());
 }
 
+TEST(document, DISABLED_reserved_directive)
+{
+  string input = "%YAML\n---\nBare document\n";
+  context_wrap ctx(input);
+
+  directive_document dd(ctx.get());
+  null_builder nb;
+
+  EXPECT_TRUE(dd.parse(nb));
+  EXPECT_EQ(input.size(), ctx.get().stream().pos());
+}
+
 TEST(document, eprefix)
 {
   string input = "";

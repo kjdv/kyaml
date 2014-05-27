@@ -208,6 +208,38 @@ TEST_F(toplevel, indent_in_string_literal_as_space)
   check(expect);
 }
 
+TEST_F(toplevel, with_directive)
+{
+  const string input = "%YAML 1.2\n"
+                       "---\n"
+                       "# with directive\n"
+                       "sequence:\n"
+                       "  - item 1\n"
+                       "  - item 2\n"
+                       "\n";
+
+  parse(input);
+
+  check("item 1", "sequence", 0);
+  check("item 2", "sequence", 1);
+}
+
+TEST_F(toplevel, DISABLED_reserved_directive)
+{
+  const string input = "%BLAH\n"
+                       "---\n"
+                       "# with directive\n"
+                       "sequence:\n"
+                       "  - item 1\n"
+                       "  - item 2\n"
+                       "\n";
+
+  parse(input);
+
+  check("item 1", "sequence", 0);
+  check("item 2", "sequence", 1);
+}
+
 class datatypes : public toplevel
 {
 public:

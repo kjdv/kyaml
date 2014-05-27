@@ -103,7 +103,7 @@ const std::string kyaml::test::g_multi_yaml =
   "bare document\n"
   "\n"
   "...\n"
-  "%YAML\n"
+  "%YAML 1.2\n"
   "---\n"
   "# with directive\n"
   "sequence:\n"

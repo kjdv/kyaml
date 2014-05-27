@@ -86,7 +86,6 @@ namespace kyaml
     //                                    | ns-tag-directive
     //                                    | ns-reserved-directive )
     //                                      s-l-comments
-
     typedef internal::all_of<internal::simple_char_clause<'%'>,
                              internal::any_of<yaml_directive,
                                               tag_directive,

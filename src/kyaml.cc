@@ -8,7 +8,7 @@ using namespace kyaml::clauses;
 
 namespace
 {
-  logger<true> g_log("parser");
+  logger<false> g_log("parser");
 }
 
 namespace kyaml
@@ -70,7 +70,7 @@ namespace kyaml
     ~skip_guard()
     {
       d_ctx.stream().ignore();
-      skip_till_next(d_ctx);
+      // skip_till_next(d_ctx);
     }
 
   private:
