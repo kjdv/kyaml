@@ -111,7 +111,7 @@ TEST_F(toplevel, nontrivial)
   check("Gale", "customer", "family");
 }
 
-TEST_F(toplevel, DISABLED_anchors)
+TEST_F(toplevel, anchors)
 {
   parse(g_anchors_yaml);
 

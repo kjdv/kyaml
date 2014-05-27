@@ -107,6 +107,25 @@ TEST(block_sequence, indented)
   EXPECT_TRUE(bs.parse(mb));
 }
 
+TEST(block_sequence, separated)
+{
+  string input =
+      "- aap\n"
+      "\n"
+      "- noot\n"
+      "\n"
+      "- mies\n";
+
+  context_wrap ctx(input);
+
+  block_sequence bs(ctx.get());
+
+  mock_builder mb;
+  mb.expect_sequence({"aap", "noot", "mies"});
+
+  EXPECT_TRUE(bs.parse(mb));
+}
+
 TEST(block_mapping, mapping)
 {
   string input =

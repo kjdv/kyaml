@@ -34,7 +34,7 @@ namespace kyaml
     // [77] 	s-b-comment 	::= 	( s-separate-in-line c-nb-comment-text? )?
     //                                  b-comment
     typedef internal::and_clause<internal::zero_or_one<
-                                   internal::and_clause<separate_in_line,
+                                   internal::and_clause<eating_separate_in_line,
                                                         internal::zero_or_one<non_break_comment_text> > >, // whoei
                                  break_comment> sbreak_comment;
 
@@ -46,7 +46,7 @@ namespace kyaml
     // [79] 	s-l-comments 	::= 	( s-b-comment | Start of line )
     //                                    l-comment* 
     typedef internal::and_clause<internal::or_clause<sbreak_comment,
-                                                     internal::start_of_line>,
+                                                     internal::eating_start_of_line>,
                                  internal::zero_or_more<line_comment> > sline_comment;
   }
 }

@@ -84,6 +84,7 @@ namespace kyaml
     {
       return
           type() == SEQUENCE &&
+          has_index(idx) &&
           get(idx).has(path...);
     }
 
@@ -92,6 +93,7 @@ namespace kyaml
     {
       return
           type() == MAPPING &&
+          has_key(key) &&
           get(key).has(path...);
     }
 
@@ -113,6 +115,7 @@ namespace kyaml
     {
       return
           type() == SEQUENCE &&
+          has_index(idx) &&
           get(idx).has_leaf(path...);
     }
 
@@ -121,6 +124,7 @@ namespace kyaml
     {
       return
           type() == MAPPING &&
+          has_key(key) &&
           get(key).has_leaf(path...);
     }
 
@@ -147,6 +151,17 @@ namespace kyaml
 
     // visitor pattern
     virtual void accept(node_visitor &visitor) const = 0;
+
+  protected:
+    virtual bool has_index(size_t idx) const
+    {
+      return false;
+    }
+
+    virtual bool has_key(std::string const &key) const
+    {
+      return false;
+    }
 
   private:
     properties_t d_properties;
@@ -243,6 +258,12 @@ namespace kyaml
 
     void accept(node_visitor &visitor) const override;
 
+  protected:
+    bool has_index(size_t idx) const override
+    {
+      return idx < size();
+    }
+
   private:
     container_t d_items;
   };
@@ -264,7 +285,7 @@ namespace kyaml
 
     node const &get(std::string const &key) const override;
 
-    bool has_key(std::string const &key) const
+    bool has_key(std::string const &key) const override
     {
       return d_items.find(key) != d_items.end();
     }
