@@ -93,13 +93,7 @@ size_t char_stream::indent_level(size_t hint) const
 
 void char_stream::ignore()
 {
-  if(!d_buffer.empty() && d_pos == d_buffer.size() - 1)
-  {
-    d_base.putback(d_buffer[d_pos]);
-    d_buffer.clear();
-  }
-  else
-    d_buffer.erase(d_buffer.begin(), d_buffer.begin() + d_pos);
+  d_buffer.erase(d_buffer.begin(), d_buffer.begin() + d_pos);
 
   d_pos = 0;
   d_mark_valid = false;
@@ -107,6 +101,16 @@ void char_stream::ignore()
 
 void char_stream::ignore(char c)
 {
+  while(true)
+  {
+    if(d_pos >= d_buffer.size())
+      break;
+    else if(d_buffer[d_pos] == c)
+      return;
+    else
+      ++d_pos;
+  }
+
   ignore();
   d_base.ignore(numeric_limits<streamsize>::max(), c);
 }

@@ -31,6 +31,9 @@ namespace kyaml
 
     std::unique_ptr<const document> parse(); // may throw
 
+    // intended for testing/debugging/error reporting
+    std::string head(size_t n);
+
   private:
     std::unique_ptr<parser_impl> d_pimpl; // trick to encapsulate dependencies
   };

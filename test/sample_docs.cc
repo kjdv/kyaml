@@ -112,7 +112,7 @@ const std::string kyaml::test::g_multi_yaml =
   "\n"
   "---\n"
   "# no closing thingy\n"
-  "\n"
+ // "\n"
   "mapping:\n"
   "  key1: value 1\n"
   "  key2: value 2\n"

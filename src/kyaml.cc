@@ -111,6 +111,22 @@ namespace kyaml
       throw parser::parse_error(d_ctx.linenumber(), "Could not construct a valid document.");
     }
 
+    string head(size_t n)
+    {
+      stream_guard sg(d_ctx);
+
+      string result;
+
+      for(size_t i = 0; i < n && d_ctx.stream().good(); ++i)
+      {
+        char32_t c;
+        d_ctx.stream().get(c);
+        append_utf8(result, c);
+      }
+
+      return result;
+    }
+
   private:
     char_stream d_stream;
     context d_ctx;
@@ -127,6 +143,12 @@ namespace kyaml
   {
     assert(d_pimpl);
     return d_pimpl->parse();
+  }
+
+  string parser::head(size_t n)
+  {
+    assert(d_pimpl);
+    return d_pimpl->head(n);
   }
 
   parser::parse_error::parse_error(unsigned linenumber, const string &msg) :
