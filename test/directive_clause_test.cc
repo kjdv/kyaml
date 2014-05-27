@@ -20,8 +20,8 @@ namespace
 
 CLAUSE_TEST(reserved_directive,
             cases({tc("FOO bar baz", true),
-                   tc("YAML", true)}))
-// TODO make this work  tc("YAML\nnextline", true, 4)}))
+                   tc("YAML", true),
+                   tc("YAML\nnextline", true, 4)}))
 
 CLAUSE_TEST(yaml_directive,
             cases({tc("YAML 1.2", true)}))

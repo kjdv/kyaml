@@ -38,7 +38,7 @@ namespace kyaml
 
     typedef internal::or_clause<internal::and_clause<sline_comment,
                                                      flow_line_prefix>,
-                                separate_in_line> separate_in_lines;
+                                eating_separate_in_line> separate_in_lines;
   }
 }
 

@@ -19,9 +19,19 @@ namespace kyaml
 
         bool parse(document_builder &builder);
       };
+
+      typedef internal::zero_or_more<line_break> eat_lines;
+
+      typedef internal::and_clause<eat_lines,
+                                   start_of_line> eating_start_of_line;
     }
+
+    // the big question is: should separate-in-line eat newlines? lets provide two flavours
     typedef internal::or_clause<internal::one_or_more<white>,
                                 internal::start_of_line> separate_in_line;
+
+    typedef internal::or_clause<internal::one_or_more<white>,
+                                internal::eating_start_of_line> eating_separate_in_line;
 
     // [67] 	s-line-prefix(n,c) 	::= 	c = block-out ⇒ s-block-line-prefix(n)
     //                                          c = block-in  ⇒ s-block-line-prefix(n)
@@ -49,7 +59,7 @@ namespace kyaml
 
     // [69] 	s-flow-line-prefix(n) 	::= 	s-indent(n) s-separate-in-line? 
     typedef internal::and_clause<internal::indent_clause_ge,
-                                 internal::zero_or_one<separate_in_line> 
+                                 internal::zero_or_one<separate_in_line>
                                  > flow_line_prefix;
 
     // [70] 	l-empty(n,c) 	::= 	( s-line-prefix(n,c) | s-indent(<n) )
@@ -82,7 +92,7 @@ namespace kyaml
 
     // [74] 	s-flow-folded(n) 	::= 	s-separate-in-line? b-l-folded(n,flow-in)
     //                                          s-flow-line-prefix(n)
-    typedef internal::all_of<internal::zero_or_one<separate_in_line>,
+    typedef internal::all_of<internal::zero_or_one<eating_separate_in_line>,
                              internal::state_scope<internal::flow_modifier<context::FLOW_IN>, line_folded>,
                              flow_line_prefix> flow_folded;
   }

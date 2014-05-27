@@ -18,7 +18,7 @@ TEST(document, bare)
   EXPECT_EQ(input.size(), ctx.get().stream().pos());
 }
 
-TEST(document, explicit)
+TEST(document, explicit_doc)
 {
   string input = "---\nBare document";
   context_wrap ctx(input, 0, context::BLOCK_IN);

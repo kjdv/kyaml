@@ -35,6 +35,6 @@ bool separate::parse_lines(document_builder &builder)
 
 bool separate::parse_in_line(document_builder &builder)
 {
-  separate_in_line s(ctx());
+  eating_separate_in_line s(ctx());
   return s.parse(builder);
 }

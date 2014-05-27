@@ -33,7 +33,7 @@ namespace kyaml
     // [206] 	c-forbidden 	::= 	/* Start of line */
     //                                  ( c-directives-end | c-document-end )
     //                                  ( b-char | s-white | /* End of file */ ) 
-    typedef internal::all_of<internal::start_of_line,
+    typedef internal::all_of<internal::eating_start_of_line,
                              internal::or_clause<directives_end, document_end>,
                              internal::any_of<break_char,
                                               white,
