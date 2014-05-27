@@ -16,7 +16,7 @@ namespace
   }
 }
 
-TEST(multidoc, DISABLED_single)
+TEST(multidoc, single)
 {
   stringstream stream(g_multi_yaml);
 
