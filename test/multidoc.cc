@@ -1,5 +1,6 @@
 #include "kyaml.hh"
 #include "sample_docs.hh"
+#include "utils.hh"
 #include <gtest/gtest.h>
 
 using namespace std;
@@ -123,6 +124,7 @@ public:
     }
     catch(parser::parse_error const &e)
     {
+      logger<false>("parse error")(e.what());
       EXPECT_EQ(linenumber, e.linenumber());
     }
   }
@@ -146,28 +148,25 @@ private:
 
 TEST_F(unhappy, unbalanced_quote)
 {
-  error(0, 2);
-  check_sync("---\n");
+  error(0, 3);
+  check_sync("---\n# eos 1");
 }
 
 TEST_F(unhappy, empty)
 {
-  // note: empty documents are skipped
-
-  unique_ptr<const document> root = parse(1);
-  ASSERT_TRUE((bool)root);
-
-  EXPECT_EQ("|", root->leaf_value("string"));
+  error(1, 12);
+  check_sync("---\n# eos 2");
 }
 
 TEST_F(unhappy, unbalanced)
 {
-  error(2, 13);
-  check_sync("---\n");
+  error(2, 17);
+  check_sync("---\n# eos 3");
 }
 
-TEST_F(unhappy, DISABLED_indent)
+TEST_F(unhappy, indent)
 {
-  error(3, 20);
-  check_sync("---\n");
+  error(3, 24);
+  check_sync("---\n# eos 4");
 }
+

@@ -124,21 +124,26 @@ const std::string kyaml::test::g_unhappy_stream_yaml =
   "\n"
   "var: 'unclosed quote\n"
   "\n"
-  "---\n" // line 5
+  "... # comment\n" // line 5
+  "---\n"
+  "# eos 1\n"
   "#empty will be skipped\n"
   "---\n"
-  "# the previous document was empty\n"
+  "# the previous document was empty\n" // line 10
   "# this has an unvalues string literal\n"
-  "string: |\n" // line 10
+  "string: |\n"
   "...\n"
   "---\n"
+  "# eos 2\n" // line 15
   "# unbalanced sequence\n"
   "[one [two] three\n"
-  "...\n" // line 15
+  "...\n"
   "---\n"
-  "# invalid indent\n"
+  "# eos 3\n" // line 20
+  "# invalid indent'n"
   "indent:\n"
   "  - toplevel 1\n"
-  "  - toplevel 2\n" // line 20
-  " - lower level\n"
-  "---\n";
+  "  - toplevel 2\n"
+  " - lower level\n" // line 25
+  "---\n"
+  "# eos 4\n";

@@ -8,24 +8,31 @@ using namespace kyaml::clauses;
 
 namespace
 {
-  logger<true> g_log("parser");
+  logger<false> g_log("parser");
 
-  typedef internal::and_clause<internal::zero_or_more<ldirective>,
-                               directives_end> start_of_document;
+  typedef internal::all_of<internal::zero_or_more<ldirective>,
+                           directives_end,
+                           sline_comment
+                          > start_of_document;
   typedef internal::or_clause<internal::endoffile,
-                              clauses::document_end> end_of_document;
+                              internal::and_clause<clauses::document_suffix,
+                                                   internal::zero_or_one<break_char>
+                                                  >
+                             > end_of_document;
+  typedef internal::and_clause<internal::zero_or_more<non_break_char>,
+                               line_break> eat_line;
 
   bool is_document_end(context &ctx)
   {
-    context_guard cg(ctx);
-
-    internal::and_clause<internal::zero_or_more<internal::eat_lines>,
-                         internal::or_clause<start_of_document,
-                                             end_of_document
-                                            >
-                        > eod(ctx);
-
     null_builder nb;
+    sline_comment sc(ctx);
+    sc.parse(nb);
+
+    stream_guard sg(ctx);
+
+    internal::or_clause<start_of_document,
+                        end_of_document
+                       > eod(ctx);
     return eod.parse(nb);
   }
 }
@@ -41,7 +48,7 @@ namespace kyaml
 
     ~skip_guard()
     {
-      d_ctx.stream().ignore();
+      d_ctx.reset();
       skip_till_next();
     }
 
@@ -52,16 +59,14 @@ namespace kyaml
     {
       while(d_ctx.stream().good() && !sync_stream())
       {
-        // todo: such call might screw up the line number count
-        d_ctx.stream().advance(1);
-        d_ctx.stream().ignore('\n');
-        d_ctx.newline();
+        eat_line el(d_ctx);
+        null_builder nb;
+        el.parse(nb);
       }
     }
 
     bool sync_stream()
     {
-      d_ctx.reset();
       stream_guard sg(d_ctx);
 
       null_builder nb;
@@ -94,7 +99,7 @@ namespace kyaml
 
     unique_ptr<const document> parse()
     {
-      g_log("start parsing at line", d_ctx.linenumber());
+      g_log("start parsing at line", d_ctx.linenumber(), peek(20));
 
       skip_guard sg(d_ctx);
 
@@ -103,6 +108,8 @@ namespace kyaml
       yaml_single_document ys(d_ctx);
 
       bool r = ys.parse(nb);
+
+      g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "good" : "bad"), "head at", peek(20));
 
       if(!is_document_end(d_ctx))
         error(string("parsing stopped before the end of document, could not handle \"") + peek(20) + "\"");
