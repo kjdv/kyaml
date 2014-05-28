@@ -9,42 +9,25 @@ using namespace kyaml::clauses;
 namespace
 {
   logger<false> g_log("parser");
+
+  typedef internal::and_clause<internal::one_or_more<ldirective>,
+                               directives_end> start_of_document;
 }
 
 namespace kyaml
 {
   bool document_end(context &ctx)
   {
-    typedef internal::one_or_more<document_suffix> pos_clause_t;
-    typedef internal::and_clause<internal::zero_or_more<document_prefix>, ldirective> pre_clause_t;
-    typedef internal::endoffile eof_t;
-
     ctx.reset();
+    stream_guard sg(ctx);
 
+    forbidden fb(ctx);
     null_builder nb;
 
-    eof_t e(ctx);
-    if(e.parse(nb))
+    if(fb.parse(nb))
       return true;
-    {
-      context_guard cg(ctx);
 
-      pos_clause_t pos(ctx);
-      if(pos.parse(nb))
-      {
-        // eat
-        cg.release();
-        return true;
-      }
-    }
-    {
-      context_guard cg(ctx);
-
-      pre_clause_t pre(ctx);
-      if(pre.parse(nb))
-        return true; // don't eat
-    }
-
+    sg.release();
     return false;
   }
 
@@ -52,10 +35,10 @@ namespace kyaml
   // that is, either until the next ---, past the next ..., or end of file
   void skip_till_next(context &ctx)
   {
-    while(!document_end(ctx))
+    while(ctx.stream().good() && !document_end(ctx))
     {
-      ctx.stream().ignore('\n');
-      ctx.newline();
+      //ctx.stream().ignore('\n');
+      //ctx.newline();
       ctx.stream().advance(1);
     }
   }
@@ -69,8 +52,8 @@ namespace kyaml
 
     ~skip_guard()
     {
-      d_ctx.stream().ignore();
-      // skip_till_next(d_ctx);
+      //d_ctx.stream().ignore();
+      skip_till_next(d_ctx);
     }
 
   private:
