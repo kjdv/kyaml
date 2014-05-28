@@ -9,40 +9,10 @@ using namespace kyaml::clauses;
 namespace
 {
   logger<false> g_log("parser");
-
-  typedef internal::and_clause<internal::one_or_more<ldirective>,
-                               directives_end> start_of_document;
 }
 
 namespace kyaml
 {
-  bool document_end(context &ctx)
-  {
-    ctx.reset();
-    stream_guard sg(ctx);
-
-    forbidden fb(ctx);
-    null_builder nb;
-
-    if(fb.parse(nb))
-      return true;
-
-    sg.release();
-    return false;
-  }
-
-  // skipp until the next document in the stream, or eof
-  // that is, either until the next ---, past the next ..., or end of file
-  void skip_till_next(context &ctx)
-  {
-    while(ctx.stream().good() && !document_end(ctx))
-    {
-      //ctx.stream().ignore('\n');
-      //ctx.newline();
-      ctx.stream().advance(1);
-    }
-  }
-
   class skip_guard : private no_copy
   {
   public:
@@ -52,11 +22,50 @@ namespace kyaml
 
     ~skip_guard()
     {
-      //d_ctx.stream().ignore();
-      skip_till_next(d_ctx);
+      d_ctx.stream().ignore();
+      skip_till_next();
     }
 
   private:
+    // skipp until the next document in the stream, or eof
+    // that is, either until the next ---, past the next ..., or end of file
+    void skip_till_next()
+    {
+      while(d_ctx.stream().good() && !sync_stream())
+      {
+        d_ctx.stream().advance(1);
+        d_ctx.stream().ignore('\n');
+        d_ctx.newline();
+      }
+    }
+
+    bool sync_stream()
+    {
+      typedef internal::and_clause<internal::zero_or_more<ldirective>,
+                                   directives_end> start_of_document;
+      typedef internal::or_clause<internal::endoffile,
+                                  clauses::document_end> end_of_document;
+
+      d_ctx.reset();
+      stream_guard sg(d_ctx);
+
+      null_builder nb;
+      start_of_document start(d_ctx);
+
+      if(start.parse(nb))
+        return true;
+      else
+      {
+        end_of_document end(d_ctx);
+        if(end.parse(nb))
+        {
+          sg.release();
+          return true;
+        }
+      }
+      return false;
+    }
+
     context &d_ctx;
   };
 
@@ -80,7 +89,7 @@ namespace kyaml
 
       bool r= ys.parse(nb);
 
-      g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "true" : "false"));
+      g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "true" : "false"), "at", peek(10));
 
       if(r)
         return nb.build();

@@ -54,7 +54,7 @@ TEST(multidoc, multi)
     // eof
     EXPECT_TRUE(stream.eof());
   }
-  catch(parser::parse_error const &e)
+  catch(std::exception const &e)
   {
     string buf;
     getline(stream, buf, '\0');
