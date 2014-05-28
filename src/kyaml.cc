@@ -145,6 +145,11 @@ namespace kyaml
       return result;
     }
 
+    unsigned linenumber() const
+    {
+      return d_ctx.linenumber();
+    }
+
   private:
     void error(std::string const &msg = "")
     {
@@ -172,6 +177,12 @@ namespace kyaml
   {
     assert(d_pimpl);
     return d_pimpl->peek(n);
+  }
+
+  unsigned parser::linenumber() const
+  {
+    assert(d_pimpl);
+    return d_pimpl->linenumber();
   }
 
   parser::parse_error::parse_error(unsigned linenumber, const string &msg) :

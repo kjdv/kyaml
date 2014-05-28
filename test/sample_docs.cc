@@ -140,7 +140,7 @@ const std::string kyaml::test::g_unhappy_stream_yaml =
   "...\n"
   "---\n"
   "# eos 3\n" // line 20
-  "# invalid indent'n"
+  "# invalid indent\n"
   "indent:\n"
   "  - toplevel 1\n"
   "  - toplevel 2\n"

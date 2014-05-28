@@ -10,10 +10,11 @@ using namespace kyaml::test;
 class multidoc_base : public testing::Test
 {
 public:
-  void check_sync(std::string const &head)
+  void check_sync(std::string const &head, unsigned linenumber)
   {
     ASSERT_TRUE((bool)d_parser);
     EXPECT_EQ(head, d_parser->peek(head.size()));
+    EXPECT_EQ(linenumber, d_parser->linenumber());
   }
 
   unique_ptr<const document> parse(unsigned n = 0)
@@ -58,7 +59,7 @@ TEST_F(multidoc, single)
   // document 1 ends with "...", document 2 starts with "%YAML 1.2":
   // ...
   // %YAML 1.2
-  check_sync("%YAML 1.2\n");
+  check_sync("%YAML 1.2\n", 6);
 }
 
 TEST_F(multidoc, stream)
@@ -71,7 +72,7 @@ TEST_F(multidoc, stream)
   EXPECT_EQ("bare document", root->leaf_value());
 
   // stream 2
-  check_sync("%YAML 1.2\n");
+  check_sync("%YAML 1.2\n", 6);
 
   root = parse();
   ASSERT_TRUE((bool)root);
@@ -80,7 +81,7 @@ TEST_F(multidoc, stream)
   EXPECT_EQ("item 2", root->leaf_value("sequence", 1));
 
   // stream 3
-  check_sync("---\n");
+  check_sync("---\n", 13);
 
   root = parse();
   ASSERT_TRUE((bool)root);
@@ -149,24 +150,24 @@ private:
 TEST_F(unhappy, unbalanced_quote)
 {
   error(0, 3);
-  check_sync("---\n# eos 1");
+  check_sync("---\n# eos 1", 6);
 }
 
 TEST_F(unhappy, empty)
 {
   error(1, 12);
-  check_sync("---\n# eos 2");
+  check_sync("---\n# eos 2", 14);
 }
 
 TEST_F(unhappy, unbalanced)
 {
   error(2, 17);
-  check_sync("---\n# eos 3");
+  check_sync("---\n# eos 3", 19);
 }
 
 TEST_F(unhappy, indent)
 {
-  error(3, 24);
-  check_sync("---\n# eos 4");
+  error(3, 25);
+  check_sync("---\n# eos 4", 26);
 }
 
