@@ -35,15 +35,16 @@ TEST(multidoc, multi)
     EXPECT_EQ("bare document", root->leaf_value());
 
     // stream 2
+    EXPECT_EQ("%YAML 1.2\n", prs.peek(10));
+
     root = prs.parse();
     ASSERT_TRUE((bool)root);
 
     EXPECT_EQ("item 1", root->leaf_value("sequence", 0));
     EXPECT_EQ("item 2", root->leaf_value("sequence", 1));
 
-    EXPECT_EQ("---\n", prs.peek(4));
-
     // stream 3
+    EXPECT_EQ("---\n", prs.peek(4));
     root = prs.parse();
     ASSERT_TRUE((bool)root);
 
