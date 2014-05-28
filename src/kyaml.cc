@@ -95,32 +95,33 @@ namespace kyaml
 
       yaml_single_document ys(d_ctx);
 
-      try // try block temporary, remove when node_builder is fixed, for now this gives better diagnostics
-      {
-        bool r = ys.parse(nb);
-        g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "true" : "false"));
+      bool r= ys.parse(nb);
 
-        if(r)
-          return nb.build();
-      }
-      catch(node_builder::structure_error const &e)
-      {
-        throw parser::parse_error(d_ctx.linenumber(), e.what());
-      }
+      g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "true" : "false"));
+
+      if(r)
+        return nb.build();
 
       throw parser::parse_error(d_ctx.linenumber(), "Could not construct a valid document.");
     }
 
-    string head(size_t n)
+    string peek(size_t n) const
     {
-      stream_guard sg(d_ctx);
+      // trickytrickytricky, peek() is supposed to be semantically const, though discovering the next
+      // items in the stream means modifying the stream, so the default 'bitwise-const' won't do.
+      // The constness is guaranteed by the context guard, to ensure though the context will be modified
+      // during the call it will be restored to its orignal once the call is done.
+      // Strictly speaking the context will be modified: the next characters will be read from the buffer
+      // instead of the underlying stream, but is behaviourly / semantically unmodified.
+      context &ctx = const_cast<parser_impl *>(this)->d_ctx;
+      context_guard cg(ctx);
 
       string result;
 
-      for(size_t i = 0; i < n && d_ctx.stream().good(); ++i)
+      for(size_t i = 0; i < n && ctx.stream().good(); ++i)
       {
         char32_t c;
-        d_ctx.stream().get(c);
+        ctx.stream().get(c);
         append_utf8(result, c);
       }
 
@@ -145,10 +146,10 @@ namespace kyaml
     return d_pimpl->parse();
   }
 
-  string parser::head(size_t n)
+  string parser::peek(size_t n) const
   {
     assert(d_pimpl);
-    return d_pimpl->head(n);
+    return d_pimpl->peek(n);
   }
 
   parser::parse_error::parse_error(unsigned linenumber, const string &msg) :

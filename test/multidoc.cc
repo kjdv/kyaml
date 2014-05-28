@@ -16,7 +16,7 @@ TEST(multidoc, single)
   // document 1 ends with "...", document 2 starts with "%YAML 1.2":
   // ...
   // %YAML 1.2
-  EXPECT_EQ("%YAML 1.2\n", prs.head(10));
+  EXPECT_EQ("%YAML 1.2\n", prs.peek(10));
 }
 
 TEST(multidoc, multi)
@@ -41,7 +41,7 @@ TEST(multidoc, multi)
     EXPECT_EQ("item 1", root->leaf_value("sequence", 0));
     EXPECT_EQ("item 2", root->leaf_value("sequence", 1));
 
-    EXPECT_EQ("---\n", prs.head(4));
+    EXPECT_EQ("---\n", prs.peek(4));
 
     // stream 3
     root = prs.parse();
