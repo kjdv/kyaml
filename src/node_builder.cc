@@ -20,25 +20,6 @@ namespace
     void accept(node_visitor &visitor) const
     {}
   };
-
-  // todo: replace by regular asserts. for current tempory dev-purposes
-  // an (uncaught) expection is preferred as it does not prevent other
-  // tests from running.
-  class assertion_failed : public std::exception
-  {
-  public:
-    assertion_failed(std::string const &msg) :
-      d_msg(msg)
-    {}
-
-    char const *what() const throw() override
-    {
-      return d_msg.c_str();
-    }
-
-  private:
-    std::string d_msg;
-  };
 }
 
 namespace std
@@ -212,12 +193,8 @@ unique_ptr<node> node_builder::build()
   if(!d_root || d_stack.empty())
     return unique_ptr<node>();
 
-  if(d_stack.size() > 1)
-    throw assertion_failed("unresolved stack");
-
-  if(d_stack.top().token != RESOLVED_NODE)
-    throw assertion_failed("top of the stack is not resolved");
-
+  assert(d_stack.size() == 1);
+  assert(d_stack.top().token == RESOLVED_NODE);
   d_log("building", d_stack.top().value);
 
   d_stack = stack<item>();
