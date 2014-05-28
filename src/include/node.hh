@@ -27,10 +27,10 @@ namespace kyaml
       SCALAR
     } type_t;
 
-    class wrong_type : public std::exception
+    class type_error : public std::exception
     {
     public:
-      wrong_type(type_t expect, type_t actual);
+      type_error(type_t expect, type_t actual);
 
       char const *what() const throw() override
       {

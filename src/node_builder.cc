@@ -210,7 +210,7 @@ void node_builder::add_atom(char32_t c)
 unique_ptr<node> node_builder::build()
 {
   if(!d_root || d_stack.empty())
-    throw assertion_failed("empty document"); // strictly speaking not an error, todo
+    return unique_ptr<node>();
 
   if(d_stack.size() > 1)
     throw assertion_failed("unresolved stack");

@@ -118,3 +118,27 @@ const std::string kyaml::test::g_multi_yaml =
   "  key2: value 2\n"
   "\n"
   "# eof\n";
+
+const std::string kyaml::test::g_unhappy_stream_yaml =
+  "# multiple documents with errors\n"
+  "\n"
+  "var: 'unclosed quote\n"
+  "\n"
+  "---\n" // line 5
+  "#empty will be skipped\n"
+  "---\n"
+  "# the previous document was empty\n"
+  "# this has an unvalues string literal\n"
+  "string: |\n" // line 10
+  "...\n"
+  "---\n"
+  "# unbalanced sequence\n"
+  "[one [two] three\n"
+  "...\n" // line 15
+  "---\n"
+  "# invalid indent\n"
+  "indent:\n"
+  "  - toplevel 1\n"
+  "  - toplevel 2\n" // line 20
+  " - lower level\n"
+  "---\n";

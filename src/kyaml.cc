@@ -8,7 +8,26 @@ using namespace kyaml::clauses;
 
 namespace
 {
-  logger<false> g_log("parser");
+  logger<true> g_log("parser");
+
+  typedef internal::and_clause<internal::zero_or_more<ldirective>,
+                               directives_end> start_of_document;
+  typedef internal::or_clause<internal::endoffile,
+                              clauses::document_end> end_of_document;
+
+  bool is_document_end(context &ctx)
+  {
+    context_guard cg(ctx);
+
+    internal::and_clause<internal::zero_or_more<internal::eat_lines>,
+                         internal::or_clause<start_of_document,
+                                             end_of_document
+                                            >
+                        > eod(ctx);
+
+    null_builder nb;
+    return eod.parse(nb);
+  }
 }
 
 namespace kyaml
@@ -33,6 +52,7 @@ namespace kyaml
     {
       while(d_ctx.stream().good() && !sync_stream())
       {
+        // todo: such call might screw up the line number count
         d_ctx.stream().advance(1);
         d_ctx.stream().ignore('\n');
         d_ctx.newline();
@@ -41,11 +61,6 @@ namespace kyaml
 
     bool sync_stream()
     {
-      typedef internal::and_clause<internal::zero_or_more<ldirective>,
-                                   directives_end> start_of_document;
-      typedef internal::or_clause<internal::endoffile,
-                                  clauses::document_end> end_of_document;
-
       d_ctx.reset();
       stream_guard sg(d_ctx);
 
@@ -87,14 +102,17 @@ namespace kyaml
 
       yaml_single_document ys(d_ctx);
 
-      bool r= ys.parse(nb);
+      bool r = ys.parse(nb);
 
-      g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "true" : "false"), "at", peek(10));
+      if(!is_document_end(d_ctx))
+        error(string("parsing stopped before the end of document, could not handle \"") + peek(20) + "\"");
 
       if(r)
         return nb.build();
 
-      throw parser::parse_error(d_ctx.linenumber(), "Could not construct a valid document.");
+      error("Could not construct a valid document.");
+
+      return unique_ptr<const document>();
     }
 
     string peek(size_t n) const
@@ -121,6 +139,11 @@ namespace kyaml
     }
 
   private:
+    void error(std::string const &msg = "")
+    {
+      throw parser::parse_error(d_ctx.linenumber(), msg);
+    }
+
     char_stream d_stream;
     context d_ctx;
   };

@@ -28,10 +28,10 @@ namespace
   }
 }
 
-node::wrong_type::wrong_type(type_t expect, type_t actual)
+node::type_error::type_error(type_t expect, type_t actual)
 {
   stringstream str;
-  str << "node type mismatch: expected " << expect << " but is " << actual << '\n';
+  str << "node type mismatch: expected " << expect << " but is " << actual;
   d_msg = str.str();
 }
 
@@ -40,7 +40,7 @@ node::wrong_type::wrong_type(type_t expect, type_t actual)
 sequence const &node::as_sequence() const
 {
   if(type() != SEQUENCE)
-    throw wrong_type(SEQUENCE, type());
+    throw type_error(SEQUENCE, type());
 
   return dynamic_cast<sequence const &>(*this);
 }
@@ -48,7 +48,7 @@ sequence const &node::as_sequence() const
 scalar const &node::as_scalar() const
 {
   if(type() != SCALAR)
-    throw wrong_type(SCALAR, type());
+    throw type_error(SCALAR, type());
 
   return dynamic_cast<scalar const &>(*this);
 }
@@ -56,7 +56,7 @@ scalar const &node::as_scalar() const
 mapping const &node::as_mapping() const
 {
   if(type() != MAPPING)
-    throw wrong_type(MAPPING, type());
+    throw type_error(MAPPING, type());
 
   return dynamic_cast<mapping const &>(*this);
 }
@@ -64,25 +64,25 @@ mapping const &node::as_mapping() const
 string const &node::get() const
 {
   assert(type() != SCALAR);
-  throw wrong_type(SCALAR, type());
+  throw type_error(SCALAR, type());
 }
 
 node const &node::get(size_t i) const
 {
   assert(type() != SEQUENCE);
-  throw wrong_type(SEQUENCE, type());
+  throw type_error(SEQUENCE, type());
 }
 
 node const &node::get(const string &key) const
 {
   assert(type() != MAPPING);
-  throw wrong_type(MAPPING, type());
+  throw type_error(MAPPING, type());
 }
 
 void node::add(std::shared_ptr<node> val)
 {
   if(type() != SEQUENCE)
-    throw wrong_type(SEQUENCE, type());
+    throw type_error(SEQUENCE, type());
 
   dynamic_cast<sequence &>(*this).add(val);
 }
@@ -90,7 +90,7 @@ void node::add(std::shared_ptr<node> val)
 void node::add(string const &key, std::shared_ptr<node> val)
 {
   if(type() != MAPPING)
-    throw wrong_type(MAPPING, type());
+    throw type_error(MAPPING, type());
 
   return dynamic_cast<mapping &>(*this).add(key, val);
 }

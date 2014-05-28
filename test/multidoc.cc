@@ -6,58 +6,168 @@ using namespace std;
 using namespace kyaml;
 using namespace kyaml::test;
 
-TEST(multidoc, single)
+class multidoc_base : public testing::Test
 {
-  stringstream stream(g_multi_yaml);
+public:
+  void check_sync(std::string const &head)
+  {
+    ASSERT_TRUE((bool)d_parser);
+    EXPECT_EQ(head, d_parser->peek(head.size()));
+  }
 
-  kyaml::parser prs(stream);
-  unique_ptr<const document> root = prs.parse();
+  unique_ptr<const document> parse(unsigned n = 0)
+  {
+    for(unsigned i = 1; i < n; ++i)
+      d_parser->parse();
+
+    return d_parser->parse();
+  }
+
+  std::stringstream const &stream() const
+  {
+    return d_stream;
+  }
+
+protected:
+  void construct(std::string const &input)
+  {
+    d_stream = stringstream(input);
+    d_parser.reset(new kyaml::parser(d_stream));
+  }
+
+private:
+  stringstream d_stream;
+  unique_ptr<kyaml::parser> d_parser;
+};
+
+class multidoc : public multidoc_base
+{
+public:
+  void SetUp() override
+  {
+    multidoc_base::SetUp();
+    construct(g_multi_yaml);
+  }
+};
+
+TEST_F(multidoc, single)
+{
+  unique_ptr<const document> root = parse();
 
   // document 1 ends with "...", document 2 starts with "%YAML 1.2":
   // ...
   // %YAML 1.2
-  EXPECT_EQ("%YAML 1.2\n", prs.peek(10));
+  check_sync("%YAML 1.2\n");
 }
 
-TEST(multidoc, multi)
+TEST_F(multidoc, stream)
 {
-  stringstream stream(g_multi_yaml);
+  // stream 1
 
-  try
+  unique_ptr<const document> root = parse();
+  ASSERT_TRUE((bool)root);
+
+  EXPECT_EQ("bare document", root->leaf_value());
+
+  // stream 2
+  check_sync("%YAML 1.2\n");
+
+  root = parse();
+  ASSERT_TRUE((bool)root);
+
+  EXPECT_EQ("item 1", root->leaf_value("sequence", 0));
+  EXPECT_EQ("item 2", root->leaf_value("sequence", 1));
+
+  // stream 3
+  check_sync("---\n");
+
+  root = parse();
+  ASSERT_TRUE((bool)root);
+
+  EXPECT_EQ("value 1", root->leaf_value("mapping", "key1"));
+  EXPECT_EQ("value 2", root->leaf_value("mapping", "key2"));
+
+  // eof
+  EXPECT_TRUE(stream().eof());
+}
+
+// the purpose of the unhappy stream test is not as such to lay down the
+// one and only rules for what happens on invalid input, but rather
+// that (1) something reasonable happends and (2) the stream is synced
+// for the next document.
+class unhappy : public multidoc_base
+{
+public:
+  void SetUp() override
   {
-    kyaml::parser prs(stream);
-
-    // stream 1
-
-    unique_ptr<const document> root = prs.parse();
-    ASSERT_TRUE((bool)root);
-
-    EXPECT_EQ("bare document", root->leaf_value());
-
-    // stream 2
-    EXPECT_EQ("%YAML 1.2\n", prs.peek(10));
-
-    root = prs.parse();
-    ASSERT_TRUE((bool)root);
-
-    EXPECT_EQ("item 1", root->leaf_value("sequence", 0));
-    EXPECT_EQ("item 2", root->leaf_value("sequence", 1));
-
-    // stream 3
-    EXPECT_EQ("---\n", prs.peek(4));
-    root = prs.parse();
-    ASSERT_TRUE((bool)root);
-
-    EXPECT_EQ("value 1", root->leaf_value("mapping", "key1"));
-    EXPECT_EQ("value 2", root->leaf_value("mapping", "key2"));
-
-    // eof
-    EXPECT_TRUE(stream.eof());
+    multidoc_base::SetUp();
+    construct(g_unhappy_stream_yaml);
   }
-  catch(std::exception const &e)
+
+  unique_ptr<const document> parse(unsigned n = 0)
   {
-    string buf;
-    getline(stream, buf, '\0');
-    FAIL() << e.what() << "\n\tstream at " << buf;
+    if(n > 0)
+      skip(n);
+
+    return multidoc_base::parse();
   }
+
+  void error(unsigned n, unsigned linenumber)
+  {
+    try
+    {
+      parse(n);
+
+      // if we reach this, no exception was thrown
+      FAIL() << "no exception was thrown";
+    }
+    catch(parser::parse_error const &e)
+    {
+      EXPECT_EQ(linenumber, e.linenumber());
+    }
+  }
+
+private:
+  void skip(unsigned n)
+  {
+    // by putting the unhappy scenarios in the same stream we implicitely
+    // test for stream synchronization on errors
+    for(unsigned i = 0; i < n; ++i)
+    {
+      try
+      {
+        multidoc_base::parse();
+      }
+      catch(parser::parse_error const &e)
+      {}
+    }
+  }
+};
+
+TEST_F(unhappy, unbalanced_quote)
+{
+  error(0, 2);
+  check_sync("---\n");
+}
+
+TEST_F(unhappy, empty)
+{
+  // note: empty documents are skipped
+
+  unique_ptr<const document> root = parse(1);
+  ASSERT_TRUE((bool)root);
+
+  EXPECT_EQ("|", root->leaf_value("string"));
+}
+
+TEST_F(unhappy, unbalanced)
+{
+  error(2, 13);
+  check_sync("---\n");
+}
+
+TEST_F(unhappy, DISABLED_indent)
+{
+  error(3, 20);
+  check_sync("---\n");
 }

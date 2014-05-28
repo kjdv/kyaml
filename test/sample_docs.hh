@@ -16,6 +16,8 @@ namespace kyaml
     extern const std::string g_chomp_yaml;
 
     extern const std::string g_multi_yaml;
+
+    extern const std::string g_unhappy_stream_yaml;
   }
 }
 

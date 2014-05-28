@@ -9,7 +9,7 @@ namespace kyaml
 {
   class parser_impl;
   class parser
-  {
+  {   
   public:
     class parse_error : public std::exception
     {
@@ -19,6 +19,11 @@ namespace kyaml
       char const *what() const throw() override
       {
         return d_msg.c_str();
+      }
+
+      unsigned linenumber() const
+      {
+        return d_linenumber;
       }
 
     private:

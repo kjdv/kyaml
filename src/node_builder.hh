@@ -2,6 +2,7 @@
 #define NODE_BUILDER_HH
 
 #include "node.hh"
+#include "kyaml.hh"
 #include "document_builder.hh"
 #include <stack>
 
@@ -10,6 +11,8 @@ namespace kyaml
   class node_builder : public document_builder
   {
   public:
+    typedef kyaml::parser::parse_error parse_error;
+
     class unkown_alias : public std::exception
     {
     public:
