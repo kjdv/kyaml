@@ -2,8 +2,6 @@
 #include "clauses_base.hh"
 
 using namespace kyaml;
-using namespace kyaml::clauses;
-
 
 state_guard::state_guard(context &ctx) :
   d_ctx(ctx),

@@ -6,194 +6,190 @@
 
 namespace kyaml
 {
-  namespace clauses
+  class context : private no_copy
   {
-
-    class context : private no_copy
+  public:
+    typedef enum
     {
-    public:
-      typedef enum
-      {
-        NA,
-        BLOCK_OUT,
-        BLOCK_IN,
-        BLOCK_KEY,
-        FLOW_OUT,
-        FLOW_IN,
-        FLOW_KEY,
-      } blockflow_t;
+      NA,
+      BLOCK_OUT,
+      BLOCK_IN,
+      BLOCK_KEY,
+      FLOW_OUT,
+      FLOW_IN,
+      FLOW_KEY,
+    } blockflow_t;
 
-      typedef enum
-      {
-        CLIP,
-        STRIP,
-        KEEP,
-      } chomp_t;
+    typedef enum
+    {
+      CLIP,
+      STRIP,
+      KEEP,
+    } chomp_t;
 
-      struct state
-      {
-        // note: the indent_level is intentionally signed. It is in fact legal to have a negavitve indent level.
-        // In fact, it is -1 by default so that 0 counts as higher than the current.
-        int indent_level;
-        blockflow_t blockflow;
-        chomp_t chomp;
+    struct state
+    {
+      // note: the indent_level is intentionally signed. It is in fact legal to have a negavitve indent level.
+      // In fact, it is -1 by default so that 0 counts as higher than the current.
+      int indent_level;
+      blockflow_t blockflow;
+      chomp_t chomp;
 
-        state(int il, blockflow_t bf, chomp_t c) :
-          indent_level(il),
-          blockflow(bf),
-          chomp(c)
-        {}
-      };
-
-      context(char_stream &str,
-              int indent_level = -1,
-              blockflow_t bf = NA,
-              chomp_t c = CLIP,
-              unsigned l = 1) :
-        d_stream(str),
-        d_state(indent_level, bf, c),
-        d_linenumber(l)
+      state(int il, blockflow_t bf, chomp_t c) :
+        indent_level(il),
+        blockflow(bf),
+        chomp(c)
       {}
-
-      void reset(int indent_level = -1, blockflow_t bf = NA, chomp_t c = CLIP)
-      {
-        d_state = state(indent_level, bf, c);
-      }
-
-      char_stream const &stream() const
-      {
-        return d_stream;
-      }
-
-      char_stream &stream()
-      {
-        return d_stream;
-      }
-
-      int indent_level() const
-      {
-        return d_state.indent_level;
-      }
-
-      blockflow_t blockflow() const
-      {
-        return d_state.blockflow;
-      }
-
-      chomp_t chomp() const
-      {
-        return d_state.chomp;
-      }
-
-      void set_blockflow(blockflow_t bf)
-      {
-        d_state.blockflow = bf;
-      }
-
-      void set_indent(int il)
-      {
-        d_state.indent_level = il;
-      }
-
-      void set_chomp(chomp_t c)
-      {
-        d_state.chomp = c;
-      }
-
-      unsigned linenumber() const
-      {
-        return d_linenumber;
-      }
-
-      void set_linenumber(unsigned ln)
-      {
-        d_linenumber = ln;
-      }
-
-      void newline()
-      {
-        ++d_linenumber;
-      }
-
-      state get_state() const
-      {
-        return d_state;
-      }
-
-      void set_state(state const &s)
-      {
-        d_state = s;
-      }
-
-    private:
-      char_stream &d_stream;
-      state d_state;
-      unsigned d_linenumber; // should maybe be part of the stream, not of context
     };
 
-    // scope-based state guard
-    class state_guard : private no_copy
+    context(char_stream &str,
+            int indent_level = -1,
+            blockflow_t bf = NA,
+            chomp_t c = CLIP,
+            unsigned l = 1) :
+      d_stream(str),
+      d_state(indent_level, bf, c),
+      d_linenumber(l)
+    {}
+
+    void reset(int indent_level = -1, blockflow_t bf = NA, chomp_t c = CLIP)
     {
-    public:
-      state_guard(context &ctx);
-      ~state_guard();
+      d_state = state(indent_level, bf, c);
+    }
 
-      void release()
-      {
-        d_canceled = true;
-      }
-
-    private:
-      context &d_ctx;
-      const context::state d_state;
-      bool d_canceled;
-    };
-
-    // stream guard
-    class stream_guard : private no_copy
+    char_stream const &stream() const
     {
-    public:
-      stream_guard(context &ctx);
-      ~stream_guard();
+      return d_stream;
+    }
 
-      void release()
-      {
-        d_canceled = true;
-      }
-
-    private:
-      context &d_ctx;
-      const char_stream::mark_t d_mark;
-      const unsigned d_line;
-      bool d_canceled;
-    };
-
-    // guard stream and state
-    class context_guard : private no_copy
+    char_stream &stream()
     {
-    public:
-      context_guard(context &ctx) :
-        d_state_guard(ctx),
-        d_stream_guard(ctx)
-      {}
+      return d_stream;
+    }
 
-      void release();
+    int indent_level() const
+    {
+      return d_state.indent_level;
+    }
 
-      void release_state()
-      {
-        d_state_guard.release();
-      }
+    blockflow_t blockflow() const
+    {
+      return d_state.blockflow;
+    }
 
-      void release_stream()
-      {
-        d_stream_guard.release();
-      }
+    chomp_t chomp() const
+    {
+      return d_state.chomp;
+    }
 
-    private:
-      state_guard d_state_guard;
-      stream_guard d_stream_guard;
-    };
-  }
+    void set_blockflow(blockflow_t bf)
+    {
+      d_state.blockflow = bf;
+    }
+
+    void set_indent(int il)
+    {
+      d_state.indent_level = il;
+    }
+
+    void set_chomp(chomp_t c)
+    {
+      d_state.chomp = c;
+    }
+
+    unsigned linenumber() const
+    {
+      return d_linenumber;
+    }
+
+    void set_linenumber(unsigned ln)
+    {
+      d_linenumber = ln;
+    }
+
+    void newline()
+    {
+      ++d_linenumber;
+    }
+
+    state get_state() const
+    {
+      return d_state;
+    }
+
+    void set_state(state const &s)
+    {
+      d_state = s;
+    }
+
+  private:
+    char_stream &d_stream;
+    state d_state;
+    unsigned d_linenumber; // should maybe be part of the stream, not of context
+  };
+
+  // scope-based state guard
+  class state_guard : private no_copy
+  {
+  public:
+    state_guard(context &ctx);
+    ~state_guard();
+
+    void release()
+    {
+      d_canceled = true;
+    }
+
+  private:
+    context &d_ctx;
+    const context::state d_state;
+    bool d_canceled;
+  };
+
+  // stream guard
+  class stream_guard : private no_copy
+  {
+  public:
+    stream_guard(context &ctx);
+    ~stream_guard();
+
+    void release()
+    {
+      d_canceled = true;
+    }
+
+  private:
+    context &d_ctx;
+    const char_stream::mark_t d_mark;
+    const unsigned d_line;
+    bool d_canceled;
+  };
+
+  // guard stream and state
+  class context_guard : private no_copy
+  {
+  public:
+    context_guard(context &ctx) :
+      d_state_guard(ctx),
+      d_stream_guard(ctx)
+    {}
+
+    void release();
+
+    void release_state()
+    {
+      d_state_guard.release();
+    }
+
+    void release_stream()
+    {
+      d_stream_guard.release();
+    }
+
+  private:
+    state_guard d_state_guard;
+    stream_guard d_stream_guard;
+  };
 }
 
 #endif // CONTEXT_HH

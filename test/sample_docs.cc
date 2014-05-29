@@ -146,4 +146,8 @@ const std::string kyaml::test::g_unhappy_stream_yaml =
   "  - toplevel 2\n"
   " - lower level\n" // line 25
   "---\n"
-  "# eos 5\n";
+  "# eos 5\n"
+  "name: klaas\n"
+  "status: *good\n"
+  "---\n" // line 30
+  "# eos 6\n";

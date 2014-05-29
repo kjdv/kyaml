@@ -16,32 +16,32 @@ namespace kyaml
     public:
       context_wrap(std::string const &s,
                    int indent_level = -1,
-                   kyaml::clauses::context::blockflow_t bf = kyaml::clauses::context::NA) :
+                   kyaml::context::blockflow_t bf = kyaml::context::NA) :
         d_sstream(s),
         d_stream(d_sstream),
         d_ctx(d_stream, indent_level, bf)
       {}
 
-      kyaml::clauses::context const &get() const
+      kyaml::context const &get() const
       {
         return d_ctx;
       }
       
-      kyaml::clauses::context &get()
+      kyaml::context &get()
       {
         return d_ctx;
       }
     private:
       std::stringstream d_sstream;
       char_stream d_stream;
-      kyaml::clauses::context d_ctx;
+      kyaml::context d_ctx;
     };
 
     struct clause_testcase
     {
       std::string input;
       int indent_level;
-      kyaml::clauses::context::blockflow_t blockflow;
+      kyaml::context::blockflow_t blockflow;
 
       bool const result;
       unsigned const consumed;
@@ -53,7 +53,7 @@ namespace kyaml
       testcase_builder(std::string const &input, bool result) :
         d_input(input),
         d_indent_level(0),
-        d_blockflow(kyaml::clauses::context::NA),
+        d_blockflow(kyaml::context::NA),
         d_result(result),
         d_consumed(input.size())
       {}
@@ -64,7 +64,7 @@ namespace kyaml
         return *this;
       }
       
-      testcase_builder &with_blockflow(kyaml::clauses::context::blockflow_t bf)
+      testcase_builder &with_blockflow(kyaml::context::blockflow_t bf)
       {
         d_blockflow = bf;
         return *this;
@@ -88,7 +88,7 @@ namespace kyaml
     private:
       std::string d_input;
       int d_indent_level;
-      kyaml::clauses::context::blockflow_t d_blockflow;
+      kyaml::context::blockflow_t d_blockflow;
       
       bool d_result;
       unsigned d_consumed;
@@ -133,7 +133,7 @@ namespace kyaml
         return d_clause;
       }
   
-      kyaml::clauses::context &ctx()
+      kyaml::context &ctx()
       {
         return d_ctx.get();
       }
