@@ -13,10 +13,10 @@ namespace kyaml
   public:
     typedef kyaml::parser::parse_error parse_error;
 
-    class unkown_alias : public std::exception
+    class unknown_alias : public std::exception
     {
     public:
-      unkown_alias(std::string const &alias) :
+      unknown_alias(std::string const &alias) :
         d_msg("unkown alias ")
       {
         d_msg += "'" + alias + "'\n";
@@ -55,6 +55,8 @@ namespace kyaml
 
     std::unique_ptr<node> build();
 
+    void clear();
+
   private:
     typedef enum
     {
@@ -86,6 +88,9 @@ namespace kyaml
     void push_shared(token_t t, std::shared_ptr<node> v);
 
     std::unordered_map<std::string, std::weak_ptr<node> > d_anchors;
+
+    // todo: find a cleaner way to deal with content errors
+    std::unique_ptr<std::string> d_unknown_alias;
 
     std::stack<item> d_stack;
     std::unique_ptr<node> d_root;

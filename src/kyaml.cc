@@ -107,18 +107,8 @@ namespace kyaml
 
       yaml_single_document ys(d_ctx);
 
-      bool r = false;
-      try
-      {
-        r = ys.parse(nb);
-        g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "good" : "bad"), "head at", peek(20));
-
-      }
-      catch(std::exception const &e)
-      {
-        // rethrow as content error
-        content_error(e.what());
-      }
+      bool r = ys.parse(nb);
+      g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "good" : "bad"), "head at", peek(20));
 
       if(!is_document_end(d_ctx))
       {
@@ -127,7 +117,17 @@ namespace kyaml
       }
 
       if(r)
-        return nb.build();
+      {
+        try
+        {
+          return nb.build();
+        }
+        catch(std::exception const &e)
+        {
+          // rethrow as content error
+          content_error(e.what());
+        }
+      }
 
       parse_error("Could not construct a valid document.");
 

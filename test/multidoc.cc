@@ -201,7 +201,7 @@ TEST_F(unhappy, indent)
 
 TEST_F(unhappy, invalid_anchor)
 {
-  content_error(5, 26);
+  content_error(5, 30);
   check_sync("---\n# eos 6", 30);
 }
 

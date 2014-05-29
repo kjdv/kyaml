@@ -83,7 +83,9 @@ void node_builder::add_alias(const string &alias)
       return;
     }
   }
-  throw unkown_alias(alias);
+
+  if(!d_unknown_alias)
+    d_unknown_alias.reset(new string(alias));
 }
 
 void node_builder::add_scalar(const string &val)
@@ -193,12 +195,22 @@ unique_ptr<node> node_builder::build()
   if(!d_root || d_stack.empty())
     return unique_ptr<node>(new scalar(""));
 
+  if(d_unknown_alias)
+    throw unknown_alias(*d_unknown_alias);
+
   assert(d_stack.size() == 1);
   assert(d_stack.top().token == RESOLVED_NODE);
   d_log("building", d_stack.top().value);
 
-  d_stack = stack<item>();
   return std::move(d_root);
+}
+
+void node_builder::clear()
+{
+  d_stack = stack<item>();
+  d_unknown_alias.reset();
+  d_root.reset();
+  d_anchors.clear();
 }
 
 node_builder::item node_builder::pop()
