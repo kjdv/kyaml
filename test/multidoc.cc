@@ -125,10 +125,10 @@ public:
   {
     try
     {
-      parse(n);
+      unique_ptr<const document> root = parse(n);
 
       // if we reach this, no exception was thrown
-      FAIL() << "no exception was thrown";
+      FAIL() << "no exception was thrown in " << *root;
     }
     catch(parser::parse_error const &e)
     {
@@ -146,19 +146,33 @@ TEST_F(unhappy, unbalanced_quote)
 
 TEST_F(unhappy, empty)
 {
-  error(1, 12);
-  check_sync("---\n# eos 2", 14);
+  unique_ptr<const document> root = parse(1);
+  ASSERT_TRUE((bool)root);
+
+  EXPECT_EQ("", root->leaf_value());
+
+  check_sync("---\n# eos 2", 9);
+}
+
+TEST_F(unhappy, invalid_string)
+{
+  unique_ptr<const document> root = parse(2);
+  ASSERT_TRUE((bool)root);
+
+  EXPECT_EQ("|", root->leaf_value("string"));
+
+  check_sync("---\n# eos 3", 14);
 }
 
 TEST_F(unhappy, unbalanced)
 {
-  error(2, 17);
-  check_sync("---\n# eos 3", 19);
+  error(3, 17);
+  check_sync("---\n# eos 4", 19);
 }
 
 TEST_F(unhappy, indent)
 {
-  error(3, 25);
-  check_sync("---\n# eos 4", 26);
+  error(4, 25);
+  check_sync("---\n# eos 5", 26);
 }
 

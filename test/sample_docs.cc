@@ -129,21 +129,21 @@ const std::string kyaml::test::g_unhappy_stream_yaml =
   "# eos 1\n"
   "#empty will be skipped\n"
   "---\n"
-  "# the previous document was empty\n" // line 10
+  "# eos 2\n" // line 10
   "# this has an unvalues string literal\n"
   "string: |\n"
   "...\n"
   "---\n"
-  "# eos 2\n" // line 15
+  "# eos 3\n" // line 15
   "# unbalanced sequence\n"
   "[one [two] three\n"
   "...\n"
   "---\n"
-  "# eos 3\n" // line 20
+  "# eos 4\n" // line 20
   "# invalid indent\n"
   "indent:\n"
   "  - toplevel 1\n"
   "  - toplevel 2\n"
   " - lower level\n" // line 25
   "---\n"
-  "# eos 4\n";
+  "# eos 5\n";

@@ -43,7 +43,8 @@ namespace kyaml
 
     // [207] 	l-bare-document 	::= 	s-l+block-node(-1,block-in)
                                                 /* Excluding c-forbidden content */ 
-    typedef internal::and_clause<internal::not_clause<forbidden>,
+    typedef internal::all_of<sline_comment,
+                                 internal::not_clause<forbidden>,
                                  internal::state_scope<internal::and_clause<internal::indent_modifier<-1>,
                                                                             internal::flow_modifier<context::BLOCK_IN>
                                                                            >,

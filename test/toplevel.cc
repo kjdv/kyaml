@@ -276,7 +276,7 @@ TEST_F(toplevel, empty_document_pre_and_suffixed)
   check("");
 }
 
-TEST_F(toplevel, DISABLED_empty_document_ambiguous)
+TEST_F(toplevel, empty_document_ambiguous)
 {
   const string input =
          "---\n"
