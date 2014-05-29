@@ -36,3 +36,14 @@ if(GTEST_FOUND)
   find_package(Threads) # gtest may also need pthread
   target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES} ${GMOCK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 endif()
+
+# (optional) python bindings
+find_package(PythonInterp)
+find_package(PythonLibs)
+if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
+  set(pymodule py${PROJECT_NAME})
+
+  file(GLOB_RECURSE PYTHON_SOURCES python/*.cc python/*.hh)
+
+  add_custom_target(pymodule ALL ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/setup.py build SOURCES ${PYTHON_SOURCES})
+endif()
