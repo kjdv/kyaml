@@ -112,7 +112,10 @@ namespace kyaml
       g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "good" : "bad"), "head at", peek(20));
 
       if(!is_document_end(d_ctx))
+      {
+        g_log("not at document end, reporting error");
         error(string("parsing stopped before the end of document, could not handle \"") + peek(20) + "\"");
+      }
 
       if(r)
         return nb.build();
@@ -138,8 +141,8 @@ namespace kyaml
       for(size_t i = 0; i < n && ctx.stream().good(); ++i)
       {
         char32_t c;
-        ctx.stream().get(c);
-        append_utf8(result, c);
+        if(ctx.stream().get(c))
+          append_utf8(result, c);
       }
 
       return result;

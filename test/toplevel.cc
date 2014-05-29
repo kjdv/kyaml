@@ -17,8 +17,6 @@ public:
 
     kyaml::parser p(stream);
     d_document = p.parse();
-
-    ASSERT_TRUE((bool)d_document);
   }
 
   template <typename... path_t>
@@ -238,6 +236,34 @@ TEST_F(toplevel, reserved_directive)
 
   check("item 1", "sequence", 0);
   check("item 2", "sequence", 1);
+}
+
+TEST_F(toplevel, empty_document)
+{
+  const string input = "";
+
+  parse(input);
+  check("");
+}
+
+TEST_F(toplevel, empty_document_prefixed)
+{
+  const string input =
+         "%YAML 1.2\n"
+         "---";
+
+  parse(input);
+  check("");
+}
+
+TEST_F(toplevel, empty_document_suffixed)
+{
+  const string input =
+         "#empty\n"
+         "...";
+
+  parse(input);
+  check("");
 }
 
 class datatypes : public toplevel

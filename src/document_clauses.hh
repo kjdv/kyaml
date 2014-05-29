@@ -33,7 +33,7 @@ namespace kyaml
     // [206] 	c-forbidden 	::= 	/* Start of line */
     //                                  ( c-directives-end | c-document-end )
     //                                  ( b-char | s-white | /* End of file */ ) 
-    typedef internal::all_of<internal::eating_start_of_line,
+    typedef internal::all_of<internal::start_of_line,
                              internal::or_clause<directives_end, document_end>,
                              internal::any_of<break_char,
                                               white,
@@ -43,12 +43,13 @@ namespace kyaml
 
     // [207] 	l-bare-document 	::= 	s-l+block-node(-1,block-in)
                                                 /* Excluding c-forbidden content */ 
-    typedef internal::state_scope<
-              internal::and_clause<internal::indent_modifier<-1>,
-                                   internal::flow_modifier<context::BLOCK_IN>
-                                  >,
-              block_node
-            > bare_document;
+    typedef internal::and_clause<internal::not_clause<forbidden>,
+                                 internal::state_scope<internal::and_clause<internal::indent_modifier<-1>,
+                                                                            internal::flow_modifier<context::BLOCK_IN>
+                                                                           >,
+                                                       block_node
+                                                      >
+                                > bare_document;
 
 
     // [208] 	l-explicit-document 	::= 	c-directives-end

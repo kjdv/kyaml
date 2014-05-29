@@ -191,7 +191,7 @@ void node_builder::add_atom(char32_t c)
 unique_ptr<node> node_builder::build()
 {
   if(!d_root || d_stack.empty())
-    return unique_ptr<node>();
+    return unique_ptr<node>(new scalar(""));
 
   assert(d_stack.size() == 1);
   assert(d_stack.top().token == RESOLVED_NODE);
