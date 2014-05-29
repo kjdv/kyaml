@@ -209,8 +209,8 @@ TEST(line_literal, one_line)
 TEST(line_literal, multiline)
 {
   string input = "| \n"
-                 "line one\n"
-                 "line two\n";
+                 " line one\n"
+                 " line two\n";
 
   context_wrap ctx(input);
 
@@ -237,11 +237,12 @@ TEST(line_literal, block_header)
 
 TEST(line_literal, nospace)
 {
-  string input = "| \n"
-                 "line one\n"
-                 "line two\n";
+  string input = " | \n"
+                 " line one\n"
+                 " line two\n";
 
-  context_wrap ctx(input);
+  context_wrap ctx(input, 0);
+  ctx.get().stream().advance(1);
 
   mock_builder mb;
   line_literal ll(ctx.get());
@@ -255,9 +256,9 @@ TEST(line_literal, nospace)
 TEST(line_literal, with_indents)
 {
   string input = "|\n"
-                 "line\n"
-                 "  indented\n"
-                 "less indented\n";
+                 " line\n"
+                 "   indented\n"
+                 " less indented\n";
   context_wrap ctx(input);
 
   mock_builder mb;
@@ -272,8 +273,8 @@ TEST(line_literal, with_indents)
 TEST(folded_content, multiline)
 {
   string input = "> \n"
-                 "folded content\n"
-                 "on two lines\n";
+                 " folded content\n"
+                 " on two lines\n";
 
   context_wrap ctx(input);
 
@@ -289,9 +290,9 @@ TEST(folded_content, multiline)
 TEST(folded_content, with_indents)
 {
   string input = ">\n"
-                 "line\n"
-                 "  indented\n"
-                 "less indented\n";
+                 " line\n"
+                 "   indented\n"
+                 " less indented\n";
 
   context_wrap ctx(input);
 

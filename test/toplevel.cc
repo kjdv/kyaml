@@ -183,9 +183,9 @@ TEST_F(toplevel, chomp_as_space)
 TEST_F(toplevel, indent_in_string_literal)
 {
   const string input = "|\n"
-                       "line\n"
-                       "  indented\n"
-                       "less indented\n";
+                       " line\n"
+                       "   indented\n"
+                       " less indented\n";
   const string expect = "line\n  indented\nless indented\n";
 
   parse(input);
@@ -196,9 +196,9 @@ TEST_F(toplevel, indent_in_string_literal)
 TEST_F(toplevel, indent_in_string_literal_as_space)
 {
   const string input = ">\n"
-                       "line\n"
-                       "\tindented\n"
-                       "less indented\n";
+                       " line\n"
+                       " \tindented\n"
+                       " less indented\n";
   const string expect = "line \tindented less indented\n";
 
   parse(input);
@@ -286,6 +286,16 @@ TEST_F(toplevel, DISABLED_empty_document_ambiguous)
 
   parse(input);
   check("");
+}
+
+TEST_F(toplevel, unterminated_literal)
+{
+  const string input =
+      "|\n"
+      "...\n"
+      "---\n";
+  parse(input);
+  check("|"); // the pipe symbol is a valid scalar
 }
 
 class datatypes : public toplevel

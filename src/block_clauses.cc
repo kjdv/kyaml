@@ -368,7 +368,7 @@ bool literal_content::parse(document_builder &builder)
   string_builder sb;
 
   typedef internal::zero_or_one<internal::all_of<line_literal_text,
-                                                 internal::zero_or_more<break_literal_text>,
+                                                 internal::zero_or_more<break_literal_next>,
                                                  chomped_last
                                                 >
                                > first_t;
@@ -402,5 +402,67 @@ bool folded_content::parse(document_builder &builder)
     return true;
   }
 
+  return false;
+}
+
+
+bool line_literal::parse(document_builder &builder)
+{
+  typedef internal::and_clause<internal::simple_char_clause<'|', false>,
+                               block_header> head_t;
+  typedef literal_content tail_t;
+
+  context_guard cg(ctx());
+
+  null_builder nb;
+  head_t head(ctx());
+
+  const int n = ctx().indent_level();
+
+  logger<false> log("line literal");
+  log("indent level before", n);
+
+  if(head.parse(nb) &&
+     internal::autodetect_indent(ctx(), n) &&
+     ctx().indent_level() > 0) // TODO: is indentation at 0 legal here? Anser is no for now, as it will eat until eof
+  {
+
+
+    log("indent level after", ctx().indent_level());
+    tail_t tail(ctx());
+    if(tail.parse(builder))
+    {
+      cg.release_stream();
+      return true;
+    }
+  }
+  return false;
+}
+
+
+bool content_folded::parse(document_builder &builder)
+{
+  typedef internal::and_clause<internal::simple_char_clause<'>', false>,
+                               block_header> head_t;
+  typedef folded_content tail_t;
+
+  context_guard cg(ctx());
+
+  null_builder nb;
+  head_t head(ctx());
+
+  const int n = ctx().indent_level();
+
+  if(head.parse(nb) &&
+     internal::autodetect_indent(ctx(), n) &&
+     ctx().indent_level() > 0) // TODO: is indentation at 0 legal here? Anser is no for now, as it will eat until eof
+  {
+    tail_t tail(ctx());
+    if(tail.parse(builder))
+    {
+      cg.release_stream();
+      return true;
+    }
+  }
   return false;
 }

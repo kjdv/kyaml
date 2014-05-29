@@ -105,7 +105,7 @@ namespace kyaml
     // [172] 	b-nb-literal-next(n) 	::= 	b-as-line-feed
     //                                          l-nb-literal-text(n) 	 
     typedef internal::and_clause<as_line_feed,
-                                 line_literal_text> break_literal_text;
+                                 line_literal_text> break_literal_next;
 
     // [173] 	l-literal-content(n,t) 	::= 	( l-nb-literal-text(n) b-nb-literal-next(n)*
     //                                            b-chomped-last(t) )?
@@ -120,9 +120,13 @@ namespace kyaml
 
     // [170] 	c-l+literal(n) 	::= 	“|” c-b-block-header(m,t)
     //                                  l-literal-content(n+m,t)
-    typedef internal::all_of<internal::simple_char_clause<'|', false>,
-                             block_header,
-                             literal_content> line_literal; // TODO: test indentation magic
+    class  line_literal : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [175] 	s-nb-folded-text(n) 	::= 	s-indent(n) ns-char nb-char* 
     typedef internal::all_of<indent_clause_eq,
@@ -177,9 +181,13 @@ namespace kyaml
 
     // [174] 	c-l+folded(n) 	::= 	“>” c-b-block-header(m,t)
     //                                   l-folded-content(n+m,t)
-    typedef internal::all_of<internal::simple_char_clause<'>', false>,
-                             block_header,
-                             folded_content> content_folded; // TODO: test indentation magic, and a better name
+    class content_folded : public clause
+    {
+    public:
+      using clause::clause;
+
+      bool parse(document_builder &builder);
+    };
 
     // [201] 	seq-spaces(n,c) 	::= 	c = block-out ⇒ n-1
     //                                          c = block-in  ⇒ n 
