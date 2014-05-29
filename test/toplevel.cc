@@ -276,6 +276,17 @@ TEST_F(toplevel, empty_document_pre_and_suffixed)
   check("");
 }
 
+TEST_F(toplevel, DISABLED_empty_document_ambiguous)
+{
+  const string input =
+         "---\n"
+         "# empty\n" // this will not be interpreted as "forbidden", therefore the following "..." will be considered valid content
+         "...\n"     // spec does not specify this.
+         "---\n";
+
+  parse(input);
+  check("");
+}
 
 class datatypes : public toplevel
 {
