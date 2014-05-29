@@ -192,6 +192,21 @@ void node_builder::add_atom(char32_t c)
 
 unique_ptr<node> node_builder::build()
 {
+  struct cleaner
+  {
+    node_builder &subject;
+
+    cleaner(node_builder &s) :
+      subject(s)
+    {}
+    ~cleaner()
+    {
+      subject.clear();
+    }
+  };
+
+  cleaner cl(*this);
+
   if(!d_root || d_stack.empty())
     return unique_ptr<node>(new scalar(""));
 
