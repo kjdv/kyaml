@@ -266,6 +266,17 @@ TEST_F(toplevel, empty_document_suffixed)
   check("");
 }
 
+TEST_F(toplevel, empty_document_pre_and_suffixed)
+{
+  const string input =
+         "---\n"
+         "...";
+
+  parse(input);
+  check("");
+}
+
+
 class datatypes : public toplevel
 {
 public:
