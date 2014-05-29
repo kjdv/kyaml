@@ -19,9 +19,9 @@ public:
 
   unique_ptr<const document> parse(unsigned n = 0)
   {
-    for(unsigned i = 1; i < n; ++i)
-      d_parser->parse();
+    assert(d_parser);
 
+    skip(n);
     return d_parser->parse();
   }
 
@@ -38,6 +38,21 @@ protected:
   }
 
 private:
+  void skip(unsigned n)
+  {
+    assert(d_parser);
+
+    for(unsigned i = 0; i < n; ++i)
+    {
+      try
+      {
+        d_parser->parse();
+      }
+      catch(parser::parse_error const &e)
+      {}
+    }
+  }
+
   stringstream d_stream;
   unique_ptr<kyaml::parser> d_parser;
 };
@@ -52,17 +67,7 @@ public:
   }
 };
 
-TEST_F(multidoc, single)
-{
-  unique_ptr<const document> root = parse();
-
-  // document 1 ends with "...", document 2 starts with "%YAML 1.2":
-  // ...
-  // %YAML 1.2
-  check_sync("%YAML 1.2\n", 6);
-}
-
-TEST_F(multidoc, stream)
+TEST_F(multidoc, bare)
 {
   // stream 1
 
@@ -71,19 +76,26 @@ TEST_F(multidoc, stream)
 
   EXPECT_EQ("bare document", root->leaf_value());
 
-  // stream 2
-  check_sync("%YAML 1.2\n", 6);
 
-  root = parse();
+  check_sync("%YAML 1.2\n", 6);
+}
+
+TEST_F(multidoc, sequence)
+{
+  // stream 2
+  unique_ptr<const document> root = parse(1);
   ASSERT_TRUE((bool)root);
 
   EXPECT_EQ("item 1", root->leaf_value("sequence", 0));
   EXPECT_EQ("item 2", root->leaf_value("sequence", 1));
 
-  // stream 3
   check_sync("---\n", 13);
+}
 
-  root = parse();
+TEST_F(multidoc, mapping)
+{
+  // stream 3
+  unique_ptr<const document> root = parse(2);
   ASSERT_TRUE((bool)root);
 
   EXPECT_EQ("value 1", root->leaf_value("mapping", "key1"));
@@ -103,15 +115,10 @@ public:
   void SetUp() override
   {
     multidoc_base::SetUp();
+
+    // by putting the unhappy scenarios in the same stream we implicitely
+    // test for stream synchronization on errors
     construct(g_unhappy_stream_yaml);
-  }
-
-  unique_ptr<const document> parse(unsigned n = 0)
-  {
-    if(n > 0)
-      skip(n);
-
-    return multidoc_base::parse();
   }
 
   void error(unsigned n, unsigned linenumber)
@@ -127,22 +134,6 @@ public:
     {
       logger<false>("parse error")(e.what());
       EXPECT_EQ(linenumber, e.linenumber());
-    }
-  }
-
-private:
-  void skip(unsigned n)
-  {
-    // by putting the unhappy scenarios in the same stream we implicitely
-    // test for stream synchronization on errors
-    for(unsigned i = 0; i < n; ++i)
-    {
-      try
-      {
-        multidoc_base::parse();
-      }
-      catch(parser::parse_error const &e)
-      {}
     }
   }
 };
