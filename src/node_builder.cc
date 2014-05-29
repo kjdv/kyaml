@@ -40,7 +40,7 @@ namespace std
 void node_builder::start_sequence(context const &ctx)
 {
   d_log("starting sequence");
-  push(SEQUENCE, std::unique_ptr<sequence>(new sequence));
+  push(SEQUENCE, ctx, std::unique_ptr<sequence>(new sequence));
 }
 
 void node_builder::end_sequence(context const &ctx)
@@ -53,7 +53,7 @@ void node_builder::end_sequence(context const &ctx)
 void node_builder::start_mapping(context const &ctx)
 {
   d_log("start mapping");
-  push(MAPPING, std::unique_ptr<mapping>(new mapping));
+  push(MAPPING, ctx, std::unique_ptr<mapping>(new mapping));
 }
 
 void node_builder::end_mapping(context const &ctx)
@@ -66,7 +66,7 @@ void node_builder::end_mapping(context const &ctx)
 void node_builder::add_anchor(context const &ctx, const string &anchor)
 {
   d_log("anchor", anchor);
-  push(ANCHOR, std::unique_ptr<scalar>(new scalar(anchor)));
+  push(ANCHOR, ctx, std::unique_ptr<scalar>(new scalar(anchor)));
 }
 
 void node_builder::add_alias(context const &ctx, const string &alias)
@@ -79,13 +79,12 @@ void node_builder::add_alias(context const &ctx, const string &alias)
     shared_ptr<node> sp = it->second.lock();
     if(sp)
     {
-      add_resolved_node(sp);
+      add_resolved_node(ctx, sp);
       return;
     }
   }
 
-  if(!d_unknown_alias)
-    d_unknown_alias.reset(new string(alias));
+  d_errors.emplace_back(ctx, string("unknown alias '" + alias + "'"));
 }
 
 void node_builder::add_scalar(context const &ctx, const string &val)
@@ -93,11 +92,11 @@ void node_builder::add_scalar(context const &ctx, const string &val)
   d_log("scalar", val);
 
   if(d_stack.empty())
-    push(RESOLVED_NODE, unique_ptr<scalar>(new scalar(val)));
+    push(RESOLVED_NODE, ctx, unique_ptr<scalar>(new scalar(val)));
   else
   {
     shared_ptr<scalar> s = make_shared<scalar>(val);
-    add_resolved_node(s);
+    add_resolved_node(ctx, s);
   }
 }
 
@@ -106,17 +105,17 @@ void node_builder::add_property(context const &ctx, string const &prop)
   d_log("propery", prop);
 
   if(d_stack.empty() ||  d_stack.top().token != PROPERTY)
-    d_stack.emplace(PROPERTY, std::unique_ptr<properties_node>(new properties_node));
+    d_stack.emplace(PROPERTY, ctx, std::unique_ptr<properties_node>(new properties_node));
 
   d_stack.top().value->add_property(prop);
 }
 
-void node_builder::add_resolved_node(shared_ptr<node> s)
+void node_builder::add_resolved_node(context const &ctx, shared_ptr<node> s)
 {
   if(d_stack.empty())
   {
     d_log("bare");
-    push_shared(RESOLVED_NODE, s);
+    push_shared(RESOLVED_NODE, ctx, s);
   }
   else
   {
@@ -130,7 +129,7 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
 
     case MAPPING:
       d_log("using as key");
-      push_shared(MAPPING_KEY, s);
+      push_shared(MAPPING_KEY, ctx, s);
       break;
 
     case MAPPING_KEY:
@@ -146,7 +145,7 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
       item key = pop();
       d_log("storing anchor", key.value->get(), s);
       d_anchors.insert(make_pair(key.value->get(), s));
-      add_resolved_node(s);
+      add_resolved_node(ctx, s); // or key.ctx?
       break;
     }
     case PROPERTY:
@@ -154,7 +153,7 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
       item props = pop();
       for(std::string const &p : props.value->properties())
         s->add_property(p);
-      add_resolved_node(s);
+      add_resolved_node(ctx, s); // or props.ctx?
       break;
     }
 
@@ -164,23 +163,23 @@ void node_builder::add_resolved_node(shared_ptr<node> s)
   }
 }
 
-void node_builder::push(node_builder::token_t t, std::unique_ptr<node> v)
+void node_builder::push(node_builder::token_t t, context const &ctx, std::unique_ptr<node> v)
 {
   if(d_stack.empty())
   {
     // the top element in the stack is owned by d_root, not d_stack, so put shared_ptr with a no-op delete on top
     d_root = std::move(v);
     std::shared_ptr<node> sp(d_root.get(), dont_delete<node>);
-    d_stack.emplace(t, sp);
+    d_stack.emplace(t, ctx, sp);
   }
   else
-    d_stack.emplace(t, std::move(v));
+    d_stack.emplace(t, ctx, std::move(v));
 }
 
-void node_builder::push_shared(token_t t, std::shared_ptr<node> v)
+void node_builder::push_shared(token_t t, context const &ctx, std::shared_ptr<node> v)
 {
   assert(!d_stack.empty());
-  d_stack.emplace(t, v);
+  d_stack.emplace(t, ctx, v);
 }
 
 void node_builder::add_atom(context const &ctx, char32_t c)
@@ -210,8 +209,16 @@ unique_ptr<node> node_builder::build()
   if(!d_root || d_stack.empty())
     return unique_ptr<node>(new scalar(""));
 
-  if(d_unknown_alias)
-    throw unknown_alias(*d_unknown_alias);
+  if(!d_errors.empty())
+  {
+    error const &err = d_errors.front();
+    stringstream str;
+    str << "Content error at line " << err.ctx.linenumber();
+    if(!err.msg.empty())
+      str << ": " << err.msg;
+
+    throw content_error(err.ctx.linenumber(), str.str());
+  }
 
   assert(d_stack.size() == 1);
   assert(d_stack.top().token == RESOLVED_NODE);
@@ -224,7 +231,7 @@ unique_ptr<node> node_builder::build()
 void node_builder::clear()
 {
   d_stack = stack<item>();
-  d_unknown_alias.reset();
+  d_errors.clear();
   d_root.reset();
   d_anchors.clear();
 }
@@ -248,8 +255,9 @@ void node_builder::resolve()
   else
   {
     shared_ptr<node> rn = d_stack.top().value;
+    context ctx = d_stack.top().ctx;
     d_stack.pop();
 
-    add_resolved_node(rn);
+    add_resolved_node(ctx, rn);
   }
 }

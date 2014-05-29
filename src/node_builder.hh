@@ -11,25 +11,7 @@ namespace kyaml
   class node_builder : public document_builder
   {
   public:
-    typedef kyaml::parser::parse_error parse_error;
-
-    class unknown_alias : public std::exception
-    {
-    public:
-      unknown_alias(std::string const &alias) :
-        d_msg("unkown alias ")
-      {
-        d_msg += "'" + alias + "'\n";
-      }
-
-      char const *what() const throw() override
-      {
-        return d_msg.c_str();
-      }
-
-    private:
-      std::string d_msg;
-    };
+    typedef kyaml::parser::content_error content_error;
 
     node_builder() :
       d_log("node builder")
@@ -72,10 +54,12 @@ namespace kyaml
     struct item
     {
       token_t token;
+      context ctx;
       std::shared_ptr<node> value;
 
-      item(token_t t, std::shared_ptr<node> v = std::shared_ptr<node>()) :
+      item(token_t t, context const &c, std::shared_ptr<node> v = std::shared_ptr<node>()) :
         token(t),
+        ctx(c),
         value(v)
       {}
     };
@@ -83,15 +67,24 @@ namespace kyaml
     item pop();
 
     void resolve();
-    void add_resolved_node(std::shared_ptr<node> s);
+    void add_resolved_node(context const &ctx, std::shared_ptr<node> s);
 
-    void push(token_t t, std::unique_ptr<node> v = std::unique_ptr<node>());
-    void push_shared(token_t t, std::shared_ptr<node> v);
+    void push(token_t t, context const &ctx, std::unique_ptr<node> v = std::unique_ptr<node>());
+    void push_shared(token_t t, context const &ctx, std::shared_ptr<node> v);
 
     std::unordered_map<std::string, std::weak_ptr<node> > d_anchors;
 
-    // todo: find a cleaner way to deal with content errors
-    std::unique_ptr<std::string> d_unknown_alias;
+    struct error
+    {
+      context ctx;
+      std::string msg;
+
+      error(context const &c, std::string const &m) :
+        ctx(c),
+        msg(m)
+      {}
+    };
+    std::vector<error> d_errors;
 
     std::stack<item> d_stack;
     std::unique_ptr<node> d_root;

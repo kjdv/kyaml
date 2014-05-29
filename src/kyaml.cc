@@ -117,17 +117,7 @@ namespace kyaml
       }
 
       if(r)
-      {
-        try
-        {
-          return nb.build();
-        }
-        catch(std::exception const &e)
-        {
-          // rethrow as content error
-          content_error(e.what());
-        }
-      }
+        return nb.build();
 
       parse_error("Could not construct a valid document.");
 
@@ -170,16 +160,6 @@ namespace kyaml
       if(!msg.empty())
         stream << ": " << msg;
       throw parser::parse_error(linenumber(), stream.str());
-    }
-
-    void content_error(std::string const &msg = "")
-    {
-
-      stringstream stream;
-      stream << "Content error near line " << linenumber();
-      if(!msg.empty())
-        stream << ": " << msg;
-      throw parser::content_error(linenumber(), stream.str());
     }
 
     char_stream d_stream;

@@ -158,7 +158,7 @@ public:
   }
 
 private:
-  logger<true> d_log;
+  logger<false> d_log;
 };
 
 TEST_F(unhappy, unbalanced_quote)
@@ -201,7 +201,7 @@ TEST_F(unhappy, indent)
 
 TEST_F(unhappy, invalid_anchor)
 {
-  content_error(5, 30);
+  content_error(5, 29);
   check_sync("---\n# eos 6", 30);
 }
 
