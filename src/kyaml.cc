@@ -107,20 +107,29 @@ namespace kyaml
 
       yaml_single_document ys(d_ctx);
 
-      bool r = ys.parse(nb);
+      bool r = false;
+      try
+      {
+        r = ys.parse(nb);
+        g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "good" : "bad"), "head at", peek(20));
 
-      g_log("done parsing at line", d_ctx.linenumber(), "result", (r ? "good" : "bad"), "head at", peek(20));
+      }
+      catch(std::exception const &e)
+      {
+        // rethrow as content error
+        content_error(e.what());
+      }
 
       if(!is_document_end(d_ctx))
       {
         g_log("not at document end, reporting error");
-        error(string("parsing stopped before the end of document, could not handle \"") + peek(20) + "\"");
+        parse_error(string("parsing stopped before the end of document, could not parse \"") + peek(20) + "\"");
       }
 
       if(r)
         return nb.build();
 
-      error("Could not construct a valid document.");
+      parse_error("Could not construct a valid document.");
 
       return unique_ptr<const document>();
     }
@@ -154,9 +163,23 @@ namespace kyaml
     }
 
   private:
-    void error(std::string const &msg = "")
+    void parse_error(std::string const &msg = "")
     {
-      throw parser::parse_error(d_ctx.linenumber(), msg);
+      stringstream stream;
+      stream << "Parse error near line " << linenumber();
+      if(!msg.empty())
+        stream << ": " << msg;
+      throw parser::parse_error(linenumber(), stream.str());
+    }
+
+    void content_error(std::string const &msg = "")
+    {
+
+      stringstream stream;
+      stream << "Content error near line " << linenumber();
+      if(!msg.empty())
+        stream << ": " << msg;
+      throw parser::content_error(linenumber(), stream.str());
     }
 
     char_stream d_stream;
@@ -188,15 +211,16 @@ namespace kyaml
     return d_pimpl->linenumber();
   }
 
+  parser::error::error(unsigned linenumber, const string &msg) :
+    d_linenumber(linenumber),
+    d_msg(msg)
+  {}
+
   parser::parse_error::parse_error(unsigned linenumber, const string &msg) :
-    d_linenumber(linenumber)
-  {
-    stringstream str;
-    str << "parse error at line " << d_linenumber;
-    if(!msg.empty())
-      str << ": " << msg;
+    error(linenumber, msg)
+  {}
 
-    d_msg = str.str();
-  }
-
+  parser::content_error::content_error(unsigned linenumber, const string &msg) :
+    error(linenumber, msg)
+  {}
 }

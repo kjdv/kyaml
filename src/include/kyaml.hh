@@ -11,10 +11,11 @@ namespace kyaml
   class parser
   {   
   public:
-    class parse_error : public std::exception
+    class error : public std::exception
     {
+    protected: // not to be used directly
+      error(unsigned linenumber, std::string const &msg);
     public:
-      parse_error(unsigned linenumber, std::string const &msg = "");
 
       char const *what() const throw() override
       {
@@ -29,6 +30,18 @@ namespace kyaml
     private:
       unsigned d_linenumber;
       std::string d_msg;
+    };
+
+    class parse_error : public kyaml::parser::error
+    {
+    public:
+      parse_error(unsigned linenumber, std::string const &msg = "");
+    };
+
+    class content_error : public kyaml::parser::error
+    {
+    public:
+      content_error(unsigned linenumber, std::string const &msg = "");
     };
 
     parser(std::istream &input);

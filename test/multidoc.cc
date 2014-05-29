@@ -48,7 +48,7 @@ private:
       {
         d_parser->parse();
       }
-      catch(parser::parse_error const &e)
+      catch(parser::error const &e)
       {}
     }
   }
@@ -112,6 +112,10 @@ TEST_F(multidoc, mapping)
 class unhappy : public multidoc_base
 {
 public:
+  unhappy() :
+    d_log("unhappy")
+  {}
+
   void SetUp() override
   {
     multidoc_base::SetUp();
@@ -121,7 +125,7 @@ public:
     construct(g_unhappy_stream_yaml);
   }
 
-  void error(unsigned n, unsigned linenumber)
+  void parse_error(unsigned n, unsigned linenumber)
   {
     try
     {
@@ -132,15 +136,34 @@ public:
     }
     catch(parser::parse_error const &e)
     {
-      logger<false>("parse error")(e.what());
+      d_log("parse error", e.what());
       EXPECT_EQ(linenumber, e.linenumber());
     }
   }
+
+  void content_error(unsigned n, unsigned linenumber)
+  {
+    try
+    {
+      unique_ptr<const document> root = parse(n);
+
+      // if we reach this, no exception was thrown
+      FAIL() << "no exception was thrown in " << *root;
+    }
+    catch(parser::content_error const &e)
+    {
+      d_log("content error", e.what());
+      EXPECT_EQ(linenumber, e.linenumber());
+    }
+  }
+
+private:
+  logger<true> d_log;
 };
 
 TEST_F(unhappy, unbalanced_quote)
 {
-  error(0, 3);
+  parse_error(0, 3);
   check_sync("---\n# eos 1", 6);
 }
 
@@ -166,19 +189,19 @@ TEST_F(unhappy, invalid_string)
 
 TEST_F(unhappy, unbalanced)
 {
-  error(3, 17);
+  parse_error(3, 17);
   check_sync("---\n# eos 4", 19);
 }
 
 TEST_F(unhappy, indent)
 {
-  error(4, 25);
+  parse_error(4, 25);
   check_sync("---\n# eos 5", 26);
 }
 
 TEST_F(unhappy, invalid_anchor)
 {
-  error(5, 28);
+  content_error(5, 26);
   check_sync("---\n# eos 6", 30);
 }
 
