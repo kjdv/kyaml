@@ -14,7 +14,7 @@ namespace
     indent_builder() : d_value(0)
     {}
 
-    void add_atom(char32_t c) override
+    void add_atom(context const &ctx, char32_t c) override
     {
       string s;
       append_utf8(s, c);
@@ -22,28 +22,28 @@ namespace
       str >> d_value;
     }
 
-    void start_sequence() override
+    void start_sequence(context const &ctx) override
     {}
 
-    void end_sequence() override
+    void end_sequence(context const &ctx) override
     {}
 
-    void start_mapping() override
+    void start_mapping(context const &ctx) override
     {}
 
-    void end_mapping() override
+    void end_mapping(context const &ctx) override
     {}
 
-    void add_anchor(std::string const &) override
+    void add_anchor(context const &ctx, std::string const &) override
     {}
 
-    void add_alias(std::string const &) override
+    void add_alias(context const &ctx, std::string const &) override
     {}
 
-    void add_scalar(std::string const &) override
+    void add_scalar(context const &ctx, std::string const &) override
     {}
 
-    void add_property(std::string const &) override
+    void add_property(context const &ctx, std::string const &) override
     {}
     
     int build()
@@ -230,9 +230,9 @@ bool compact_mapping::parse(document_builder &builder)
   if(cm.parse(rb))
   {
     result = true;
-    builder.start_mapping();
+    builder.start_mapping(ctx());
     rb.replay(builder);
-    builder.end_mapping();
+    builder.end_mapping(ctx());
   }
 
   return result;
@@ -302,9 +302,9 @@ bool block_sequence::parse(document_builder &builder)
     bs_clause bs(ctx());
     if(bs.parse(rb))
     {
-      builder.start_sequence();
+      builder.start_sequence(ctx());
       rb.replay(builder);
-      builder.end_sequence();
+      builder.end_sequence(ctx());
 
       return true;
     }
@@ -330,9 +330,9 @@ bool block_mapping::parse(document_builder &builder)
     replay_builder rb;
     if(bs.parse(rb))
     {
-      builder.start_mapping();
+      builder.start_mapping(ctx());
       rb.replay(builder);
-      builder.end_mapping();
+      builder.end_mapping(ctx());
 
       return true;
     } 
@@ -353,9 +353,9 @@ bool compact_sequence::parse(document_builder &builder)
   if(d.parse(rb))
   {
     result = true;
-    builder.start_sequence();
+    builder.start_sequence(ctx());
     rb.replay(builder);
-    builder.end_sequence();
+    builder.end_sequence(ctx());
   }
   return result;
 }
@@ -380,7 +380,7 @@ bool literal_content::parse(document_builder &builder)
     second_t s(ctx());
     if(s.parse(sb))
     {
-      builder.add_scalar(sb.build());
+      builder.add_scalar(ctx(), sb.build());
       sg.release();
       return true;
     }
@@ -398,7 +398,7 @@ bool folded_content::parse(document_builder &builder)
   delegate_t d(ctx());
   if(d.parse(sb))
   {
-    builder.add_scalar(sb.build());
+    builder.add_scalar(ctx(), sb.build());
     return true;
   }
 

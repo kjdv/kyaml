@@ -37,39 +37,39 @@ namespace std
   }
 }
 
-void node_builder::start_sequence()
+void node_builder::start_sequence(context const &ctx)
 {
   d_log("starting sequence");
   push(SEQUENCE, std::unique_ptr<sequence>(new sequence));
 }
 
-void node_builder::end_sequence()
+void node_builder::end_sequence(context const &ctx)
 {
   d_log("ending sequence");
   resolve();
   d_log("completed sequence ", d_stack.top().value);
 }
 
-void node_builder::start_mapping()
+void node_builder::start_mapping(context const &ctx)
 {
   d_log("start mapping");
   push(MAPPING, std::unique_ptr<mapping>(new mapping));
 }
 
-void node_builder::end_mapping()
+void node_builder::end_mapping(context const &ctx)
 {
   d_log("ending mapping");
   resolve();
   d_log("completed mapping ", d_stack.top().value);
 }
 
-void node_builder::add_anchor(const string &anchor)
+void node_builder::add_anchor(context const &ctx, const string &anchor)
 {
   d_log("anchor", anchor);
   push(ANCHOR, std::unique_ptr<scalar>(new scalar(anchor)));
 }
 
-void node_builder::add_alias(const string &alias)
+void node_builder::add_alias(context const &ctx, const string &alias)
 {
   d_log("alias", alias);
 
@@ -88,7 +88,7 @@ void node_builder::add_alias(const string &alias)
     d_unknown_alias.reset(new string(alias));
 }
 
-void node_builder::add_scalar(const string &val)
+void node_builder::add_scalar(context const &ctx, const string &val)
 {
   d_log("scalar", val);
 
@@ -101,7 +101,7 @@ void node_builder::add_scalar(const string &val)
   }
 }
 
-void node_builder::add_property(string const &prop)
+void node_builder::add_property(context const &ctx, string const &prop)
 {
   d_log("propery", prop);
 
@@ -183,7 +183,7 @@ void node_builder::push_shared(token_t t, std::shared_ptr<node> v)
   d_stack.emplace(t, v);
 }
 
-void node_builder::add_atom(char32_t c)
+void node_builder::add_atom(context const &ctx, char32_t c)
 {
   // TODO: sometimes called, but shouldn't be. ignore for now
   // d_log("atom (?) ", c);
@@ -215,6 +215,7 @@ unique_ptr<node> node_builder::build()
 
   assert(d_stack.size() == 1);
   assert(d_stack.top().token == RESOLVED_NODE);
+
   d_log("building", d_stack.top().value);
 
   return std::move(d_root);

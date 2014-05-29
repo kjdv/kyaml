@@ -33,7 +33,7 @@ bool anchor_property::parse(document_builder &builder)
     anchor_name an(ctx());
     if(an.parse(sb))
     {
-      builder.add_anchor(sb.build());
+      builder.add_anchor(ctx(), sb.build());
       sg.release();
       return true;
     }
@@ -53,7 +53,7 @@ bool verbatim_tag::parse(document_builder &builder)
      internal::one_or_more<uri_char>(ctx()).parse(sb) &&
      internal::simple_char_clause<'>'>(ctx()).parse(db))
   {
-    builder.add_scalar(sb.build());
+    builder.add_scalar(ctx(), sb.build());
     sg.release();
     return true;
   }
@@ -69,7 +69,7 @@ bool alias_node::parse(document_builder &builder)
   if(internal::simple_char_clause<'*'>(ctx()).parse(db) &&
      anchor_name(ctx()).parse(sb))
   {
-    builder.add_alias(sb.build());
+    builder.add_alias(ctx(), sb.build());
     sg.release();
     return true;
   }
@@ -135,7 +135,7 @@ bool single_text::parse(document_builder &builder)
   string_builder sb;
   if(d_dispatch && (this->*d_dispatch)(sb))
   {
-    builder.add_scalar(sb.build());
+    builder.add_scalar(ctx(), sb.build());
     return true;
   }
   return false;
@@ -291,7 +291,7 @@ bool plain::parse(document_builder &builder)
     plain_multi_line pml(ctx());
     if(pml.parse(sb))
     {
-      builder.add_scalar(sb.build());
+      builder.add_scalar(ctx(), sb.build());
       return true;
     }
   }
@@ -302,7 +302,7 @@ bool plain::parse(document_builder &builder)
     plain_one_line pol(ctx());
     if(pol.parse(sb))
     {
-      builder.add_scalar(sb.build());
+      builder.add_scalar(ctx(), sb.build());
       return true;
     }
   }
@@ -319,7 +319,7 @@ bool kyaml::clauses::double_text::parse(kyaml::document_builder &builder)
   string_builder sb;
   if(d_dispatch && (this->*d_dispatch)(sb))
   {
-    builder.add_scalar(sb.build());
+    builder.add_scalar(ctx(), sb.build());
     return true;
   }
   return false;
@@ -336,7 +336,7 @@ bool tag_property::parse(document_builder &builder)
   delegate_t d(ctx());
   if(d.parse(sb))
   {
-    builder.add_property(sb.build());
+    builder.add_property(ctx(), sb.build());
     return true;
   }
   return false;

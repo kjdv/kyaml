@@ -10,54 +10,71 @@
 
 namespace kyaml
 {
+  class context;
+
   class document_builder
   {
   public:
+    // in purpose much like the global context, except this explicitely has no access to
+    // and cannot modify the stream, and has to be a copyable type
+    class context
+    {
+    public:
+      context(kyaml::context const &ctx);
+
+      unsigned linenumber() const
+      {
+        return d_linenumber;
+      }
+    private:
+      unsigned d_linenumber;
+    };
+
     virtual ~document_builder()
     {}
 
-    virtual void start_sequence() = 0;
-    virtual void end_sequence() = 0;
-    virtual void start_mapping() = 0;
-    virtual void end_mapping() = 0;
+    virtual void start_sequence(context const &ctx) = 0;
+    virtual void end_sequence(context const &ctx) = 0;
+    virtual void start_mapping(context const &ctx) = 0;
+    virtual void end_mapping(context const &ctx) = 0;
 
-    virtual void add_anchor(std::string const &anchor) = 0;
-    virtual void add_alias(std::string const &alias) = 0;
-    virtual void add_scalar(std::string const &val) = 0;
-    virtual void add_atom(char32_t c) = 0;
-    virtual void add_property(std::string const &prop) = 0;
+    virtual void add_anchor(context const &ctx, std::string const &anchor) = 0;
+    virtual void add_alias(context const &ctx, std::string const &alias) = 0;
+    virtual void add_scalar(context const &ctx, std::string const &val) = 0;
+    virtual void add_atom(context const &ctx, char32_t c) = 0;
+    virtual void add_property(context const &ctx, std::string const &prop) = 0;
   };
 
   class string_builder : public document_builder
   {
   public:
-    void start_sequence() override
+    void start_sequence(context const &ctx) override
     {}
 
-    void end_sequence() override
+    void end_sequence(context const &ctx) override
     {}
 
-    void start_mapping() override
+    void start_mapping(context const &ctx) override
     {}
 
-    void end_mapping() override
+    void end_mapping(context const &ctx) override
     {}
 
-    void add_anchor(std::string const &) override
+    void add_anchor(context const &ctx, std::string const &) override
     {}
 
-    void add_alias(std::string const &) override
+    void add_alias(context const &ctx, std::string const &) override
     {}
 
-    void add_property(std::string const &) override
+    void add_property(context const &ctx, std::string const &) override
     {}
 
-    void add_scalar(std::string const &val) override
+    void add_scalar(context const &ctx, std::string const &val) override
     {
       d_value += val;
     }
 
-    void add_atom(char32_t c) override
+    void add_atom(context const &ctx, char32_t c) override
     {
       append_utf8(d_value, c);
     }
@@ -74,31 +91,31 @@ namespace kyaml
   class null_builder : public document_builder
   {
   public:
-    void start_sequence() override
+    void start_sequence(context const &ctx) override
     {}
 
-    void end_sequence() override
+    void end_sequence(context const &ctx) override
     {}
 
-    void start_mapping() override
+    void start_mapping(context const &ctx) override
     {}
 
-    void end_mapping() override
+    void end_mapping(context const &ctx) override
     {}
 
-    void add_anchor(std::string const &) override
+    void add_anchor(context const &ctx, std::string const &) override
     {}
 
-    void add_alias(std::string const &) override
+    void add_alias(context const &ctx, std::string const &) override
     {}
 
-    void add_scalar(std::string const &) override
+    void add_scalar(context const &ctx, std::string const &) override
     {}
 
-    void add_property(std::string const &) override
+    void add_property(context const &ctx, std::string const &) override
     {}
 
-    void add_atom(char32_t c) override
+    void add_atom(context const &ctx, char32_t c) override
     {}
   };
 
@@ -106,16 +123,16 @@ namespace kyaml
   {
   public:
 
-    void start_sequence() override;
-    void end_sequence() override;
-    void start_mapping() override;
-    void end_mapping() override;
+    void start_sequence(context const &ctx) override;
+    void end_sequence(context const &ctx) override;
+    void start_mapping(context const &ctx) override;
+    void end_mapping(context const &ctx) override;
 
-    void add_anchor(std::string const &anchor) override;
-    void add_alias(std::string const &alias) override;
-    void add_scalar(std::string const &val) override;
-    void add_atom(char32_t c) override;
-    void add_property(std::string const &prop) override;
+    void add_anchor(context const &ctx, std::string const &anchor) override;
+    void add_alias(context const &ctx, std::string const &alias) override;
+    void add_scalar(context const &ctx, std::string const &val) override;
+    void add_atom(context const &ctx, char32_t c) override;
+    void add_property(context const &ctx, std::string const &prop) override;
 
     void replay(document_builder &builder) const;
 
@@ -136,18 +153,21 @@ namespace kyaml
     struct item
     {
       token_t token;
+      context ctx;
       std::string value;
       char32_t atom;
 
-      item(token_t t, std::string const &v = "") :
+      item(token_t t, context const &c, std::string const &v = "") :
         token(t),
+        ctx(c),
         value(v),
         atom(0)
       {}
 
-      item(token_t t, char32_t c) :
+      item(token_t t, context const &c, char32_t ch) :
         token(t),
-        atom(c)
+        ctx(c),
+        atom(ch)
       {}
     };
 

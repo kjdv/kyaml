@@ -24,7 +24,7 @@ namespace kyaml
           if(ctx().stream().peek(c) && c == char_value)
           {
             if(read_value)
-              builder.add_atom(c);
+              builder.add_atom(ctx(), c);
             ctx().stream().advance();
             return true;
           }
@@ -403,34 +403,34 @@ namespace kyaml
             d_v(0)
           {}
 
-          void add_atom(char32_t c) override
+          void add_atom(context const &ctx, char32_t c) override
           {
             d_v <<= 4;
             d_v |= from_hex(c);
           }
 
-          void start_sequence() override
+          void start_sequence(context const &ctx) override
           {}
 
-          void end_sequence() override
+          void end_sequence(context const &ctx) override
           {}
 
-          void start_mapping() override
+          void start_mapping(context const &ctx) override
           {}
 
-          void end_mapping() override
+          void end_mapping(context const &ctx) override
           {}
 
-          void add_anchor(std::string const &) override
+          void add_anchor(context const &ctx, std::string const &) override
           {}
 
-          void add_alias(std::string const &) override
+          void add_alias(context const &ctx, std::string const &) override
           {}
 
-          void add_scalar(std::string const &) override
+          void add_scalar(context const &ctx, std::string const &) override
           {}
 
-          void add_property(std::string const &) override
+          void add_property(context const &ctx, std::string const &) override
           {}
 
 
@@ -470,7 +470,7 @@ namespace kyaml
                 if(!hd.parse(ub))
                   return false;
               }
-              builder.add_atom(ub.build());
+              builder.add_atom(ctx(), ub.build());
               return true;
             }
             return false;
@@ -489,7 +489,7 @@ namespace kyaml
           internal::simple_char_clause<char_v, false> d(ctx());
           if(d.parse(builder))
           {
-            builder.add_atom(emit_v);
+            builder.add_atom(ctx(), emit_v);
             return true;
           }
           return false;

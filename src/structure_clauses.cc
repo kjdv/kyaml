@@ -65,7 +65,7 @@ bool as_space::parse(document_builder &builder)
   null_builder nb;
   if(lb.parse(nb))
   {
-    builder.add_atom(' ');
+    builder.add_atom(ctx(), ' ');
     return true;
   }
   return false;

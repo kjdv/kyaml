@@ -35,24 +35,25 @@ namespace kyaml
       d_log("node builder")
     {}
 
-    virtual void start_sequence() override;
+    void start_sequence(context const &ctx) override;
 
-    virtual void end_sequence() override;
+    void end_sequence(context const &ctx) override;
 
-    virtual void start_mapping() override;
+    void start_mapping(context const &ctx) override;
 
-    virtual void end_mapping() override;
+    void end_mapping(context const &ctx) override;
 
-    virtual void add_anchor(std::string const &anchor) override;
+    void add_anchor(context const &ctx, std::string const &anchor) override;
 
-    virtual void add_alias(std::string const &alias) override;
+    void add_alias(context const &ctx, std::string const &alias) override;
 
-    virtual void add_scalar(std::string const &val) override;
+    void add_scalar(context const &ctx, std::string const &val) override;
 
-    virtual void add_property(std::string const &prop) override;
+    void add_property(context const &ctx, std::string const &prop) override;
 
-    virtual void add_atom(char32_t c) override;
+    void add_atom(context const &ctx, char32_t c) override;
 
+    // may throw
     std::unique_ptr<node> build();
 
     void clear();

@@ -17,13 +17,13 @@ bool printable::parse(document_builder &builder)
      (c >= '\x20' && c <= '\x7e') ||
      c == static_cast<char_t>('\x85'))
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
   else if(c >= 0xff && is_valid_utf8(c))
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
@@ -40,13 +40,13 @@ bool json::parse(document_builder &builder)
   if(c == '\x9' ||
      (c >= '\x20' && c <= '\x7f'))
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
   else if(c >= 0xff && is_valid_utf8(c))
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
@@ -67,7 +67,7 @@ bool byte_order_mark::inner::parse(document_builder &builder)
     return false;
   if(c == 0x0000feff)
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
@@ -80,7 +80,7 @@ bool sequence_start::parse(document_builder &builder)
   null_builder b;
   if(d.parse(b))
   {
-    builder.start_sequence();
+    builder.start_sequence(ctx());
     return true;
   }
   return false;
@@ -92,7 +92,7 @@ bool sequence_end::parse(document_builder &builder)
   null_builder b;
   if(d.parse(b))
   {
-    builder.end_sequence();
+    builder.end_sequence(ctx());
     return true;
   }
   return false;
@@ -104,7 +104,7 @@ bool mapping_start::parse(document_builder &builder)
   null_builder b;
   if(d.parse(b))
   {
-    builder.start_mapping();
+    builder.start_mapping(ctx());
     return true;
   }
   return false;
@@ -116,7 +116,7 @@ bool mapping_end::parse(document_builder &builder)
   null_builder b;
   if(d.parse(b))
   {
-    builder.end_mapping();
+    builder.end_mapping(ctx());
     return true;
   }
   return false;
@@ -128,7 +128,7 @@ bool reserved::parse(document_builder &builder)
   if(ctx().stream().peek(c) &&
      ( c == '@' || c == '`' ))
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
@@ -160,7 +160,7 @@ bool indicator::parse(document_builder &builder)
   case '%':
   case '@':
   case '`':
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
 
@@ -181,7 +181,7 @@ bool flow_indicator::parse(document_builder &builder)
   case ']':
   case '{':
   case '}':
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
 
@@ -236,7 +236,7 @@ bool dec_digit_char::parse(document_builder &builder)
   if(ctx().stream().peek(c) &&
      (c >= '0' && c <= '9'))
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
@@ -255,7 +255,7 @@ bool hex_digit_char::parse(document_builder &builder)
        ((c >= 'a' && c <= 'f') ||
         (c >= 'A' && c <= 'F')))
     {
-      builder.add_atom(c);
+      builder.add_atom(ctx(), c);
       ctx().stream().advance();
       return true;
     }
@@ -270,7 +270,7 @@ bool ascii_letter::parse(document_builder &builder)
      ((c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z')))
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
@@ -291,7 +291,7 @@ bool word_char::parse(document_builder &builder)
   if(ctx().stream().peek(c) &&
      c == '-')
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
   }
@@ -316,7 +316,7 @@ bool uri_char::inner::parse(document_builder &builder)
 
   if(c == '%')
   {
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
 
     hex_digit_char h1(ctx());
@@ -347,7 +347,7 @@ bool uri_char::inner::parse(document_builder &builder)
   case ')':
   case '[':
   case ']':
-    builder.add_atom(c);
+    builder.add_atom(ctx(), c);
     ctx().stream().advance();
     return true;
 
@@ -404,7 +404,7 @@ bool kyaml::clauses::as_line_feed::parse(kyaml::document_builder &builder)
   null_builder nb;
   if(lb.parse(nb))
   {
-    builder.add_atom('\n');
+    builder.add_atom(ctx(), '\n');
     return true;
   }
   return false;

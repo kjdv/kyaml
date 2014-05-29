@@ -104,7 +104,7 @@ namespace kyaml
 
       bool parse(document_builder &builder)
       {
-        builder.add_scalar("");
+        builder.add_scalar(ctx(), "");
         return true;
       }
 
