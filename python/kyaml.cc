@@ -15,7 +15,16 @@ namespace
   };
 }
 
-PyMODINIT_FUNC initpykyaml()
+extern "C"
 {
-  Py_InitModule3("kyaml", module_methods, "");
+  PyMODINIT_FUNC initpykyaml()
+  {
+    PyObject *module = Py_InitModule("kyaml", module_methods);
+
+    if(!module)
+      return;
+
+    PyModule_AddIntConstant(module, "ONE", 1);
+
+  }
 }
