@@ -25,7 +25,7 @@ public:
     return d_parser->parse();
   }
 
-  std::stringstream const &stream() const
+  stringstream const &stream() const
   {
     return d_stream;
   }
@@ -33,7 +33,7 @@ public:
 protected:
   void construct(std::string const &input)
   {
-    d_stream = stringstream(input);
+    d_stream.str(input);
     d_parser.reset(new kyaml::parser(d_stream));
   }
 
