@@ -43,9 +43,7 @@ namespace kyaml
         add_scalar(val);
       }
       void add_atom(context const &ctx, char32_t c) override
-      {
-        add_atom(c);
-      }
+      {}
       void add_property(context const &ctx, std::string const &prop) override
       {
         add_property(prop);
@@ -59,7 +57,6 @@ namespace kyaml
       MOCK_METHOD1(add_alias, void(std::string const &));
       MOCK_METHOD1(add_scalar, void(std::string const &));
       MOCK_METHOD1(add_property, void(std::string const &));
-      MOCK_METHOD1(add_atom, void(char32_t));
 
       void expect_sequence(std::initializer_list<std::string> const &seq = {});\
       void expect_mapping(std::initializer_list<std::pair<std::string, std::string> > const &map = {});
