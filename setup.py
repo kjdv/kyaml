@@ -16,7 +16,9 @@ def targetdir():
     return os.getcwd()
 
 sources = globcc(os.path.join(sourcedir(), 'python', 'src'))
-includes = [os.path.join(sourcedir(), 'src', 'include')]
+includes = [os.path.join(sourcedir(), 'src', 'include'),
+            os.path.join(sourcedir(), 'src')] # todo: mainly to expose the logger, but should not be included in a final version
+
 libraries = ['kyaml']
 library_dirs = [targetdir()]
 
