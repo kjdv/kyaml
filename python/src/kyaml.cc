@@ -42,7 +42,7 @@ namespace
     {"readline", (PyCFunction)readline, METH_O, ""},
     {"throw",    (PyCFunction)thrower,  METH_NOARGS, ""},
 
-    {NULL, NULL, 0, NULL}
+    {nullptr, nullptr, 0, nullptr}
   };
 }
 
@@ -55,5 +55,6 @@ PyMODINIT_FUNC initpykyaml(void)
 
   call_checker::initialize("kyaml.error");
   PyModule_AddObject(module, "error", call_checker::get());
-  PyModule_AddIntConstant(module, "ONE", 1);
+
+  init_parser(module);
 }

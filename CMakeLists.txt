@@ -45,8 +45,7 @@ if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
 
   file(GLOB_RECURSE PYTHON_SOURCES python/src/*.cc python/src/*.hh)
 
-  add_custom_target(pymodule ALL
+  add_custom_target(pykyaml
                     ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/setup.py build
                     SOURCES ${PYTHON_SOURCES})
-  add_dependencies(pymodule ${PROJECT_NAME})
 endif()

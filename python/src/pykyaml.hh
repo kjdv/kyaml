@@ -127,6 +127,8 @@ namespace pykyaml
   private:
     static PyObject *s_exception;
   };
+
+  void init_parser(PyObject *module);
 }
 
 #endif // PYKYAML_HH

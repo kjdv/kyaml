@@ -15,12 +15,15 @@ def sourcedir():
 def targetdir():
     return os.getcwd()
 
-sources = globcc(os.path.join(sourcedir(), 'python', 'src'))
+# cleaner and faster would be to link agains kyaml, but this leads to complexities due to kyaml being static
+# and the module being dynamic (-fPic flag). Dumb-but-works solution is to just recompile everything exactly
+# the way python wants it
+sources = globcc(os.path.join(sourcedir(), 'python', 'src')) + globcc(os.path.join(sourcedir(), 'src'))
 includes = [os.path.join(sourcedir(), 'src', 'include'),
-            os.path.join(sourcedir(), 'src')] # todo: mainly to expose the logger, but should not be included in a final version
+            os.path.join(sourcedir(), 'src')] 
 
-libraries = ['kyaml']
-library_dirs = [targetdir()]
+libraries = []
+library_dirs = []
 
 pykyaml = Extension('pykyaml',
                     sources = sources,
