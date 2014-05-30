@@ -59,4 +59,15 @@ specialDelivery:  >
         sentinel = '---\n# next doc as sentinel\n'
         self.assertEqual(sentinel, self.parser.peek(len(sentinel)))
 
+    def test_value(self):
+        val = self.parser.parse()
+        self.assertEqual('3.1459', val.value())
+        self.assertEqual(frozenset(('aap', 'noot', 'mies')), val.properties())
+
+    def test_conversion(self):
+        val = self.parser.parse()
+        self.assertEqual(3.1459, val.as_float())
+
+
+
         

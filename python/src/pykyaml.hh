@@ -11,10 +11,11 @@ namespace pykyaml
   class py_object
   {
   public:
-    py_object(PyObject *self) :
+    py_object(PyObject *self, bool incref = true) :
       d_self(self)
     {
-      Py_INCREF(d_self);
+      if(incref)
+        Py_INCREF(d_self);
     }
 
     py_object(py_object const &other)
@@ -128,7 +129,10 @@ namespace pykyaml
     static PyObject *s_exception;
   };
 
+  PyObject *build_leaf(std::shared_ptr<const kyaml::scalar> value);
+
   void init_parser(PyObject *module);
+  void init_leaf(PyObject *module);
 }
 
 #endif // PYKYAML_HH

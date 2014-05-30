@@ -52,10 +52,8 @@ namespace
   void destroy(parser_t *self)
   {
     delete self->stream;
-    self->stream = nullptr;
-
     delete self->parser;
-    self->parser = nullptr;
+
     self->ob_type->tp_free((PyObject *)self);
   }
 
@@ -66,9 +64,12 @@ namespace
 
     std::unique_ptr<const kyaml::document> root = self->parser->parse();
 
-    std::cout << "\n\n" << *root << "\n\n";
+    std::shared_ptr<kyaml::scalar> value = std::make_shared<kyaml::scalar>("3.1459");
+    value->add_property("aap");
+    value->add_property("noot");
+    value->add_property("mies");
 
-    Py_RETURN_NONE;
+    return build_leaf(value);
   }
 
   PyObject *parse(parser_t *self, PyObject *arg)

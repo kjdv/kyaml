@@ -57,4 +57,5 @@ PyMODINIT_FUNC initpykyaml(void)
   PyModule_AddObject(module, "error", call_checker::get());
 
   init_parser(module);
+  init_leaf(module);
 }
