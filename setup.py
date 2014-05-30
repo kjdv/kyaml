@@ -15,7 +15,7 @@ def sourcedir():
 def targetdir():
     return os.getcwd()
 
-sources = globcc(os.path.join(sourcedir(), 'python'))
+sources = globcc(os.path.join(sourcedir(), 'python', 'src'))
 includes = [os.path.join(sourcedir(), 'src', 'include')]
 libraries = ['kyaml']
 library_dirs = [targetdir()]

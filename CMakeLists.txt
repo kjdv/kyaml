@@ -43,7 +43,7 @@ find_package(PythonLibs)
 if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
   set(pymodule py${PROJECT_NAME})
 
-  file(GLOB_RECURSE PYTHON_SOURCES python/*.cc python/*.hh)
+  file(GLOB_RECURSE PYTHON_SOURCES python/src/*.cc python/src/*.hh)
 
   add_custom_target(pymodule ALL
                     ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/setup.py build
