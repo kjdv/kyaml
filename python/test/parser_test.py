@@ -61,8 +61,9 @@ specialDelivery:  >
 
     def test_value(self):
         val = self.parser.parse()
-        self.assertEqual('3.1459', val.value())
-        self.assertEqual(frozenset(('aap', 'noot', 'mies')), val.properties())
+        print val
+        self.assertEqual({}, val)
+        self.assertEqual(set(('aap', 'noot', 'mies')), val.properties())
 
     def test_conversion(self):
         val = self.parser.parse()

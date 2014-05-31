@@ -1,6 +1,10 @@
 #ifndef PYKYAML_HH
 #define PYKYAML_HH
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <Python.h>
 #include <kyaml.hh>
 #include <stdexcept>
@@ -130,6 +134,8 @@ namespace pykyaml
   };
 
   PyObject *build_leaf(std::shared_ptr<const kyaml::scalar> value);
+
+  PyObject *build_tree(kyaml::document const &root);
 
   void init_parser(PyObject *module);
   void init_leaf(PyObject *module);

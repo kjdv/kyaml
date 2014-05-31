@@ -45,6 +45,8 @@ if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
 
   file(GLOB_RECURSE PYTHON_SOURCES python/src/*.cc python/src/*.hh)
 
+  # as python's setup.py does not do incremental builds it is not included
+  # as part of 'ALL'
   add_custom_target(pykyaml
                     ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/setup.py build
                     SOURCES ${PYTHON_SOURCES})

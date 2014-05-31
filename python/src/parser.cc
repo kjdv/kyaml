@@ -63,13 +63,10 @@ namespace
     assert(self);
 
     std::unique_ptr<const kyaml::document> root = self->parser->parse();
+    if(root)
+      return build_tree(*root);
 
-    std::shared_ptr<kyaml::scalar> value = std::make_shared<kyaml::scalar>("3.1459");
-    value->add_property("aap");
-    value->add_property("noot");
-    value->add_property("mies");
-
-    return build_leaf(value);
+    Py_RETURN_NONE;
   }
 
   PyObject *parse(parser_t *self, PyObject *arg)

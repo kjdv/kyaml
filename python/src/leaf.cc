@@ -49,12 +49,11 @@ namespace
 
     if(!self->value->properties().empty())
     {
-      PyObject *set = PyFrozenSet_New(nullptr);
+      PyObject *set = PySet_New(nullptr);
       for(string const &item : self->value->properties())
       {
-        PyObject *key = PyString_FromStringAndSize(item.c_str(), item.size());
-        PySet_Add(set, key); // according to the python docs this is allowed from v2.6
-        Py_DECREF(key);      // the doc does not mention wheter the above 'steals' the reference, assume it does not
+        py_object key(PyString_FromStringAndSize(item.c_str(), item.size()), false);
+        PySet_Add(set, key.get());
       }
       return set;
     }
