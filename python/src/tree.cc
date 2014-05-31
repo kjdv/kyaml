@@ -67,6 +67,7 @@ namespace
       assert(d_key);
       PyDict_SetItem(get(), d_key, item);
       Py_DECREF(d_key);
+      Py_DECREF(item);
       d_key = nullptr;
     }
 
