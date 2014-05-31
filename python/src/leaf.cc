@@ -129,6 +129,11 @@ namespace
     return call_checker().call(as_binary_delegate, *self->value).release();
   }
 
+  PyObject *as_null(leaf_t *self, PyObject *arg)
+  {
+    Py_RETURN_NONE;
+  }
+
   PyObject *representation(PyObject *self)
   {
     assert(self);
@@ -148,6 +153,7 @@ namespace
     {"as_float",   (PyCFunction)as_float,   METH_NOARGS, ""},
     {"as_string",  (PyCFunction)as_string,  METH_NOARGS, ""},
     {"as_binary",  (PyCFunction)as_binary,  METH_NOARGS, ""},
+    {"as_null",    (PyCFunction)as_null,    METH_NOARGS, ""},
 
     {nullptr, nullptr, 0, nullptr}
   };

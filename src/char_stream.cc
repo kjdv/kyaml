@@ -105,7 +105,7 @@ void char_stream::ignore(char c)
   {
     if(d_pos >= d_buffer.size())
       break;
-    else if(d_buffer[d_pos] == c)
+    else if(d_buffer[d_pos] == (char_t)c)
       return;
     else
       ++d_pos;

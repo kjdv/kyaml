@@ -46,6 +46,7 @@ bool_no : !!bool No
 integer : !!int -5
 float : !!float 2.71828
 string : !!str "blah	blah\\tblah"
+null : !!null
 '''
 
     def setUp(self):
@@ -112,8 +113,11 @@ string : !!str "blah	blah\\tblah"
         root = self.parser.parse()
         self.assertEquals('blah\tblah\tblah', root['string'].as_string())
 
-
-
+    def test_null(self):
+        self.parser.parse() # skip first document
+        root = self.parser.parse()
+        self.assertEquals(None, root['null'].as_null())
+        
 
 
 
