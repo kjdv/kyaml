@@ -59,13 +59,10 @@ namespace
     Py_RETURN_NONE;
   }
 
-  PyObject *as_bool_delegate(scalar const &val)
+  py_object as_bool_delegate(scalar const &val)
   {
     bool v = val.as<bool>();
-    if(v)
-      Py_RETURN_TRUE;
-    else
-      Py_RETURN_FALSE;
+    return py_object(PyBool_FromLong(v), false);
   }
 
   PyObject *as_bool(leaf_t *self, PyObject *arg)
@@ -73,13 +70,13 @@ namespace
     assert(self);
     assert(self->value);
 
-    return call_checker().call(as_bool_delegate, *self->value);
+    return call_checker().call(as_bool_delegate, *self->value).release();
   }
 
-  PyObject *as_int_delegate(scalar const &val)
+  py_object as_int_delegate(scalar const &val)
   {
     long v = val.as<long>();
-    return PyInt_FromLong(v);
+    return py_object(PyInt_FromLong(v), false);
   }
 
   PyObject *as_int(leaf_t *self, PyObject *arg)
@@ -87,13 +84,13 @@ namespace
     assert(self);
     assert(self->value);
 
-    return call_checker().call(as_int_delegate, *self->value);
+    return call_checker().call(as_int_delegate, *self->value).release();
   }
 
-  PyObject *as_float_delegate(scalar const &val)
+  py_object as_float_delegate(scalar const &val)
   {
     double v = val.as<double>();
-    return PyFloat_FromDouble(v);
+    return py_object(PyFloat_FromDouble(v), false);
   }
 
   PyObject *as_float(leaf_t *self, PyObject *arg)
@@ -101,23 +98,35 @@ namespace
     assert(self);
     assert(self->value);
 
-    return call_checker().call(as_float_delegate, *self->value);
+    return call_checker().call(as_float_delegate, *self->value).release();
+  }
+
+  py_object as_string_delegate(scalar const &val)
+  {
+    string const &str = val.get();
+    return py_object(PyString_FromStringAndSize(str.c_str(), str.size()), false);
   }
 
   PyObject *as_string(leaf_t *self, PyObject *arg)
   {
-    return value(self, arg);
+    assert(self);
+    assert(self->value);
+
+    return call_checker().call(as_string_delegate, *self->value).release();
   }
 
-  PyObject *as_binary_delegate(scalar const &val)
+  py_object as_binary_delegate(scalar const &val)
   {
     std::vector<uint8_t> v = val.as<std::vector<uint8_t> >();
-    return PyByteArray_FromStringAndSize((char const *)v.data(), v.size());
+    return py_object(PyByteArray_FromStringAndSize((char const *)v.data(), v.size()), false);
   }
 
   PyObject *as_binary(leaf_t *self, PyObject *arg)
   {
-    return call_checker().call(as_binary_delegate, *self->value);
+    assert(self);
+    assert(self->value);
+
+    return call_checker().call(as_binary_delegate, *self->value).release();
   }
 
   PyObject *representation(PyObject *self)

@@ -55,20 +55,20 @@ namespace
   }
 
   // methods
-  PyObject *parse_delegate(parser_t *self)
+  py_object parse_delegate(parser_t *self)
   {
     assert(self);
 
     std::unique_ptr<const kyaml::document> root = self->parser->parse();
     if(root)
-      return build_tree(*root).release();
+      return build_tree(*root);
 
-    Py_RETURN_NONE;
+    return py_object(Py_None);
   }
 
   PyObject *parse(parser_t *self, PyObject *arg)
   {
-    return call_checker().call(parse_delegate, self);
+    return call_checker().call(parse_delegate, self).release();
   }
 
   PyObject *peek(parser_t *self, PyObject *arg)

@@ -14,7 +14,7 @@ namespace pykyaml
     explicit py_object(PyObject *self, bool incref = true) :
       d_self(self)
     {
-      if(incref)
+      if(incref && d_self)
         Py_INCREF(d_self);
     }
 
@@ -50,20 +50,23 @@ namespace pykyaml
 
     PyObject *release()
     {
-      Py_INCREF(d_self);
-      return d_self;
+      PyObject *self = d_self;
+      d_self = nullptr;
+      return self;
     }
 
   private:
     void copy(py_object const &other)
     {
       d_self = other.d_self;
-      Py_INCREF(d_self);
+      if(d_self)
+        Py_INCREF(d_self);
     }
 
     void destroy()
     {
-      Py_DECREF(d_self);
+      if(d_self)
+        Py_DECREF(d_self);
     }
 
     PyObject *d_self;
@@ -79,7 +82,7 @@ namespace pykyaml
     }
 
     template <typename callable_t, typename... args_t>
-    PyObject *call(callable_t &callable, args_t... args)
+    py_object call(callable_t &callable, args_t... args)
     {
       assert(s_exception);
 
@@ -90,7 +93,7 @@ namespace pykyaml
       catch(std::exception const &e)
       {
         PyErr_SetString(s_exception, e.what());
-        return nullptr;
+        return py_object(nullptr);
       }
     }
 
