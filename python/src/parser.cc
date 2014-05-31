@@ -61,7 +61,7 @@ namespace
 
     std::unique_ptr<const kyaml::document> root = self->parser->parse();
     if(root)
-      return build_tree(*root);
+      return build_tree(*root).release();
 
     Py_RETURN_NONE;
   }

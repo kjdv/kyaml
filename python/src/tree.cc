@@ -13,21 +13,19 @@ namespace
   class inserter
   {
   public:
-    inserter(PyObject *container) :
-      d_self(container, false)
+    inserter(py_object container) :
+      d_self(container)
     {}
 
-    virtual void insert(PyObject *item) = 0;
-    virtual void set_key(PyObject *key)
+    virtual void insert(py_object item) = 0;
+    virtual void set_key(py_object key)
     {
       assert(false);
     }
 
-    PyObject *collect()
+    py_object collect()
     {
-      PyObject *self = d_self.get();
-      Py_INCREF(self);
-      return self;
+      return d_self;
     }
 
   protected:
@@ -44,13 +42,12 @@ namespace
   {
   public:
     list_inserter() :
-      inserter(PyList_New(0))
+      inserter(py_object(PyList_New(0), false))
     {}
 
-    void insert(PyObject *item) override
+    void insert(py_object item) override
     {
-      PyList_Append(get(), item);
-      Py_DECREF(item);
+      PyList_Append(get(), item.get());
     }
   };
 
@@ -58,37 +55,35 @@ namespace
   {
   public:
     dict_inserter() :
-      inserter(PyDict_New()),
-      d_key(nullptr)
+      inserter(py_object(PyDict_New(), false))
     {}
 
-    void insert(PyObject *item) override
+    void insert(py_object item) override
     {
       assert(d_key);
-      PyDict_SetItem(get(), d_key, item);
-      Py_DECREF(d_key);
-      Py_DECREF(item);
-      d_key = nullptr;
+
+      PyDict_SetItem(get(), d_key->get(), item.get());
+      d_key.reset();
     }
 
-    void set_key(PyObject *key) override
+    void set_key(py_object key) override
     {
       assert(!d_key);
-      d_key = key;
+      d_key.reset(new py_object(key));
     }
 
   private:
-    PyObject *d_key;
+    unique_ptr<py_object> d_key;
   };
 
   class leaf_inserter : public inserter
   {
   public:
-    leaf_inserter(PyObject *leaf) :
+    leaf_inserter(py_object leaf) :
       inserter(leaf)
     {}
 
-    void insert(PyObject *item) override
+    void insert(py_object item) override
     {
       assert(false);
     }
@@ -104,7 +99,8 @@ namespace
       for(auto const &prop : val.properties())
         cp->add_property(prop);
 
-      PyObject *leaf = build_leaf(cp);
+      py_object leaf = build_leaf(cp);
+
       if(d_stack.empty())
         d_stack.emplace(new leaf_inserter(leaf));
       else
@@ -136,10 +132,10 @@ namespace
       assert(!d_stack.empty());
 
       PyObject *pkey = PyString_FromStringAndSize(key.data(), key.size());
-      d_stack.top()->set_key(pkey);
+      d_stack.top()->set_key(py_object(pkey, false));
     }
 
-    PyObject *collect()
+    py_object collect()
     {
       assert(d_stack.size() == 1);
       return d_stack.top()->collect();
@@ -161,7 +157,7 @@ namespace
 
 namespace pykyaml
 {
-  PyObject *build_tree(document const &root)
+  py_object build_tree(document const &root)
   {
     py_visitor visitor;
     root.accept(visitor);

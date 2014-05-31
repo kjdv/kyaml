@@ -11,7 +11,7 @@ namespace pykyaml
   class py_object
   {
   public:
-    py_object(PyObject *self, bool incref = true) :
+    explicit py_object(PyObject *self, bool incref = true) :
       d_self(self)
     {
       if(incref)
@@ -48,6 +48,12 @@ namespace pykyaml
       return d_self;
     }
 
+    PyObject *release()
+    {
+      Py_INCREF(d_self);
+      return d_self;
+    }
+
   private:
     void copy(py_object const &other)
     {
@@ -61,38 +67,6 @@ namespace pykyaml
     }
 
     PyObject *d_self;
-  };
-
-  class type_error : public std::exception
-  {
-  public:
-    type_error(std::string const &msg) :
-      d_msg(msg)
-    {}
-
-    char const *what() const throw() override
-    {
-      return d_msg.c_str();
-    }
-
-  private:
-    std::string d_msg;
-  };
-
-  class value_error : public std::exception
-  {
-  public:
-    value_error(std::string const &msg) :
-      d_msg(msg)
-    {}
-
-    char const *what() const throw() override
-    {
-      return d_msg.c_str();
-    }
-
-  private:
-    std::string d_msg;
   };
 
   class call_checker
@@ -129,9 +103,9 @@ namespace pykyaml
     static PyObject *s_exception;
   };
 
-  PyObject *build_leaf(std::shared_ptr<const kyaml::scalar> value);
+  py_object build_leaf(std::shared_ptr<const kyaml::scalar> value);
 
-  PyObject *build_tree(kyaml::document const &root);
+  py_object build_tree(kyaml::document const &root);
 
   void init_parser(PyObject *module);
   void init_leaf(PyObject *module);

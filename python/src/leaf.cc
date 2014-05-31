@@ -190,11 +190,11 @@ namespace
 namespace pykyaml
 {
 
-  PyObject *build_leaf(shared_ptr<const scalar> value)
+  py_object build_leaf(shared_ptr<const scalar> value)
   {
     leaf_t *self = (leaf_t *)allocate(&leaf_type, nullptr, nullptr);
     self->value = value;
-    return (PyObject *)self;
+    return py_object((PyObject *)self, false);
   }
 
   void init_leaf(PyObject *module)
