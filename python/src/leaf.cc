@@ -48,13 +48,13 @@ namespace
 
     if(!self->value->properties().empty())
     {
-      PyObject *set = PySet_New(nullptr);
+      py_object set(PySet_New(nullptr), false);
       for(string const &item : self->value->properties())
       {
         py_object key(PyString_FromStringAndSize(item.c_str(), item.size()), false);
-        PySet_Add(set, key.get());
+        PySet_Add(set.get(), key.get());
       }
-      return set;
+      return set.release();
     }
     Py_RETURN_NONE;
   }
