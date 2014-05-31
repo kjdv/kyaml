@@ -1,5 +1,4 @@
 #include "pystream.hh"
-#include "utils.hh"
 
 using namespace std;
 using namespace pykyaml;

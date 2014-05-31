@@ -61,13 +61,17 @@ specialDelivery:  >
 
     def test_value(self):
         val = self.parser.parse()
-        print val
-        self.assertEqual({}, val)
-        self.assertEqual(set(('aap', 'noot', 'mies')), val.properties())
+        self.assertEqual('E1628', val['items'][1]['part_no'].value())
 
     def test_conversion(self):
         val = self.parser.parse()
-        self.assertEqual(3.1459, val.as_float())
+        self.assertEqual(100.27, val['items'][1]['price'].as_float())
+
+    def test_anchor(self):
+        val = self.parser.parse()
+        self.assertEqual('East Centerville', val['ship-to']['city'].value())
+
+
 
 
 

@@ -1,5 +1,4 @@
 #include "pykyaml.hh"
-#include "utils.hh"
 #include <node_visitor.hh>
 
 #include <stack>

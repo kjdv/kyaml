@@ -8,40 +8,8 @@ PyObject *call_checker::s_exception = nullptr;
 
 namespace
 {
-  PyObject *throw_delegate(int a, int b)
-  {
-    if(a < b)
-      throw value_error("a < b");
-    return nullptr;
-  }
-
-  PyObject *thrower(PyObject *self, PyObject *arg)
-  {
-    return call_checker().call(throw_delegate, 5, 6);
-  }
-
-  PyObject *readline(PyObject *self, PyObject *arg)
-  {
-    if(!py_istream::check(arg))
-    {
-      PyErr_BadArgument();
-      return NULL;
-    }
-
-    py_istream stream(arg);
-    string line;
-    getline(stream, line);
-
-    PyObject *result = PyString_FromStringAndSize(line.data(), line.size());
-    return result;
-  }
-
   PyMethodDef module_methods[] =
   {
-    // todo: only for testing/ development purposes. maybe find a clear way to mark it as such, or remove
-    {"readline", (PyCFunction)readline, METH_O, ""},
-    {"throw",    (PyCFunction)thrower,  METH_NOARGS, ""},
-
     {nullptr, nullptr, 0, nullptr}
   };
 }

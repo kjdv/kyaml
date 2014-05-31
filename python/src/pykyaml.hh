@@ -1,10 +1,6 @@
 #ifndef PYKYAML_HH
 #define PYKYAML_HH
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <Python.h>
 #include <kyaml.hh>
 #include <stdexcept>

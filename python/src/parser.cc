@@ -1,13 +1,10 @@
 #include "pykyaml.hh"
 #include "pystream.hh"
-#include "utils.hh"
 
 using namespace pykyaml;
 
 namespace
 {
-  kyaml::logger<true> g_log("parser");
-
   // structure ctor/dtor
 
   struct parser_t
