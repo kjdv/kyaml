@@ -288,6 +288,39 @@ TEST_F(toplevel, empty_document_ambiguous)
   check("");
 }
 
+TEST_F(toplevel, escaped)
+{
+  const string input =
+      "string : \"string\\twith\\0escape\\achars\\U00e282ac\"\n";
+
+  parse(input);
+
+  string expect("string\t");
+  expect += "with";
+  expect += '\0';
+  expect += "escape\achars";
+  expect += "\xe2\x82\xac";
+
+  check(expect, "string");
+}
+
+TEST_F(toplevel, escaped_squote)
+{
+  // just to check one specific bug
+  // where this would block the stream
+  const string input =
+      "string : 'with\0null'\n";
+
+  try
+  {
+    parse(input);
+  }
+  catch(...)
+  {}
+
+  SUCCEED();
+}
+
 TEST_F(toplevel, unterminated_literal)
 {
   const string input =

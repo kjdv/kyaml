@@ -61,7 +61,8 @@ namespace kyaml
       {
         eat_line el(d_ctx);
         null_builder nb;
-        el.parse(nb);
+        if(!el.parse(nb))
+          break;
       }
     }
 
