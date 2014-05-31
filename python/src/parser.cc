@@ -33,7 +33,7 @@ namespace
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &file))
       return -1;
 
-    py_object file_object(file);
+    py_object file_object(file, true);
     if(!py_istream::check(file_object))
     {
       PyErr_BadArgument();
@@ -63,7 +63,7 @@ namespace
     if(root)
       return build_tree(*root);
 
-    return py_object(Py_None);
+    return py_object(Py_None, true);
   }
 
   PyObject *parse(parser_t *self, PyObject *arg)

@@ -11,7 +11,7 @@ namespace pykyaml
   class py_object
   {
   public:
-    explicit py_object(PyObject *self, bool incref = true) :
+    py_object(PyObject *self, bool incref) :
       d_self(self)
     {
       if(incref && d_self)
@@ -93,7 +93,7 @@ namespace pykyaml
       catch(std::exception const &e)
       {
         PyErr_SetString(s_exception, e.what());
-        return py_object(nullptr);
+        return py_object(nullptr, true);
       }
     }
 
