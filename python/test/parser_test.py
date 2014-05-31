@@ -45,7 +45,7 @@ bool_yes : !!bool Yes
 bool_no : !!bool No
 integer : !!int -5
 float : !!float 2.71828
-string : !!str 'blah	blah\tblah'
+string : !!str "blah	blah\\tblah"
 '''
 
     def setUp(self):
