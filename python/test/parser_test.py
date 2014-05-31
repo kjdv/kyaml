@@ -3,18 +3,6 @@ import pykyaml as kyaml
 
 import tempfile
 
-def infinite(doc):
-    while True:
-        file = tempfile.TemporaryFile('rw+b')
-        
-        file.write(doc)
-        file.seek(0)
-        
-        parser = kyaml.parser(file)
-        root = parser.parse()
-        print root
-    
-
 class parser_test(unittest.TestCase):
     doc = '''---
 receipt:     Oz-Ware Purchase Invoice
@@ -82,9 +70,6 @@ specialDelivery:  >
     def test_anchor(self):
         val = self.parser.parse()
         self.assertEqual('East Centerville', val['ship-to']['city'].value())
-
-    def test_infinite(self):
-        infinite(parser_test.doc)
 
 
 
