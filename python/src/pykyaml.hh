@@ -78,7 +78,6 @@ namespace pykyaml
     static void initialize(std::string const &name)
     {
       s_exception = PyErr_NewException((char *)name.c_str(), nullptr, nullptr);
-      Py_INCREF(s_exception);
     }
 
     template <typename callable_t, typename... args_t>
