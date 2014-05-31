@@ -144,14 +144,18 @@ namespace
   private:
     void unwind()
     {
-      if(d_stack.size() > 1)
-      {
-        shared_ptr<inserter> item = d_stack.top(); d_stack.pop();
+      assert(!d_stack.empty());
+
+      unique_ptr<inserter> item(d_stack.top().release());
+      d_stack.pop();
+
+      if(d_stack.empty())
+        d_stack.push(std::move(item));
+      else
         d_stack.top()->insert(item->collect());
-      }
     }
 
-    stack<shared_ptr<inserter> > d_stack;
+    stack<unique_ptr<inserter> > d_stack;
   };
 }
 
