@@ -103,6 +103,13 @@ node const &mapping::get(const string &key) const
   return *it->second;
 }
 
+const string scalar::null_property = "!!null";
+const string scalar::bool_property = "!!bool";
+const string scalar::int_property = "!!int";
+const string scalar::float_property = "!!float";
+const string scalar::string_property = "!!str";
+const string scalar::binary_property = "!!binary";
+
 void scalar::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);
@@ -165,7 +172,7 @@ bool kyaml::type_convert(node::properties_t const &props, std::string const &inp
 }
 
 template<>
-vector<uint8_t> kyaml::type_convert(node::properties_t const &props, string const &input)
+binary_t kyaml::type_convert(node::properties_t const &props, string const &input)
 {
   // sanitize whitespace
   string sanitized;
@@ -175,11 +182,11 @@ vector<uint8_t> kyaml::type_convert(node::properties_t const &props, string cons
       sanitized += c;
   }
 
-  vector<uint8_t> target;
+  binary_t target;
   if(decode_base64(sanitized, target))
     return target;
   else
-    return vector<uint8_t>();
+    return binary_t();
 }
 
 namespace

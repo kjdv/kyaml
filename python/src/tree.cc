@@ -94,17 +94,20 @@ namespace
   public:
     void visit(scalar const &val) override
     {
-      // todo: can we get rid of this extra copy?
-      shared_ptr<scalar> cp = make_shared<scalar>(val.get());
-      for(auto const &prop : val.properties())
-        cp->add_property(prop);
-
-      py_object leaf = build_leaf(cp);
-
-      if(d_stack.empty())
-        d_stack.emplace(new leaf_inserter(leaf));
+      if(val.has_property(scalar::bool_property))
+        insert_bool(val);
+      else if(val.has_property(scalar::int_property))
+        insert_int(val);
+      else if(val.has_property(scalar::float_property))
+        insert_float(val);
+      else if(val.has_property(scalar::string_property))
+        insert_string(val);
+      else if(val.has_property(scalar::null_property))
+        insert_null(val);
+      else if(val.has_property(scalar::binary_property))
+        insert_binary(val);
       else
-        d_stack.top()->insert(leaf);
+        insert_leaf(val);
     }
 
     void visit(sequence const &seq) override
@@ -142,6 +145,66 @@ namespace
     }
 
   private:
+    void insert_bool(scalar const &val)
+    {
+      bool v = val.as<bool>();
+      py_object leaf(PyBool_FromLong(v), false);
+      insert_base(leaf);
+    }
+
+    void insert_int(scalar const &val)
+    {
+      long v = val.as<long>();
+      py_object leaf(PyInt_FromLong(v), false);
+      insert_base(leaf);
+    }
+
+    void insert_float(scalar const &val)
+    {
+      double v = val.as<double>();
+      py_object leaf(PyFloat_FromDouble(v), false);
+      insert_base(leaf);
+    }
+
+    void insert_string(scalar const &val)
+    {
+      string  v = val.as<string>();
+      py_object leaf(PyString_FromStringAndSize(v.data(), v.size()), false);
+      insert_base(leaf);
+    }
+
+    void insert_null(scalar const &val)
+    {
+      py_object leaf(Py_None, true);
+      insert_base(leaf);
+    }
+
+    void insert_binary(scalar const &val)
+    {
+      binary_t v = val.as<vector<uint8_t> >();
+      py_object leaf(PyByteArray_FromStringAndSize((char const *)v.data(), v.size()), false);
+      insert_base(leaf);
+    }
+
+    void insert_leaf(scalar const &val)
+    {
+      // todo: can we get rid of this extra copy?
+      shared_ptr<scalar> cp = make_shared<scalar>(val.get());
+      for(auto const &prop : val.properties())
+        cp->add_property(prop);
+
+      py_object leaf = build_leaf(cp);
+      insert_base(leaf);
+    }
+
+    void insert_base(py_object leaf)
+    {
+      if(d_stack.empty())
+        d_stack.emplace(new leaf_inserter(leaf));
+      else
+        d_stack.top()->insert(leaf);
+    }
+
     void unwind()
     {
       assert(!d_stack.empty());

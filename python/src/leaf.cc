@@ -117,7 +117,7 @@ namespace
 
   py_object as_binary_delegate(scalar const &val)
   {
-    std::vector<uint8_t> v = val.as<std::vector<uint8_t> >();
+    binary_t v = val.as<std::vector<uint8_t> >();
     return py_object(PyByteArray_FromStringAndSize((char const *)v.data(), v.size()), false);
   }
 

@@ -128,7 +128,7 @@ TEST_F(node_typeconvert_test, base64)
 {
   const string expect = "This is a sample string that will be base64 encoded.";
 
-  vector<uint8_t> binary = get<vector<uint8_t> >("binary");
+  binary_t binary = get<binary_t>("binary");
   string actual(binary.begin(), binary.end());
 
   EXPECT_EQ(expect, actual);

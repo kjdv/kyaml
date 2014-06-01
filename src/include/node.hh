@@ -11,6 +11,9 @@
 
 namespace kyaml
 {
+  // binary data will be represented by a vector of bytes
+  typedef std::vector<uint8_t> binary_t;
+
   class node_visitor;
 
   class sequence;
@@ -179,6 +182,14 @@ namespace kyaml
   class scalar final : public node
   {
   public: 
+    // known values, currently don't really have a meaning
+    static const std::string null_property;   // !!null
+    static const std::string bool_property;   // !!bool
+    static const std::string int_property;    // !!int
+    static const std::string float_property;  // !!float
+    static const std::string string_property; // !!str
+    static const std::string binary_property; // !!binary
+
     scalar(std::string const &v) :
       d_value(v)
     {}
@@ -328,8 +339,14 @@ namespace kyaml
   template<> // overload for bool
   bool type_convert(node::properties_t const &props, std::string const &input);
 
+  template<> // overload for string
+  inline std::string type_convert(node::properties_t const &props, std::string const &input)
+  {
+    return input;
+  }
+
   template<> // overload for (base64) binary data
-  std::vector<uint8_t> type_convert(node::properties_t const &props, std::string const &input);
+  binary_t type_convert(node::properties_t const &props, std::string const &input);
 }
 
 namespace std

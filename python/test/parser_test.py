@@ -40,13 +40,6 @@ specialDelivery:  >
 ...
 ---
 # next doc as sentinel
-binary : !!binary c29tZSBiaW5hcnk=
-bool_yes : !!bool Yes
-bool_no : !!bool No
-integer : !!int -5
-float : !!float 2.71828
-string : !!str "blah	blah\\tblah"
-null : !!null
 '''
 
     def setUp(self):
@@ -77,48 +70,6 @@ null : !!null
     def test_anchor(self):
         root = self.parser.parse()
         self.assertEqual('East Centerville', root['ship-to']['city'].value())
-
-    def test_property(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertEqual(set(['!!binary']), root['binary'].properties())
-
-    def test_binary(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertEqual('some binary', root['binary'].as_binary())
-
-    def test_yes(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertTrue(root['bool_yes'].as_bool())
-
-    def test_no(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertFalse(root['bool_no'].as_bool())
-
-    def test_integer(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertEquals(-5, root['integer'].as_int())
-
-    def test_float(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertEquals(2.71828, root['float'].as_float())
-
-    def test_string(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertEquals('blah\tblah\tblah', root['string'].as_string())
-
-    def test_null(self):
-        self.parser.parse() # skip first document
-        root = self.parser.parse()
-        self.assertEquals(None, root['null'].as_null())
-        
-
 
 
         
