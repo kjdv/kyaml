@@ -63,7 +63,7 @@ explicit:
         self.assertEquals(int, type(val))
         self.assertEquals(10, val)
 
-    def test_explicit_int(self):
+    def test_explicit_float(self):
         val = self.root['explicit']['float']
         self.assertEquals(float, type(val))
         self.assertEquals(0.123, val)
@@ -97,7 +97,3 @@ explicit:
 
         self.assertEquals(kyaml.leaf, type(val))
         self.assertEquals('0.123', val.value())
-
-
-
-        
