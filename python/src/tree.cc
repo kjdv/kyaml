@@ -92,20 +92,29 @@ namespace
   class py_visitor : public node_visitor
   {
   public:
+    py_visitor(bool convert) :
+      d_convert(convert)
+    {}
+
     void visit(scalar const &val) override
     {
-      if(val.has_property(scalar::bool_property))
-        insert_bool(val);
-      else if(val.has_property(scalar::int_property))
-        insert_int(val);
-      else if(val.has_property(scalar::float_property))
-        insert_float(val);
-      else if(val.has_property(scalar::string_property))
-        insert_string(val);
-      else if(val.has_property(scalar::null_property))
-        insert_null(val);
-      else if(val.has_property(scalar::binary_property))
-        insert_binary(val);
+      if(d_convert)
+      {
+        if(val.has_property(scalar::bool_property))
+          insert_bool(val);
+        else if(val.has_property(scalar::int_property))
+          insert_int(val);
+        else if(val.has_property(scalar::float_property))
+          insert_float(val);
+        else if(val.has_property(scalar::string_property))
+          insert_string(val);
+        else if(val.has_property(scalar::null_property))
+          insert_null(val);
+        else if(val.has_property(scalar::binary_property))
+          insert_binary(val);
+        else
+          insert_leaf(val);
+      }
       else
         insert_leaf(val);
     }
@@ -218,15 +227,16 @@ namespace
         d_stack.top()->insert(item->collect());
     }
 
+    bool d_convert;
     stack<unique_ptr<inserter> > d_stack;
   };
 }
 
 namespace pykyaml
 {
-  py_object build_tree(document const &root)
+  py_object build_tree(document const &root, bool convert)
   {
-    py_visitor visitor;
+    py_visitor visitor(convert);
     root.accept(visitor);
 
     return visitor.collect();

@@ -108,7 +108,7 @@ namespace pykyaml
 
   py_object build_leaf(std::shared_ptr<const kyaml::scalar> value);
 
-  py_object build_tree(kyaml::document const &root);
+  py_object build_tree(kyaml::document const &root, bool convert);
 
   void init_parser(PyObject *module);
   void init_leaf(PyObject *module);

@@ -83,5 +83,21 @@ explicit:
         self.assertEquals(bytearray, type(val))
         self.assertEquals('some binary', val)
 
+    def test_inhibit_implicit_type_conversion(self):
+        # can we surpress the implicit type conversion
+        # when we want or have to?
+
+        file = tempfile.TemporaryFile('rw+b')
+        file.write(values_test.doc)
+        file.seek(0)
+
+        parser = kyaml.parser(file)
+        root = parser.parse(False)       
+        val = root['explicit']['float']
+
+        self.assertEquals(kyaml.leaf, type(val))
+        self.assertEquals('0.123', val.value())
+
+
 
         

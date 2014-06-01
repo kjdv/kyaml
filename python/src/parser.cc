@@ -55,20 +55,29 @@ namespace
   }
 
   // methods
-  py_object parse_delegate(parser_t *self)
+  py_object parse_delegate(parser_t *self, bool convert)
   {
     assert(self);
 
     std::unique_ptr<const kyaml::document> root = self->parser->parse();
     if(root)
-      return build_tree(*root);
+      return build_tree(*root, convert);
 
     return py_object(Py_None, true);
   }
 
-  PyObject *parse(parser_t *self, PyObject *arg)
+  PyObject *parse(parser_t *self, PyObject *args, PyObject *kwds)
   {
-    return call_checker().call(parse_delegate, self).release();
+    PyObject *implicit_conversion = nullptr;
+
+    static char *kwlist[] = {(char *)"implicit_conversion", nullptr};
+
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &implicit_conversion))
+      return nullptr;
+
+    bool convert = !implicit_conversion || PyObject_IsTrue(implicit_conversion);
+
+    return call_checker().call(parse_delegate, self, convert).release();
   }
 
   PyObject *peek(parser_t *self, PyObject *arg)
@@ -95,9 +104,9 @@ namespace
 
   PyMethodDef parser_methods[] =
   {
-    {"parse",      (PyCFunction)parse,      METH_NOARGS, ""},
-    {"peek",       (PyCFunction)peek,       METH_O,      ""},
-    {"linenumber", (PyCFunction)linenumber, METH_NOARGS, ""},
+    {"parse",      (PyCFunction)parse,      METH_VARARGS | METH_KEYWORDS, ""},
+    {"peek",       (PyCFunction)peek,       METH_O,                       ""},
+    {"linenumber", (PyCFunction)linenumber, METH_NOARGS,                  ""},
 
     {nullptr, nullptr, 0, nullptr}
   };
