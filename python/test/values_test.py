@@ -21,7 +21,7 @@ explicit:
   binary : !!binary c29tZSBiaW5hcnk=
 '''
     def setUp(self):
-        file = tempfile.TemporaryFile('rw+b')
+        file = tempfile.TemporaryFile('w+b')
 
         file.write(values_test.doc)
         file.seek(0)
@@ -87,7 +87,7 @@ explicit:
         # can we surpress the implicit type conversion
         # when we want or have to?
 
-        file = tempfile.TemporaryFile('rw+b')
+        file = tempfile.TemporaryFile('w+b')
         file.write(values_test.doc)
         file.seek(0)
 

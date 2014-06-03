@@ -43,7 +43,7 @@ specialDelivery:  >
 '''
 
     def setUp(self):
-        file = tempfile.TemporaryFile('rw+b')
+        file = tempfile.TemporaryFile('w+b')
 
         file.write(parser_test.doc)
         file.seek(0)
