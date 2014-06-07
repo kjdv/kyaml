@@ -13,12 +13,12 @@ namespace
   class inserter
   {
   public:
-    inserter(py_object container) :
-      d_self(container)
+    inserter(py_object &&container) :
+      d_self(std::move(container))
     {}
 
-    virtual void insert(py_object item) = 0;
-    virtual void set_key(py_object key)
+    virtual void insert(py_object &&item) = 0;
+    virtual void set_key(py_object &&key)
     {
       assert(false);
     }
@@ -45,7 +45,7 @@ namespace
       inserter(py_object(PyList_New(0), false))
     {}
 
-    void insert(py_object item) override
+    void insert(py_object &&item) override
     {
       PyList_Append(get(), item.get());
     }
@@ -58,7 +58,7 @@ namespace
       inserter(py_object(PyDict_New(), false))
     {}
 
-    void insert(py_object item) override
+    void insert(py_object &&item) override
     {
       assert(d_key);
 
@@ -66,10 +66,10 @@ namespace
       d_key.reset();
     }
 
-    void set_key(py_object key) override
+    void set_key(py_object &&key) override
     {
       assert(!d_key);
-      d_key.reset(new py_object(key));
+      d_key.reset(new py_object(std::move(key)));
     }
 
   private:
@@ -79,11 +79,11 @@ namespace
   class leaf_inserter : public inserter
   {
   public:
-    leaf_inserter(py_object leaf) :
-      inserter(leaf)
+    leaf_inserter(py_object &&leaf) :
+      inserter(std::move(leaf))
     {}
 
-    void insert(py_object item) override
+    void insert(py_object &&item) override
     {
       assert(false);
     }
@@ -158,41 +158,41 @@ namespace
     {
       bool v = val.as<bool>();
       py_object leaf(PyBool_FromLong(v), false);
-      insert_base(leaf);
+      insert_base(std::move(leaf));
     }
 
     void insert_int(scalar const &val)
     {
       long v = val.as<long>();
       py_object leaf(PyInt_FromLong(v), false);
-      insert_base(leaf);
+      insert_base(std::move(leaf));
     }
 
     void insert_float(scalar const &val)
     {
       double v = val.as<double>();
       py_object leaf(PyFloat_FromDouble(v), false);
-      insert_base(leaf);
+      insert_base(std::move(leaf));
     }
 
     void insert_string(scalar const &val)
     {
       string  v = val.as<string>();
       py_object leaf(PyString_FromStringAndSize(v.data(), v.size()), false);
-      insert_base(leaf);
+      insert_base(std::move(leaf));
     }
 
     void insert_null(scalar const &val)
     {
       py_object leaf(Py_None, true);
-      insert_base(leaf);
+      insert_base(std::move(leaf));
     }
 
     void insert_binary(scalar const &val)
     {
       binary_t v = val.as<vector<uint8_t> >();
       py_object leaf(PyByteArray_FromStringAndSize((char const *)v.data(), v.size()), false);
-      insert_base(leaf);
+      insert_base(std::move(leaf));
     }
 
     void insert_leaf(scalar const &val)
@@ -203,15 +203,15 @@ namespace
         cp->add_property(prop);
 
       py_object leaf = build_leaf(cp);
-      insert_base(leaf);
+      insert_base(std::move(leaf));
     }
 
-    void insert_base(py_object leaf)
+    void insert_base(py_object &&leaf)
     {
       if(d_stack.empty())
-        d_stack.emplace(new leaf_inserter(leaf));
+        d_stack.emplace(new leaf_inserter(std::move(leaf)));
       else
-        d_stack.top()->insert(leaf);
+        d_stack.top()->insert(std::move(leaf));
     }
 
     void unwind()

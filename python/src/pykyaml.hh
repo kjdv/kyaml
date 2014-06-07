@@ -23,6 +23,11 @@ namespace pykyaml
       copy(other);
     }
 
+    py_object(py_object &&other)
+    {
+      move(std::move(other));
+    }
+
     ~py_object()
     {
       destroy();
@@ -34,6 +39,16 @@ namespace pykyaml
       {
         destroy();
         copy(other);
+      }
+      return *this;
+    }
+
+    py_object &operator=(py_object &&other)
+    {
+      if(this != &other)
+      {
+        destroy();
+        move(std::move(other));
       }
       return *this;
     }
@@ -61,6 +76,12 @@ namespace pykyaml
       d_self = other.d_self;
       if(d_self)
         Py_INCREF(d_self);
+    }
+
+    void move(py_object &&other)
+    {
+      d_self = other.d_self;
+      other.d_self = nullptr;
     }
 
     void destroy()

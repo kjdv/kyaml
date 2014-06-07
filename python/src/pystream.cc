@@ -8,8 +8,8 @@ bool py_istreambuf::check(py_object const &object)
   return PyFile_Check(object.get());
 }
 
-py_istreambuf::py_istreambuf(py_object const &object) :
-  d_self(object)
+py_istreambuf::py_istreambuf(py_object &&object) :
+  d_self(std::move(object))
 {
   assert(check(d_self));
   PyFile_IncUseCount((PyFileObject *)d_self.get());

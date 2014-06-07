@@ -40,7 +40,7 @@ namespace
       return -1;
     }
 
-    self->stream = new py_istream(file_object);
+    self->stream = new py_istream(std::move(file_object));
     self->parser = new kyaml::parser(*self->stream);
 
     return 0;

@@ -14,7 +14,7 @@ namespace pykyaml
   public:
     static bool check(py_object const &object);
 
-    py_istreambuf(py_object const &object);
+    py_istreambuf(py_object &&object);
 
     ~py_istreambuf();
 
@@ -33,9 +33,9 @@ namespace pykyaml
   class py_istream : public std::istream
   {
   public:
-    py_istream(py_object const &object) :
+    py_istream(py_object &&object) :
       std::istream(nullptr),
-      d_buf(object)
+      d_buf(std::move(object))
     {
       // note: this construct kinda assumes the buffer is not used
       // during istream's ctor or dtor
