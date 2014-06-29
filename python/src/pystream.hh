@@ -9,14 +9,28 @@
 // use a python file object as a std::istream, how cool
 namespace pykyaml
 {
+  class py_reader
+  {
+  public:
+    virtual ~py_reader()
+    {}
+
+    virtual int read(char *buf, size_t n) = 0;
+
+    static bool check(py_object const &object);
+
+    static std::unique_ptr<py_reader> create(py_object &&object);
+  };
+
   class py_istreambuf : public std::streambuf
   {
   public:
-    static bool check(py_object const &object);
+    static bool check(py_object const &object)
+    {
+      return py_reader::check(object);
+    }
 
     py_istreambuf(py_object &&object);
-
-    ~py_istreambuf();
 
     int underflow() override;
 
@@ -27,7 +41,7 @@ namespace pykyaml
     enum {bufsize = 1};
     char d_buffer[bufsize];
 
-    py_object d_self;
+    std::unique_ptr<py_reader> d_reader;
   };
 
   class py_istream : public std::istream
