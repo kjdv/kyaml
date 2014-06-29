@@ -8,10 +8,15 @@ namespace
   class py_filereader : public py_reader
   {
   public:
+    static bool check(py_object const &object)
+    {
+      return PyFile_Check(object.get());
+    }
+
     py_filereader(py_object &&object) :
       d_self(std::move(object))
     {
-      assert(PyFile_Check(d_self.get()));
+      assert(check(d_self));
       PyFile_IncUseCount((PyFileObject *)d_self.get());
     }
 
@@ -35,16 +40,64 @@ namespace
   private:
     py_object d_self;
   };
+
+  class py_objectreader : public py_reader
+  {
+  public:
+    static bool check(py_object const &object)
+    {
+      return PyObject_HasAttrString(const_cast<PyObject *>(object.get()), "read");
+    }
+
+    py_objectreader(py_object &&object) :
+      d_self(std::move(object))
+    {
+      assert(check(d_self));
+    }
+
+    int read(char *buf, size_t n) override
+    {
+      py_object result(PyObject_CallMethod(d_self.get(), (char *)"read", (char *)"I", n), false);
+      if(result.get())
+      {
+        if(PyByteArray_Check(result.get()))
+          return py_read(PyByteArray_Size, PyByteArray_AsString, result.get(), buf, n);
+        else if(PyString_Check(result.get()))
+          return py_read(PyString_Size, PyString_AsString, result.get(), buf, n);
+      }
+      return EOF;
+    }
+
+  private:
+    Py_ssize_t py_read(Py_ssize_t (*size_f)(PyObject *),
+                       char *(*string_f)(PyObject *),
+                       PyObject *o, char *buf, Py_ssize_t n)
+    {
+      Py_ssize_t r = std::min(n, size_f(o));
+      char *source = string_f(o);
+      std::copy(source, source + r, buf);
+      return r;
+    }
+
+    py_object d_self;
+  };
 }
 
 bool py_reader::check(py_object const &object)
 {
-  return PyFile_Check(object.get());
+  return
+    py_filereader::check(object) ||
+    py_objectreader::check(object);
 }
 
 unique_ptr<py_reader> py_reader::create(py_object &&object)
 {
-  return unique_ptr<py_reader>(new py_filereader(std::move(object)));
+  if(py_filereader::check(object))
+    return unique_ptr<py_reader>(new py_filereader(std::move(object)));
+  else if(py_objectreader::check(object))
+    return unique_ptr<py_reader>(new py_objectreader(std::move(object)));
+
+  return unique_ptr<py_reader>();
 }
 
 py_istreambuf::py_istreambuf(py_object &&object) :

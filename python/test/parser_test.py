@@ -1,7 +1,7 @@
 import unittest
 import pykyaml as kyaml
 
-import tempfile
+from cStringIO import StringIO
 
 class parser_test(unittest.TestCase):
     doc = '''---
@@ -43,11 +43,7 @@ specialDelivery:  >
 '''
 
     def setUp(self):
-        file = tempfile.TemporaryFile('w+b')
-
-        file.write(parser_test.doc)
-        file.seek(0)
-
+        file = StringIO(parser_test.doc)
         self.parser = kyaml.parser(file)
 
     def test_parse(self):
