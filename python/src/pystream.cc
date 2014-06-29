@@ -113,7 +113,7 @@ int py_istreambuf::underflow()
   int r = d_reader->read(d_buffer, bufsize);
   if(r > 0)
   {
-    setg(d_buffer, d_buffer, d_buffer + bufsize);
+    setg(d_buffer, d_buffer, d_buffer + r);
     return *gptr();
   }
   return EOF;
