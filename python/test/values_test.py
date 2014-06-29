@@ -1,7 +1,7 @@
 import unittest
 import pykyaml as kyaml
 
-import tempfile
+from cStringIO import StringIO
 
 class values_test(unittest.TestCase):
     doc = '''---
@@ -21,11 +21,7 @@ explicit:
   binary : !!binary c29tZSBiaW5hcnk=
 '''
     def setUp(self):
-        file = tempfile.TemporaryFile('w+b')
-
-        file.write(values_test.doc)
-        file.seek(0)
-
+        file = StringIO(values_test.doc)
         parser = kyaml.parser(file)
         self.root = parser.parse()
 
@@ -87,10 +83,7 @@ explicit:
         # can we surpress the implicit type conversion
         # when we want or have to?
 
-        file = tempfile.TemporaryFile('w+b')
-        file.write(values_test.doc)
-        file.seek(0)
-
+        file = StringIO(values_test.doc)
         parser = kyaml.parser(file)
         root = parser.parse(False)       
         val = root['explicit']['float']
