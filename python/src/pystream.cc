@@ -13,16 +13,17 @@ namespace
       return PyFile_Check(object.get());
     }
 
+    // BIG TODO: check reference counting
     py_filereader(py_object &&object) :
       d_self(std::move(object))
     {
       assert(check(d_self));
-      PyFile_IncUseCount((PyFileObject *)d_self.get());
+      // PyFile_IncUseCount((PyFileObject *)d_self.get());
     }
 
     ~py_filereader()
     {
-      PyFile_DecUseCount((PyFileObject *)d_self.get());
+      // PyFile_DecUseCount((PyFileObject *)d_self.get());
     }
 
     int read(char *buf, size_t n) override
