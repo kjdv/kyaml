@@ -13,21 +13,16 @@ namespace
       return PyFile_Check(object.get());
     }
 
-    // BIG TODO: check reference counting
     py_filereader(py_object &&object) :
       d_self(std::move(object))
     {
       assert(check(d_self));
-      // PyFile_IncUseCount((PyFileObject *)d_self.get());
-    }
-
-    ~py_filereader()
-    {
-      // PyFile_DecUseCount((PyFileObject *)d_self.get());
     }
 
     int read(char *buf, size_t n) override
     {
+      file_guard guard(d_self);
+
       FILE *fp = PyFile_AsFile(d_self.get());
       if(fp)
       {
@@ -39,6 +34,24 @@ namespace
     }
 
   private:
+    class file_guard
+    {
+    public:
+      file_guard(py_object &self) :
+        d_self((PyFileObject *)self.get())
+      {
+        PyFile_IncUseCount(d_self);
+      }
+
+      ~file_guard()
+      {
+        PyFile_DecUseCount(d_self);
+      }
+
+    private:
+      PyFileObject *d_self;
+    };
+
     py_object d_self;
   };
 
