@@ -114,7 +114,7 @@ node const &mapping::get(const string &key) const
 {
   container_t::const_iterator it = d_items.find(key);
   if(it == d_items.end())
-    throw value_error(string("requested value ") + key + "not found");
+    throw value_error(string("requested value ") + key + " not found");
 
   assert(it->second);
   return *it->second;
@@ -150,7 +150,7 @@ void sequence::accept(node_visitor &visitor) const
 node const &sequence::get(size_t i) const
 {
   if(i >= size())
-    throw value_error("list index out of range");
+    throw value_error(string("list index ") + tostring_cast(i) + " out of range");
   assert(d_items[i]);
   return *d_items[i];
 }
