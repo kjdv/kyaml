@@ -11,17 +11,11 @@ namespace kyaml
   class parser
   {   
   public:
-    class error : public std::exception
+    class error : public std::runtime_error
     {
     protected: // not to be used directly
       error(unsigned linenumber, std::string const &msg);
     public:
-
-      char const *what() const throw() override
-      {
-        return d_msg.c_str();
-      }
-
       unsigned linenumber() const
       {
         return d_linenumber;
@@ -29,7 +23,6 @@ namespace kyaml
 
     private:
       unsigned d_linenumber;
-      std::string d_msg;
     };
 
     class parse_error : public kyaml::parser::error

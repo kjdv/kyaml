@@ -6,7 +6,7 @@
 using namespace std;
 using namespace kyaml;
 
-namespace
+namespace std
 {
   ostream &operator<<(ostream &o, node::type_t t)
   {
@@ -28,19 +28,23 @@ namespace
   }
 }
 
-node::type_error::type_error(type_t expect, type_t actual)
+namespace
 {
-  stringstream str;
-  str << "node type mismatch: expected " << expect << " but is " << actual;
-  d_msg = str.str();
+
+  inline void throw_type_error(node::type_t expect, node::type_t actual)
+  {
+    throw node::type_error(
+          string("node type mismatch: expected ") +
+          tostring_cast(expect) +
+          " but was " +
+          tostring_cast(actual));
+  }
 }
-
-
 
 sequence const &node::as_sequence() const
 {
   if(type() != SEQUENCE)
-    throw type_error(SEQUENCE, type());
+    throw_type_error(SEQUENCE, type());
 
   return dynamic_cast<sequence const &>(*this);
 }
@@ -48,7 +52,7 @@ sequence const &node::as_sequence() const
 scalar const &node::as_scalar() const
 {
   if(type() != SCALAR)
-    throw type_error(SCALAR, type());
+    throw_type_error(SCALAR, type());
 
   return dynamic_cast<scalar const &>(*this);
 }
@@ -56,7 +60,7 @@ scalar const &node::as_scalar() const
 mapping const &node::as_mapping() const
 {
   if(type() != MAPPING)
-    throw type_error(MAPPING, type());
+    throw_type_error(MAPPING, type());
 
   return dynamic_cast<mapping const &>(*this);
 }
@@ -64,25 +68,28 @@ mapping const &node::as_mapping() const
 string const &node::get() const
 {
   assert(type() != SCALAR);
-  throw type_error(SCALAR, type());
+  throw_type_error(SCALAR, type());
+  throw std::logic_error("never reached");
 }
 
 node const &node::get(size_t i) const
 {
   assert(type() != SEQUENCE);
-  throw type_error(SEQUENCE, type());
+  throw_type_error(SEQUENCE, type());
+  throw std::logic_error("never reached");
 }
 
 node const &node::get(const string &key) const
 {
   assert(type() != MAPPING);
-  throw type_error(MAPPING, type());
+  throw_type_error(MAPPING, type());
+  throw std::logic_error("never reached");
 }
 
 void node::add(std::shared_ptr<node> val)
 {
   if(type() != SEQUENCE)
-    throw type_error(SEQUENCE, type());
+    throw_type_error(SEQUENCE, type());
 
   dynamic_cast<sequence &>(*this).add(val);
 }
@@ -90,15 +97,25 @@ void node::add(std::shared_ptr<node> val)
 void node::add(string const &key, std::shared_ptr<node> val)
 {
   if(type() != MAPPING)
-    throw type_error(MAPPING, type());
+    throw_type_error(MAPPING, type());
 
   return dynamic_cast<mapping &>(*this).add(key, val);
+}
+
+node const &mapping::operator[](const string &key) const
+{
+  container_t::const_iterator it = d_items.find(key);
+  assert(it != d_items.end());
+  assert(it->second);
+  return *it->second;
 }
 
 node const &mapping::get(const string &key) const
 {
   container_t::const_iterator it = d_items.find(key);
-  assert(it != d_items.end());
+  if(it == d_items.end())
+    throw value_error(string("requested value ") + key + "not found");
+
   assert(it->second);
   return *it->second;
 }
@@ -128,6 +145,14 @@ void sequence::accept(node_visitor &visitor) const
   }
 
   visitor.sentinel(*this);
+}
+
+node const &sequence::get(size_t i) const
+{
+  if(i >= size())
+    throw value_error("list index out of range");
+  assert(d_items[i]);
+  return *d_items[i];
 }
 
 void mapping::accept(node_visitor &visitor) const

@@ -193,8 +193,8 @@ namespace kyaml
   }
 
   parser::error::error(unsigned linenumber, const string &msg) :
-    d_linenumber(linenumber),
-    d_msg(msg)
+    std::runtime_error(msg),
+    d_linenumber(linenumber)
   {}
 
   parser::parse_error::parse_error(unsigned linenumber, const string &msg) :

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 #include <cstdint>
@@ -19,20 +20,15 @@ namespace kyaml
     no_copy &operator=(no_copy const &);
   };
 
-  class invalid_utf8 : public std::exception
+  class invalid_utf8 : public std::runtime_error
   {
   public:
     invalid_utf8(std::string const &msg, std::string const &sequence) :
-      d_msg(construct(msg, sequence))
+      std::runtime_error(construct(msg, sequence))
     {}
 
-    char const *what() const throw() override
-    {
-      return d_msg.c_str();
-    }
   private:
     static std::string construct(std::string const &msg, std::string const &sequence);
-    std::string d_msg;
   };
 
   // return the number of utf8 bytes based on the first byte c (including c)
@@ -64,6 +60,14 @@ namespace kyaml
 
   // base 64 decoding
   bool decode_base64(std::string const &source, std::vector<uint8_t> &target);
+
+  template <typename T>
+  std::string tostring_cast(T const &val)
+  {
+    std::ostringstream stream;
+    stream << val;
+    return stream.str();
+  }
 
   // for debugging purposes: a (compile-time-switchable) logger for what is parsed
   template <bool enabled = false>

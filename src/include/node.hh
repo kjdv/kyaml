@@ -30,18 +30,16 @@ namespace kyaml
       SCALAR
     } type_t;
 
-    class type_error : public std::exception
+    class value_error : public std::runtime_error
     {
     public:
-      type_error(type_t expect, type_t actual);
+      using std::runtime_error::runtime_error;
+    };
 
-      char const *what() const throw() override
-      {
-        return d_msg.c_str();
-      }
-
-    private:
-      std::string d_msg;
+    class type_error : public std::runtime_error
+    {
+    public:
+      using std::runtime_error::runtime_error;
     };
 
     typedef std::set<std::string> properties_t;
@@ -238,14 +236,11 @@ namespace kyaml
 
     node const &operator[](size_t i) const
     {
-      return get(i);
-    }
-
-    node const &get(size_t i) const override
-    {
       assert(i < size() && d_items[i]);
       return *d_items[i];
     }
+
+    node const &get(size_t i) const override;
 
     container_t::const_iterator begin() const
     {
@@ -289,10 +284,7 @@ namespace kyaml
       return MAPPING;
     }
 
-    node const &operator[](std::string const &key) const
-    {
-      return get(key);
-    }
+    node const &operator[](std::string const &key) const;
 
     node const &get(std::string const &key) const override;
 
