@@ -159,7 +159,7 @@ void mapping::accept(node_visitor &visitor) const
 {
   visitor.visit(*this);
 
-  for(auto const &kvpair : d_items)
+  for(auto&& kvpair : d_items)
   {
     assert(kvpair.second);
 

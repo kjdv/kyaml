@@ -55,7 +55,7 @@ void replay_builder::add_property(context const &ctx, const string &prop)
 
 void replay_builder::replay(document_builder &builder) const
 {
-  for(auto const &it : d_items)
+  for(auto&& it : d_items)
   {
     switch(it.token)
     {
