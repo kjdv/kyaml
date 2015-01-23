@@ -79,7 +79,7 @@ namespace kyaml
 
     // does nothing, compiler should optimize out everything
     template<typename... args_t>
-    void operator()(args_t...)
+    void operator()(args_t&&...)
     {}
   };
 
@@ -94,18 +94,18 @@ namespace kyaml
     {}
 
     template<typename... args_t>
-    void operator()(args_t... args)
+    void operator()(args_t&&... args)
     {
       d_out << "(" << d_tag << "):";
-      log_recurse(args...);
+      log_recurse(std::forward<args_t>(args)...);
     }
     
   private:
     template<typename first_t, typename... args_t>
-    void log_recurse(first_t const &head, args_t... tail)
+    void log_recurse(first_t const &head, args_t&&... tail)
     {
       d_out << ' ' << head;
-      log_recurse(tail...);
+      log_recurse(std::forward<args_t>(tail)...);
     }    
     void log_recurse()
     {

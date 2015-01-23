@@ -69,9 +69,9 @@ namespace kyaml
     }
 
     template <typename head_t, typename... tail_t>
-    node const &value(head_t const &head, tail_t... tail) const
+    node const &value(head_t const &head, tail_t&&... tail) const
     {
-      return get(head).value(tail...);
+      return get(head).value(std::forward<tail_t>(tail)...);
     }
 
     // check membership of the item
@@ -81,28 +81,28 @@ namespace kyaml
     }
 
     template <typename... path_t>
-    bool has(size_t idx, path_t... path) const
+    bool has(size_t idx, path_t&&... path) const
     {
       return
-          type() == SEQUENCE &&
-          has_index(idx) &&
-          get(idx).has(path...);
+        type() == SEQUENCE &&
+        has_index(idx) &&
+        get(idx).has(std::forward<path_t>(path)...);
     }
 
     template <typename... path_t>
-    bool has(std::string const &key, path_t... path) const
+    bool has(std::string const &key, path_t&&... path) const
     {
       return
-          type() == MAPPING &&
-          has_key(key) &&
-          get(key).has(path...);
+        type() == MAPPING &&
+        has_key(key) &&
+        get(key).has(std::forward<path_t>(path)...);
     }
 
     // specialized value()/has() for leaf nodes
     template <typename... path_t>
-    std::string const &leaf_value(path_t... path) const
+    std::string const &leaf_value(path_t&&... path) const
     {
-      return value(path...).get();
+      return value(std::forward<path_t>(path)...).get();
     }
 
     // sentinel
@@ -112,21 +112,21 @@ namespace kyaml
     }
 
     template <typename... path_t>
-    bool has_leaf(size_t idx, path_t... path) const
+    bool has_leaf(size_t idx, path_t&&... path) const
     {
       return
-          type() == SEQUENCE &&
-          has_index(idx) &&
-          get(idx).has_leaf(path...);
+        type() == SEQUENCE &&
+        has_index(idx) &&
+        get(idx).has_leaf(std::forward<path_t>(path)...);
     }
 
     template <typename... path_t>
-    bool has_leaf(std::string const &key, path_t... path) const
+    bool has_leaf(std::string const &key, path_t&&... path) const
     {
       return
-          type() == MAPPING &&
-          has_key(key) &&
-          get(key).has_leaf(path...);
+        type() == MAPPING &&
+        has_key(key) &&
+        get(key).has_leaf(std::forward<path_t>(path)...);
     }
 
     // node properties
