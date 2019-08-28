@@ -88,6 +88,3 @@ into
 typedef internal::or_clause<non_content, endoffile> break_comment;
 ```
 
-## Python
-
-Check the `python` subdirectory for python bindings.
