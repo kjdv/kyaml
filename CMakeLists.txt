@@ -1,53 +1,31 @@
-# just to surpress a cmake warning, probably lower versions are fine too
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.10)
 
-project(kyaml) # Klaas' yet another markup language implementation
+project(kyaml)
+set(CMAKE_CXX_STANDARD 17)
 
-# set the proper compiler flags
-include(compilerstuff.cmake)
+include(GoogleTest)
+find_package(GTest MODULE REQUIRED)
+find_library(GMOCK_LIBRARIES gmock)
+enable_testing()
 
-# find source files
-file(GLOB_RECURSE SOURCES src/*.cc src/*.hh)
 
-# put the src subdirectory on the include path
-include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/src/include)
+# dependencies:
 
-# put the common code in one library
-add_library(${PROJECT_NAME} ${SOURCES})
+find_package(Composite CONFIG REQUIRED)
 
-# sample executable
-add_executable(${PROJECT_NAME}_example example/main.cc)
-add_dependencies(${PROJECT_NAME}_example ${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
+find_package(Results CONFIG REQUIRED)
 
-# (optional) compile test cases (needs the google test/mock framework)
-find_package(GTest)
-if(GTEST_FOUND)
-  find_path(GMOCK_INCLUDE_DIR gmock/gmock.h)
-  find_library(GMOCK_LIBRARIES gmock)
 
-  include_directories(${GTEST_INCLUDE_DIRS}, ${GMOCK_INCLUDE_DIR})
+add_subdirectory(lib)
+add_subdirectory(test)
+add_subdirectory(examples)
 
-  file(GLOB_RECURSE TEST_SOURCES test/*.cc test/*.hh)
+# install rules
+install(TARGETS kyaml
+        EXPORT KyamlConfig
+        ARCHIVE DESTINATION lib COMPONENT lib
+        PUBLIC_HEADER DESTINATION include/kyaml COMPONENT dev
+)
 
-  add_executable(${PROJECT_NAME}_test ${TEST_SOURCES})
-  add_dependencies(${PROJECT_NAME}_test ${PROJECT_NAME})
-
-  find_package(Threads) # gtest may also need pthread
-  target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES} ${GMOCK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-endif()
-
-# (optional) python bindings
-find_package(PythonInterp)
-find_package(PythonLibs)
-if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
-  set(pymodule py${PROJECT_NAME})
-
-  file(GLOB_RECURSE PYTHON_SOURCES python/src/*.cc python/src/*.hh)
-
-  # as python's setup.py does not do incremental builds it is not included
-  # as part of 'ALL'
-  add_custom_target(pykyaml
-                    ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/setup.py build
-                    SOURCES ${PYTHON_SOURCES})
-endif()
+export(TARGETS kyaml NAMESPACE Kyaml:: FILE ${CMAKE_CURRENT_BINARY_DIR}/KyamlConfig.cmake)
+install(EXPORT KyamlConfig DESTINATION share/kyaml NAMESPACE Kyaml::)
