@@ -44,7 +44,7 @@ namespace kyaml
       kyaml::context::blockflow_t blockflow;
 
       bool const result;
-      unsigned const consumed;
+      size_t const consumed;
     };
 
     class testcase_builder
@@ -91,7 +91,7 @@ namespace kyaml
       kyaml::context::blockflow_t d_blockflow;
       
       bool d_result;
-      unsigned d_consumed;
+      size_t d_consumed;
       
       std::string d_value;
     };
@@ -188,7 +188,7 @@ namespace std
     test_advance();                                                     \
   }                                                                     \
                                                                         \
-  INSTANTIATE_TEST_CASE_P(tests_##name,                                 \
+  INSTANTIATE_TEST_SUITE_P(tests_##name,                                 \
                           name,                                         \
                           testing::ValuesIn(values));
 

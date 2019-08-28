@@ -120,7 +120,7 @@ dquote_testcase dquote_testcases[] =
   {"\"\xe2\x82\xac euro\"", "\xe2\x82\xac euro", context::FLOW_IN}
 };
 
-INSTANTIATE_TEST_CASE_P(dquote_tests,
+INSTANTIATE_TEST_SUITE_P(dquote_tests,
                         dquote_test,
                         ValuesIn(dquote_testcases));
 
@@ -153,7 +153,7 @@ squote_testcase squote_testcases[] =
   {"'kla\\as'", "kla\\as", context::FLOW_IN},
 };
 
-INSTANTIATE_TEST_CASE_P(squote_tests,
+INSTANTIATE_TEST_SUITE_P(squote_tests,
                         squote_test,
                         ValuesIn(squote_testcases));
 namespace

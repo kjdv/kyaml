@@ -7,6 +7,8 @@ using namespace kyaml;
 using namespace kyaml::test;
 using namespace kyaml::clauses;
 
+namespace {
+
 struct indentation_detect_testcase
 {
   const string input;
@@ -39,7 +41,7 @@ indentation_detect_testcase indentation_detect_testcases[] = {
   {"-", 0, 0}
 };
 
-INSTANTIATE_TEST_CASE_P(tests_indent_detect_test,
+INSTANTIATE_TEST_SUITE_P(tests_indent_detect_test,
                         indentation_detect_test,
                         testing::ValuesIn(indentation_detect_testcases));
 
@@ -304,5 +306,5 @@ TEST(folded_content, with_indents)
 
   EXPECT_TRUE(cf.parse(mb));
 }
-
+}
 

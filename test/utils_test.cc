@@ -30,7 +30,7 @@ string utf8_testcases[] =
   "\xf0\x9d\x84\x8b",
 };
 
-INSTANTIATE_TEST_CASE_P(utf8_tests,
+INSTANTIATE_TEST_SUITE_P(utf8_tests,
                         utf8_test,
                         testing::ValuesIn(utf8_testcases));
 
@@ -97,6 +97,6 @@ nr_utf8bytes_testcase nr_utf8bytes_testcases[] =
   {"\xfd\x82\x82\x82\x82\x82", 6},
 };
 
-INSTANTIATE_TEST_CASE_P(nr_utf8bytes_tests,
+INSTANTIATE_TEST_SUITE_P(nr_utf8bytes_tests,
                         nr_utf8bytes_test,
                         testing::ValuesIn(nr_utf8bytes_testcases));
